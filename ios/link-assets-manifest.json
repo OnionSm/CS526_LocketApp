@@ -1,0 +1,41 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "Scripts/layout/fonts/Geomanist-Medium.ttf",
+      "sha1": "cda7be9924a178f2361839bb780cb7697923e737"
+    },
+    {
+      "path": "Scripts/layout/fonts/Geomanist-Regular.ttf",
+      "sha1": "04beb18c2875b2f50fe07af5186cffbb52a4fede"
+    },
+    {
+      "path": "Scripts/layout/fonts/SF-Pro-Rounded-Bold.otf",
+      "sha1": "745fb5fc263ee7e4d86211f1680bd928c327040a"
+    },
+    {
+      "path": "Scripts/layout/fonts/SF-Pro-Rounded-Heavy.otf",
+      "sha1": "85e8f7b4b33e7f5b6065947ae4a7e885cdcc8d75"
+    },
+    {
+      "path": "Scripts/layout/fonts/SF-Pro-Rounded-Light.otf",
+      "sha1": "910cab7f17ab0b65ce8a0a09fddc152dc2b4f5bb"
+    },
+    {
+      "path": "Scripts/layout/fonts/SF-Pro-Rounded-Medium.otf",
+      "sha1": "889faa176363f8b8e629aeaacdf85c07d1312d8d"
+    },
+    {
+      "path": "Scripts/layout/fonts/SF-Pro-Rounded-Regular.otf",
+      "sha1": "ab2491a7db1d0a1792e50aefd4eea4bc46215742"
+    },
+    {
+      "path": "Scripts/layout/fonts/SF-Pro-Rounded-Semibold.otf",
+      "sha1": "00fd8c58ca31cc2794b221405884a1601f50558f"
+    },
+    {
+      "path": "Scripts/layout/fonts/SF-Pro-Rounded-Thin.otf",
+      "sha1": "ec84d72ada4a56604edc41df8a229aca16ff613b"
+    }
+  ]
+}

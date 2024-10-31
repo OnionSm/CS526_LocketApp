@@ -11,7 +11,11 @@
   },
   "dependencies": {
     "react": "18.3.1",
-    "react-native": "0.75.4"
+    "react-native": "0.75.4",
+    "react-native-ico-flags": "^6.3.1",
+    "react-native-parallax-scroll-view": "^0.21.3",
+    "react-native-svg": "^15.8.0",
+    "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
