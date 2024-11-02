@@ -9,7 +9,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import IconFeather from 'react-native-vector-icons/Feather';
 import general_user_profile_styles from './styles/GeneralUserprofileStyle';
 
-
 function MainScreen()
 {
     const [modalVisible, setModalVisible] = useState(false);
@@ -83,7 +82,7 @@ function MainScreen()
                     <View style={general_user_profile_styles.upper_zone}>
                         <View style={general_user_profile_styles.upper_line}></View>
                     </View>
-                    <ScrollView style={general_user_profile_styles.scroll_view}
+                    <ScrollView contentContainerStyle={general_user_profile_styles.scroll_view}
                         ref={scrollViewRef}
                         onScroll={handleScroll}
                         scrollEventThrottle={16}
@@ -112,188 +111,48 @@ function MainScreen()
                                 </View>
 
                                 <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
+                                    <Text style= {general_user_profile_styles.general_text}>Sửa thông tin</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
+                        <View style={general_user_profile_styles.user_locket_share_zone}>
+                            <View style={general_user_profile_styles.locket_share_background}>
+                                <View style={general_user_profile_styles.locket_share_background_zone1}>
+                                    <View style={general_user_profile_styles.mini_avatar_zone}>
+                                        <Image source={require("./GUI/AvatarBorder.png")}
+                                        style={general_user_profile_styles.avatar_border}>
+                                            
+                                        </Image>
+                                    </View>
 
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
-
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
-
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
+                                    <View style={general_user_profile_styles.locket_share_text_zone}>
+                                        <Text style={[general_user_profile_styles.general_text ,{fontSize:15}]}
+                                        >Mời bạn bè tham gia Locket</Text>
+                                        <Text style={[general_user_profile_styles.general_text2, {fontSize:15}]}
+                                        >locket.cam/onion</Text>
+                                    </View>
                                 </View>
 
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
+                                <View style={general_user_profile_styles.locket_share_background_zone2}>
+                                <TouchableOpacity style={general_user_profile_styles.share_button_background}>
+                                    <Icon name="share" size={24} color="#FFFFFF" /> 
                                 </TouchableOpacity>
-                            </View>
+                                </View>
+                            </View> 
                         </View>
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
 
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
-
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
-                                </View>
-
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
-                                </TouchableOpacity>
-                            </View>
+                        <View style={general_user_profile_styles.extension_setting_zone}>
+                        <Text style={[{ fontFamily: 'SF-Pro-Rounded-Bold', fontSize: 16 , color: "#AAAAAA"}]}>
+                            <Icon name="add-box" size={24} color="#AAAAAA" />
+                            Thiết lập tiện ích
+                        </Text>
                         </View>
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
 
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
+                        <View style={general_user_profile_styles.general_setting_zone}>
 
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
-                                </View>
-
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
-
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
-
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
-                                </View>
-
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
-
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
-
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
-                                </View>
-
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
-
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
-
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
-                                </View>
-
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
-
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
-
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
-                                </View>
-
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.user_setting_text}>Sửa thông tin</Text>
-                                </TouchableOpacity>
-                            </View>
                         </View>
                         
-
+                        
                     </ScrollView>
 
                 </View>
