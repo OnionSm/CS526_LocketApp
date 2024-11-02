@@ -159,7 +159,7 @@ const general_user_profile_styles = StyleSheet.create({
     locket_share_background:
     {
         width: "90%",
-        height: "80%" ,
+        height: "85%" ,
         display: "flex",
         justifyContent: "space-around",
         alignContent: "center",
@@ -220,16 +220,36 @@ const general_user_profile_styles = StyleSheet.create({
     extension_setting_zone:
     {
         display: "flex",
-        backgroundColor: "#384058",
         marginTop: 30,
+        flexDirection: "column"
         
     },
     general_setting_zone:
     {
         display: "flex",
-        backgroundColor: "#349500", 
         marginTop: 30
-    }
+    },
+    text_option_zone:
+    {
+        marginRight: width*0.05,
+        flexDirection: "row",
+        alignItems: "center"
+    },
+    button_wrapper:
+    {
+        width: width,
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        alignContent: "center"
+    },
+    medium_button:
+    {
+        width: 0.9* width,
+        height: 0.055* height,
+        backgroundColor: button_background_color,
+        display: "flex"
+    },
 });
 
 export default general_user_profile_styles
