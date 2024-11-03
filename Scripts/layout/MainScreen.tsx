@@ -3,12 +3,12 @@ import React from 'react';
 import type {PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button,
      TouchableOpacity, TextInput, Modal, ScrollView,
-     RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions} from 'react-native';
+     RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet} from 'react-native';
 import main_screen_styles from './styles/MainScreenStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import IconFeather from 'react-native-vector-icons/Feather';
 import general_user_profile_styles from './styles/GeneralUserprofileStyle';
-import { Camera, useCameraDevices, useCameraPermission, getCameraDevice } from 'react-native-vision-camera';
+import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat } from 'react-native-vision-camera';
 import PermissionsPage from './components/PermissionsPage';
 import CameraDenied from './components/CameraDenied';
 function MainScreen()
@@ -16,11 +16,17 @@ function MainScreen()
     
     const devices = Camera.getAvailableCameraDevices();
     const device = getCameraDevice(devices, 'back');
+    console.log(device);
+    const format = useCameraFormat(device, [
+        { videoAspectRatio: 1 }, // Tỷ lệ 1:1
+        { videoResolution: { width: 1080, height: 1080 } },
+        { fps: 30 }
+      ])
+    console.log("format", format);
     const [hasPermission, setHasPermission] = useState(false);
     const getPermission = async () => {
         const status = await Camera.requestCameraPermission();
         setHasPermission(status === "granted");
-        console.log(status);
         return;
     };
 
@@ -35,7 +41,11 @@ function MainScreen()
 
 //     getPermission();
 //   }, []);
-    getPermission();
+    if(!hasPermission)
+    {
+        getPermission();
+    }
+    
 
     console.log(hasPermission);
   
@@ -77,14 +87,15 @@ function MainScreen()
                 <CameraDenied />
             ) : hasPermission === true && device ? (
                 <Camera
-                    style={{ flex: 1 }}
+                    style={[StyleSheet.absoluteFill]}
                     device={device}
                     isActive={true}
+                    format={format}
                 />
             ) : (
                 <Text>Không tìm thấy thiết bị camera</Text>
             )}
-        </View>
+            </View>
             {/* Button Zone */}
             <View style={main_screen_styles.button_zone}>
                 <TouchableOpacity style={main_screen_styles.centre_button}>
