@@ -3,12 +3,12 @@ import React from 'react';
 import type {PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button,
      TouchableOpacity, TextInput, Modal, ScrollView,
-     RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions} from 'react-native';
+     RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet} from 'react-native';
 import main_screen_styles from './styles/MainScreenStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import IconFeather from 'react-native-vector-icons/Feather';
 import general_user_profile_styles from './styles/GeneralUserprofileStyle';
-import { Camera, useCameraDevices, useCameraPermission, getCameraDevice } from 'react-native-vision-camera';
+import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat } from 'react-native-vision-camera';
 import PermissionsPage from './components/PermissionsPage';
 import CameraDenied from './components/CameraDenied';
 function MainScreen()
@@ -16,29 +16,56 @@ function MainScreen()
     
     const devices = Camera.getAvailableCameraDevices();
     const device = getCameraDevice(devices, 'back');
+    console.log(device);
+    const format = useCameraFormat(device, [
+        { videoAspectRatio: 1 }, // Tỷ lệ 1:1
+        { videoResolution: { width: 1080, height: 1080 } },
+        { fps: 30 }
+      ])
+    console.log("format", format);
     const [hasPermission, setHasPermission] = useState(false);
     const getPermission = async () => {
         const status = await Camera.requestCameraPermission();
         setHasPermission(status === "granted");
-        console.log(status);
         return;
     };
 
-//   // Kiểm tra và yêu cầu quyền truy cập camera
-//   useEffect(() => {
-//     const getPermission = async () => {
-//       const status = await Camera.requestCameraPermission();
-//       setHasPermission(status === "granted");
-//     console.log(status);
-//     return;
-//     };
-
-//     getPermission();
-//   }, []);
-    getPermission();
-
+    if(!hasPermission)
+    {
+        getPermission();
+    }
     console.log(hasPermission);
-  
+
+    const [isTakingPhoto, setIsTakingPhoto] = useState(false);
+    const [photoImg, setPhoto] = useState(null); // Lưu ảnh chụp
+
+    const current_camera = useRef<Camera>(null);
+    const takePhoto = async () => {
+        if (current_camera.current) {
+            try {
+                // Đặt isTakingPhoto thành true trước khi chụp
+                setIsTakingPhoto(true);
+    
+                // Chụp ảnh
+                const photo = await current_camera.current.takePhoto({});
+    
+                // Lưu ảnh vào photoImg
+                setPhoto(photo);
+    
+                console.log(photo); // Xử lý ảnh đã chụp, đảm bảo rằng có thông tin trong `photo`
+            } 
+            catch (error) {
+                console.error("Failed to take photo:", error);
+            }
+        } else {
+            console.error("Camera is not initialized");
+        }
+    };
+    const resetTakingPhoto = () => {
+        setIsTakingPhoto(false);
+    };
+    
+
     const { width, height } = Dimensions.get('window');
     const [modalVisible, setModalVisible] = useState(false);
     const scrollViewRef = useRef(null); 
@@ -57,46 +84,113 @@ function MainScreen()
         <View style={main_screen_styles.main_view}>
 
             {/* Upper Zone */}
-            <View style={main_screen_styles.upper_zone}>
-                <TouchableOpacity style={main_screen_styles.button}
-                                onPress={() => setModalVisible(true)}>
-                     <Icon name="account-circle" size={30} color="#FFFFFF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={main_screen_styles.addfriend_button}>
-                    <Icon name="group" size={25} color="#FFFFFF" /> 
-                    <Text style={main_screen_styles.add_friend_text}>Thêm bạn bè</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={main_screen_styles.button}>
-                    <IconFeather name="zap" size={30} color="#FFFFFF" /> 
-                </TouchableOpacity>
+            
+            <View style={[main_screen_styles.upper_zone] }>
+            {isTakingPhoto ? (
+                <View style={[
+                    {display: "flex"}, 
+                    {flexDirection: "row"},
+                    {alignItems: "center"},
+                    {alignContent: "flex-end"},
+                    {justifyContent: "flex-end"},
+                    {width: "100%"}
+                ]}>
+                    
+                    <Text style={[main_screen_styles.add_friend_text,
+                        {fontSize: 20},
+                        {marginLeft: width * 0.25},
+                        {marginRight: width* 0.25}]}>Gửi đến...</Text>
+                    <TouchableOpacity style={[ {marginRight: width*0.05}]}>
+                        <Icon name="download" size={30} color="#FFFFFF" /> 
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <View style={main_screen_styles.upper_zone}> 
+                    <TouchableOpacity style={main_screen_styles.button} onPress={() => setModalVisible(true)}>
+                        <Icon name="account-circle" size={30} color="#FFFFFF" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={main_screen_styles.addfriend_button}>
+                        <Icon name="group" size={25} color="#FFFFFF" /> 
+                        <Text style={main_screen_styles.add_friend_text}>Thêm bạn bè</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={main_screen_styles.button}>
+                        <Icon name="chat-bubble" size={30} color="#FFFFFF" /> 
+                    </TouchableOpacity>
+                </View> 
+            )}
             </View>
+
 
             {/* Image Zone */}
             <View style={main_screen_styles.image_zone}>
-            {hasPermission === false ? (
+            {isTakingPhoto ? (
+                <View style={main_screen_styles.image_zone}>
+                {photoImg ? (
+                <Image 
+                    source={{ uri: photoImg.uri }} 
+                    style={{ width: 200, height: 200 }} />
+            ) : (
+                <Text>No photo taken</Text>
+            )}
+                </View>
+            ):(
+                <View style={main_screen_styles.image_zone}>
+                    {hasPermission === false ? (
                 <CameraDenied />
             ) : hasPermission === true && device ? (
                 <Camera
-                    style={{ flex: 1 }}
+                    style={[StyleSheet.absoluteFill]}
                     device={device}
+                    ref={current_camera}
                     isActive={true}
+                    photo={true}
+                    format={format}
                 />
             ) : (
                 <Text>Không tìm thấy thiết bị camera</Text>
             )}
-        </View>
+                </View>
+            )}
+            </View>
+
             {/* Button Zone */}
             <View style={main_screen_styles.button_zone}>
-                <TouchableOpacity style={main_screen_styles.centre_button}>
-                     <Icon name="bolt" size={45} color="#FFFFFF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={main_screen_styles.centre_button}>
-                    <Image source={require("./GUI/CaptureImageButton.png")}
-                    style={main_screen_styles.capture_image_button}></Image>  
-                </TouchableOpacity>
-                <TouchableOpacity style={main_screen_styles.centre_button}>
-                    <Icon name="photo-camera" size={45} color="#FFFFFF" /> 
-                </TouchableOpacity>
+                {isTakingPhoto ? 
+                (
+                    <View style={main_screen_styles.button_zone}>
+                        <TouchableOpacity style={main_screen_styles.centre_button}
+                            onPress={()=>{resetTakingPhoto()}}>
+                            <Icon name="close" size={45} color="#FFFFFF" />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[main_screen_styles.button, 
+                            {width: 100},
+                            {height: 100},
+                            {borderRadius: 50}]}>
+                            <Icon name="send" size={50} color="#FFFFFF"></Icon>
+                            {/* <Image source={require("./GUI/CaptureImageButton.png")}
+                            style={main_screen_styles.capture_image_button}></Image>   */}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={main_screen_styles.centre_button}>
+                            <Icon name="edit-note" size={45} color="#FFFFFF" /> 
+                        </TouchableOpacity>
+                    </View>
+                ):(
+                    <View style={main_screen_styles.button_zone}>
+                        <TouchableOpacity style={main_screen_styles.centre_button}>
+                            <Icon name="bolt" size={45} color="#FFFFFF" />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={main_screen_styles.centre_button}
+                        onPress={()=>{takePhoto()}}>
+                            <Image source={require("./GUI/CaptureImageButton.png")}
+                            style={main_screen_styles.capture_image_button}></Image>  
+                        </TouchableOpacity>
+                        <TouchableOpacity style={main_screen_styles.centre_button}>
+                            <Icon name="photo-camera" size={45} color="#FFFFFF" /> 
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
             {/* History Zone */}
