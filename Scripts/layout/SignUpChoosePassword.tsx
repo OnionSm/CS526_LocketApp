@@ -6,33 +6,19 @@ import FlagIcon from 'react-native-ico-flags';
 import change_password_styles from './styles/ChoosePasswordStyle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const saveUserData = async (access_token: string, refresh_token: string) => {
-    try {
-        await AsyncStorage.setItem('access_token', access_token);
-        await AsyncStorage.setItem("refresh_token", refresh_token);
-        console.log("Lưu token thành công");
-    } catch (error) {
-        console.log("Không thể lưu token", error);
-    }
-}
 
-function ChoosePassword({ navigation }: {navigation: any })
+function SignUpChoosePassword({ navigation }: {navigation: any })
 {
-    const [login_email, setEmail] = useState("");
-    const [input_password, SetPassword] = useState("");
+    const [sign_up_password, SetPassword] = useState("");
     
-    useEffect(() =>{
-        const LoadEmail = async () =>
-        {
-            const savedEmail = await AsyncStorage.getItem('login_email');
-            if(savedEmail)
-            {
-                setEmail(savedEmail);
-            }
+    const SavePassword = async () => {
+        try {
+            await AsyncStorage.setItem("sign_up_password", sign_up_password);
+            console.log("Lưu password đăng kí thành công");
+        } catch (error) {
+            console.log("Không thể lưu password đăng kí", error);
         }
-        LoadEmail();
-    }, []);
-
+    }
     
     
 
@@ -52,7 +38,7 @@ function ChoosePassword({ navigation }: {navigation: any })
 
                 <View style ={change_password_styles.inputzone}>
                     <TextInput  style={change_password_styles.inputzonetext}
-                        value={input_password} 
+                        value={sign_up_password} 
                         onChangeText={e => SetPassword(e)}
                         placeholder="Mật khẩu"
                         placeholderTextColor="#888888"
@@ -67,18 +53,17 @@ function ChoosePassword({ navigation }: {navigation: any })
             {/* Button Zone */}
             <View style={change_password_styles.buttonzone}>
                 <TouchableOpacity style={change_password_styles.continuebutton}
-                onPress={async() => 
+                onPress={async () => 
                 {
-                    var data = await Login(login_email, input_password);
-                    if(!data)
+                    if(IsValidPassword(sign_up_password))
                     {
-                        console.log("Mật khẩu không chính xác xin vui lòng thử lại");
+                        await SavePassword();
+                        navigation.navigate("ChooseUserName");
                     }
                     else
                     {
-                        navigation.navigate("MainScreen");
+                        console.log("Mật khẩu không hợp lệ, phải có đủ chữ hoa, chữ thường, số và kí tự đặc biệt");
                     }
-                    
                 }
                 }>
                     <Text style ={change_password_styles.continuetext}>Tiếp tục</Text>
@@ -88,41 +73,11 @@ function ChoosePassword({ navigation }: {navigation: any })
     )
 }
 
-export default ChoosePassword
+export default SignUpChoosePassword
 
-async function Login(email: string, password : string) 
-{
-    const formData = new FormData();
-    formData.append('Email', email);
-    formData.append("Password",password);
-
-    console.log(formData);
-
-    try {
-        const response = await fetch('http://10.0.2.2:5115/api/login/email', 
-            {
-            method: 'POST',
-            body: formData, 
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();  // Chờ phản hồi JSON
-        if(data != null)
-        {
-            console.log(data.accessToken);
-            console.log(data.refreshToken);
-            await saveUserData(data.accessToken, data.refreshToken);
-        }
-        return data;
-    } 
-    catch (error) 
-    {
-        console.error('Error fetching data:', error);
-    }
+function IsValidPassword(password: string): boolean {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return passwordRegex.test(password);
 }
-
 
 
