@@ -4,7 +4,7 @@ import { Image, ImageBackground, Text, View, Button, TouchableOpacity} from 'rea
 import signinstyles from './styles/SignInScreenStyle'
 
 
-function SignInScreen()
+function SignInScreen({navigation}: {navigation: any})
 {
     return (
         
@@ -34,11 +34,11 @@ function SignInScreen()
                 <View style={signinstyles.buttonzone}>
                     <TouchableOpacity
                         style={signinstyles.registerbutton}
-                        
+                        onPress={() => navigation.navigate("SignUpWithEmail")}
                     >
-                        <Text style ={signinstyles.registertext}>Nhấn vào đây</Text>
+                        <Text style ={signinstyles.registertext}>Tạo tài khoản</Text>
                     </TouchableOpacity>
-                    <Text style={signinstyles.signin}>Đăng nhập</Text>
+                    <Text style={signinstyles.signin}  onPress={() => navigation.navigate("SignInWithEmail")}>Đăng nhập</Text>
                 </View>
             </View>
         </View>

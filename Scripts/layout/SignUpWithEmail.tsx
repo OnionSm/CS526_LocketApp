@@ -10,14 +10,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
-function SignInWithEmail({navigation}: {navigation: any})
+function SignUpWithEmail({navigation}: {navigation: any})
 {
-    const [login_email, setEmail] = useState("");
+    const [sign_up_email, setEmail] = useState("");
 
     useEffect(() => {
         // Load dữ liệu email khi màn hình mở
         const loadData = async () => {
-            const savedEmail = await AsyncStorage.getItem('login_email');
+            const savedEmail = await AsyncStorage.getItem('sign_up_email');
             if (savedEmail) 
             {
                 setEmail(savedEmail);
@@ -28,7 +28,7 @@ function SignInWithEmail({navigation}: {navigation: any})
 
     const saveData = async () => {
         try {
-            await AsyncStorage.setItem('login_email', login_email);
+            await AsyncStorage.setItem('sign_up_email', sign_up_email);
             console.log('Email đã được lưu');
         } catch (error) {
             console.error('Lỗi khi lưu email:', error);
@@ -55,7 +55,7 @@ function SignInWithEmail({navigation}: {navigation: any})
                 <View style ={sign_in_with_email_styles.inputzone}>
                     <FlagIcon name="vietnam" style={sign_in_with_email_styles.inputzoneicon} />
                     <TextInput  style={sign_in_with_email_styles.inputzonetext}
-                        value={login_email} 
+                        value={sign_up_email} 
                         onChangeText={e => setEmail(e)}
                         placeholder="Địa chỉ email"
                         placeholderTextColor="#888888">
@@ -76,15 +76,15 @@ function SignInWithEmail({navigation}: {navigation: any})
                 {
                     try
                     {
-                        var result = await CheckEmail(login_email);
-                        if(result)
+                        var result = await CheckEmail(sign_up_email);
+                        if(!result)
                         {
                             saveData();
-                            navigation.navigate("ChoosePassword");
+                            navigation.navigate("SignUpChoosePassword");
                         }
                         else
                         {
-                            console.log("Tài khoản không tồn tại vui lòng thử lại");
+                            console.log("Email đã có người sử dụng");
                         }
                     }
                     catch(error)
@@ -100,7 +100,7 @@ function SignInWithEmail({navigation}: {navigation: any})
     )
 }
 
-export default SignInWithEmail
+export default SignUpWithEmail
 
 
 async function CheckEmail(email: string) {

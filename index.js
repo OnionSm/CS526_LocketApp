@@ -9,18 +9,38 @@ import ChoosePassword from './Scripts/layout/ChoosePassword';
 import ChooseUserName from './Scripts/layout/ChooseUserName';
 import GeneralUserProfile from './Scripts/layout/GeneralUserProfile';
 import MainScreen from './Scripts/layout/MainScreen';
+import SignUpWithEmail from './Scripts/layout/SignUpWithEmail';
+import SignUpChoosePassword from './Scripts/layout/SignUpChoosePassword';
+import ChooseUserIdName from './Scripts/layout/ChooseUserIdName';
 import { name as appName } from './app.json';
 import "./global.css";
+
 
 const Stack = createNativeStackNavigator();
 
 function MainApp() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SignInScreen">
+      <Stack.Navigator initialRouteName="ChooseUserIdName">
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="ChooseUserIdName" 
+          component={ChooseUserIdName} 
+          options={{ headerShown: false }} 
+        />
+
+        <Stack.Screen 
+          name="SignUpWithEmail" 
+          component={SignUpWithEmail} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="SignUpChoosePassword" 
+          component={SignUpChoosePassword} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 

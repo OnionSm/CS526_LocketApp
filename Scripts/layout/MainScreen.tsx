@@ -16,7 +16,6 @@ function MainScreen()
     
     const devices = Camera.getAvailableCameraDevices();
     const device = getCameraDevice(devices, 'back');
-    console.log(device);
     const format = useCameraFormat(device, [
         { videoAspectRatio: 1 }, // Tỷ lệ 1:1
         { videoResolution: { width: 1080, height: 1080 } },
