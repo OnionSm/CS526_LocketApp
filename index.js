@@ -12,6 +12,8 @@ import MainScreen from './Scripts/layout/MainScreen';
 import SignUpWithEmail from './Scripts/layout/SignUpWithEmail';
 import SignUpChoosePassword from './Scripts/layout/SignUpChoosePassword';
 import ChooseUserIdName from './Scripts/layout/ChooseUserIdName';
+import OfficialStory from './Scripts/layout/OfficicalStory';
+import AddFriendScreen from './Scripts/layout/AddFriendScreen';
 import { name as appName } from './app.json';
 import "./global.css";
 
@@ -21,10 +23,20 @@ const Stack = createNativeStackNavigator();
 function MainApp() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="ChooseUserIdName">
+      <Stack.Navigator initialRouteName="SignInScreen">
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="AddFriendScreen" 
+          component={AddFriendScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="OfficialStory" 
+          component={OfficialStory} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 

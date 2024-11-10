@@ -69,6 +69,7 @@ function ChooseUserName({navigation}: {navigation: any})
                     if(CanSaveUserName(first_name, last_name))
                     {
                         await SaveUserName();
+                        navigation.navigate("ChooseUserIdName");
                     }
                     else
                     {
