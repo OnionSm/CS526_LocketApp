@@ -14,6 +14,7 @@ import SignUpChoosePassword from './Scripts/layout/SignUpChoosePassword';
 import ChooseUserIdName from './Scripts/layout/ChooseUserIdName';
 import OfficialStory from './Scripts/layout/OfficicalStory';
 import AddFriendScreen from './Scripts/layout/AddFriendScreen';
+import MessageScreen from './Scripts/layout/MessageScreen';
 import { name as appName } from './app.json';
 import "./global.css";
 
@@ -27,6 +28,11 @@ function MainApp() {
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="MessageScreen" 
+          component={MessageScreen} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 

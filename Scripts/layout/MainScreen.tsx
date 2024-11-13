@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect , createContext, useContext} from 'react';
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button,
@@ -8,11 +8,47 @@ import main_screen_styles from './styles/MainScreenStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import IconFeather from 'react-native-vector-icons/Feather';
 import general_user_profile_styles from './styles/GeneralUserprofileStyle';
-import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat } from 'react-native-vision-camera';
+import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat, PhotoFile } from 'react-native-vision-camera';
 import PermissionsPage from './components/PermissionsPage';
 import CameraDenied from './components/CameraDenied';
-function MainScreen()
+import * as signalR from "@microsoft/signalr";
+
+
+function MainScreen({navigation}: {navigation: any})
 {
+    const [signalR_connection, SetConnection] = useState<signalR.HubConnection | null>(null);
+    useEffect(() => {
+        const GetUserMessage = async () => {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("http://10.0.2.2:5115/chathub")
+                .withAutomaticReconnect()
+                .build();
+            SetConnection(connection);
+            // Lắng nghe sự kiện 'SendMessage' từ server
+            connection.on("SendMessage", (user, message) => {
+                console.log("Received message from server:", message);  
+            });
+    
+            try {
+                await connection.start();
+                console.log("SignalR connected");
+            } catch (err) {
+                console.error("Connection failed:", err);
+            }
+    
+            // Dọn dẹp kết nối khi component tháo dỡ
+            return () => {
+                if (connection) {
+                    connection.stop();  // Dừng kết nối SignalR
+                    console.log("SignalR connection stopped");
+                }
+            };
+        };
+    
+        GetUserMessage();
+    }, []);  // [] đảm bảo useEffect chỉ chạy 1 lần khi component mount
+
+
     
     const devices = Camera.getAvailableCameraDevices();
     const device = getCameraDevice(devices, 'back');
@@ -35,35 +71,40 @@ function MainScreen()
     }
     console.log(hasPermission);
 
-    const [isTakingPhoto, setIsTakingPhoto] = useState(false);
-    const [photoImg, setPhoto] = useState(null); // Lưu ảnh chụp
+    // Định nghĩa kiểu PhotoFile dựa trên thông tin ảnh trả về
 
+
+    const [isTakingPhoto, setIsTakingPhoto] = useState(false);
+    const [photoImg, setPhoto] = useState<PhotoFile | null>(null); // Lưu ảnh chụp
     const current_camera = useRef<Camera>(null);
+
+    
     const takePhoto = async () => {
-        if (current_camera.current) {
-            try {
-                // Đặt isTakingPhoto thành true trước khi chụp
-                setIsTakingPhoto(true);
-    
-                // Chụp ảnh
-                const photo = await current_camera.current.takePhoto({});
-    
-                // Lưu ảnh vào photoImg
-                setPhoto(photo);
-    
-                console.log(photo); // Xử lý ảnh đã chụp, đảm bảo rằng có thông tin trong `photo`
-            } 
-            catch (error) {
-                console.error("Failed to take photo:", error);
-            }
-        } else {
+        if (!current_camera.current) {
             console.error("Camera is not initialized");
+            return;
         }
+
+        setIsTakingPhoto(true); // Đặt trạng thái chụp ảnh thành true
+
+        try {
+            
+            const photo = await current_camera.current.takePhoto();
+            // setPhoto(photo); // Lưu ảnh vào state photoImg
+            console.log("Photo: ", photo); // Kiểm tra ảnh đã chụp
+        } 
+        catch (error) {
+            console.error("Failed to take photo:", error);
+        } 
+        // finally {
+        //     setIsTakingPhoto(false); // Đặt lại trạng thái chụp ảnh về false
+        // }
     };
+    
+    
     const resetTakingPhoto = () => {
         setIsTakingPhoto(false);
     };
-    
 
     const { width, height } = Dimensions.get('window');
     const [modalVisible, setModalVisible] = useState(false);
@@ -114,7 +155,7 @@ function MainScreen()
                         <Text style={main_screen_styles.add_friend_text}>Thêm bạn bè</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={main_screen_styles.button}>
+                    <TouchableOpacity style={main_screen_styles.button} onPress={()=>{navigation.navigate("MessageScreen")}}>
                         <Icon name="chat-bubble" size={30} color="#FFFFFF" /> 
                     </TouchableOpacity>
                 </View> 
@@ -128,7 +169,7 @@ function MainScreen()
                 <View style={main_screen_styles.image_zone}>
                 {photoImg ? (
                 <Image 
-                    source={{ uri: photoImg.uri }} 
+                    source={{ uri: photoImg.path }} 
                     style={{ width: 200, height: 200 }} />
             ) : (
                 <Text>No photo taken</Text>
