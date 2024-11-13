@@ -48,7 +48,7 @@ function ChoosePassword({ navigation }: {navigation: any })
 
             {/* Type Password Zone */}
             <View style={change_password_styles.getpasswordzone}>
-                <Text style={change_password_styles.getpasswordzonetitle}>Chọn mật khẩu</Text>
+                <Text style={change_password_styles.getpasswordzonetitle}>Chọn mật khẩu đăng nhập</Text>
 
                 <View style ={change_password_styles.inputzone}>
                     <TextInput  style={change_password_styles.inputzonetext}

@@ -50,7 +50,7 @@ function SignUpWithEmail({navigation}: {navigation: any})
 
             {/* Get Phone Number Zone */}
             <View style={sign_in_with_email_styles.getphonezone}>
-                <Text style={sign_in_with_email_styles.getphonezonetitle}>Nhập Email ?</Text>
+                <Text style={sign_in_with_email_styles.getphonezonetitle}>Nhập Email đăng ký?</Text>
 
                 <View style ={sign_in_with_email_styles.inputzone}>
                     <FlagIcon name="vietnam" style={sign_in_with_email_styles.inputzoneicon} />
