@@ -6,37 +6,53 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import message_screen_style from "./styles/MessageScreenStyle";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as signalR from "@microsoft/signalr";
+import AxiosInstance from "./instance/AxiosInstance";
 
 function MessageScreen({navigation}: {navigation: any})
 {
     
-    
     const [messages, setMessages] = useState([]);
 
-   
+    useEffect(() => {
+        // Tạo hàm async để sử dụng getItem
+        const fetchRefreshToken = async () => {
+          try {
+            const refreshToken = await AsyncStorage.getItem("access_token");
+            console.log("access_Token", refreshToken);
+          } catch (error) {
+            console.error("Error fetching refresh token:", error);
+          }
+        };
+    
+        // Gọi hàm async bên trong useEffect
+        fetchRefreshToken();
+      }, []); // Chạy chỉ một lần khi component mount
+    
     const GetMessages = async () => {
         try {
-
-            const token = await AsyncStorage.getItem("access_token");
-    
-            const response = await fetch('http://10.0.2.2:5115/api/userconversation', {
-                method: 'GET', // Hoặc 'POST' tùy theo API
-                headers: {
-                    'Authorization': `Bearer ${token}`, // Thêm token vào header
-                },
-            });
-    
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+            var response = await AxiosInstance.get("/api/userconversation");
+            if (response.status === 200) 
+            {
+                console.log("message data : ", response.data);
+                setMessages(response.data);
+            }
+            else
+            {
+                console.log(response.status);
             }
     
-            const data = await response.json();
-            setMessages(data);
+            
         } catch (error) {
             console.error('Error fetching messages:', error);
         }
     };
 
+    useEffect(() => {
+        const fetchMessages = async () => {
+            await GetMessages();
+        };
+        fetchMessages();
+    }, []);
 
     return(
         <View style={message_screen_style.main_view}>
