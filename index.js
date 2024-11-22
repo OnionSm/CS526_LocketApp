@@ -17,17 +17,24 @@ import AddFriendScreen from './Scripts/layout/AddFriendScreen';
 import MessageScreen from './Scripts/layout/MessageScreen';
 import { name as appName } from './app.json';
 import "./global.css";
-
+import PersonalChatScreen from './Scripts/layout/PersonalChatScreen';
+import { UserMessageProvider } from './Scripts/layout/context/UserMessageContext';
 
 const Stack = createNativeStackNavigator();
 
 function MainApp() {
   return (
-    <NavigationContainer>
+    <UserMessageProvider>
+      <NavigationContainer>
       <Stack.Navigator initialRouteName="SignInScreen">
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="PersonalChatScreen" 
+          component={PersonalChatScreen} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
@@ -93,6 +100,8 @@ function MainApp() {
         />
       </Stack.Navigator>
     </NavigationContainer>
+    </UserMessageProvider>
+    
   );
 }
 

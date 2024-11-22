@@ -21,13 +21,18 @@ function MainScreen({navigation}: {navigation: any})
     const [signalR_connection, SetConnection] = useState<signalR.HubConnection | null>(null);
     useEffect(() => {
         const GetUserMessage = async () => {
+            if(signalR_connection != null)
+            {
+                console.log("has connect")
+                return;
+            }
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl("http://10.0.2.2:5115/chathub")
                 .withAutomaticReconnect()
                 .build();
             SetConnection(connection);
             // Lắng nghe sự kiện 'SendMessage' từ server
-            connection.on("SendMessage", (user, message) => {
+            connection.on("SendMessage", (message) => {
                 console.log("Received message from server:", message);  
             });
     
