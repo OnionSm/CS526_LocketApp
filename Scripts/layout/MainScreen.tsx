@@ -6,26 +6,33 @@ import { Image, ImageBackground, Text, View, Button,
      RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet} from 'react-native';
 import main_screen_styles from './styles/MainScreenStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import IconFeather from 'react-native-vector-icons/Feather';
 import general_user_profile_styles from './styles/GeneralUserprofileStyle';
 import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat, PhotoFile } from 'react-native-vision-camera';
 import PermissionsPage from './components/PermissionsPage';
 import CameraDenied from './components/CameraDenied';
 import * as signalR from "@microsoft/signalr";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 function MainScreen({navigation}: {navigation: any})
-{
+{      
+
     const [signalR_connection, SetConnection] = useState<signalR.HubConnection | null>(null);
     useEffect(() => {
         const GetUserMessage = async () => {
+            if(signalR_connection != null)
+            {
+                console.log("has connect")
+                return;
+            }
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl("http://10.0.2.2:5115/chathub")
                 .withAutomaticReconnect()
                 .build();
             SetConnection(connection);
             // Lắng nghe sự kiện 'SendMessage' từ server
-            connection.on("SendMessage", (user, message) => {
+            connection.on("SendMessage", (message) => {
                 console.log("Received message from server:", message);  
             });
     
@@ -57,7 +64,6 @@ function MainScreen({navigation}: {navigation: any})
         { videoResolution: { width: 1080, height: 1080 } },
         { fps: 30 }
       ])
-    console.log("format", format);
     const [hasPermission, setHasPermission] = useState(false);
     const getPermission = async () => {
         const status = await Camera.requestCameraPermission();
