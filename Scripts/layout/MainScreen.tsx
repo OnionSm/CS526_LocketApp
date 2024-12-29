@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect , createContext, useContext} from 'react';
+import { useRef, useState, useEffect , createContext, useContext, useCallback} from 'react';
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button,
@@ -12,11 +12,40 @@ import PermissionsPage from './components/PermissionsPage';
 import CameraDenied from './components/CameraDenied';
 import * as signalR from "@microsoft/signalr";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import UserModal from './UserModal';
+import ChangeInfoModal from './ChangeInfoModal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
 
 
 function MainScreen({navigation}: {navigation: any})
 {      
+
+    const[username, set_user_name] = useState("");
+
+    useEffect(()=>{
+        const get_user_name_from_storage = async () => {
+            var first_name = await AsyncStorage.getItem("first_name");
+            var last_name = await AsyncStorage.getItem("last_name");
+            if (first_name === null)
+            {
+                first_name = "";
+            }
+            if (last_name === null)
+            {
+                last_name = "";
+            }
+            const _user_name = first_name + " " + last_name;
+            console.log(_user_name);
+            set_user_name(_user_name);
+        };
+        get_user_name_from_storage();
+    }, [username])
+
 
     const [signalR_connection, SetConnection] = useState<signalR.HubConnection | null>(null);
     useEffect(() => {
@@ -106,449 +135,171 @@ function MainScreen({navigation}: {navigation: any})
         //     setIsTakingPhoto(false); // Đặt lại trạng thái chụp ảnh về false
         // }
     };
+
+    // Object ref to manage multiple modals
+    const modalRefs = useRef<Record<string, BottomSheetModal | null>>({});
+
+    const handlePresentModal = useCallback((key: string) => {
+        modalRefs.current[key]?.present();
+    }, []);
     
+    const handleCloseModal = useCallback((key: string) =>{
+        modalRefs.current[key]?.close()
+    }, []);
     
     const resetTakingPhoto = () => {
         setIsTakingPhoto(false);
     };
 
     const { width, height } = Dimensions.get('window');
-    const [modalVisible, setModalVisible] = useState(false);
-    const scrollViewRef = useRef(null); 
-
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const { contentOffset } = event.nativeEvent; // Lấy contentOffset từ sự kiện
-        const offsetY = contentOffset.y;
-
-        // Kiểm tra vị trí cuộn
-        if (offsetY < 0) {
-            setModalVisible(false); // Đóng modal khi ở đầu trang
-        }
-    };
+    const [isModalVisible, setModalVisible] = useState(false);
 
     return(
-        <View style={main_screen_styles.main_view}>
+        <GestureHandlerRootView style={styles.container}>
+            <BottomSheetModalProvider >
+                <View style={main_screen_styles.main_view}>
+                <UserModal username={username} modal_refs={modalRefs} modal_name = "user_modal" change_info_modal_name="change_info_modal" onClickChangeInfo={handlePresentModal} />
+                <ChangeInfoModal set_username={set_user_name} modal_refs={modalRefs} modal_name = "change_info_modal" handleCloseModal={handleCloseModal}></ChangeInfoModal>
+                    {/* Upper Zone */}
+                    <View style={[main_screen_styles.upper_zone] }>
+                    {isTakingPhoto ? (
+                        <View style={[
+                            {display: "flex"}, 
+                            {flexDirection: "row"},
+                            {alignItems: "center"},
+                            {alignContent: "flex-end"},
+                            {justifyContent: "flex-end"},
+                            {width: "100%"}
+                        ]}>
+                            
+                            <Text style={[main_screen_styles.add_friend_text,
+                                {fontSize: 20},
+                                {marginLeft: width * 0.25},
+                                {marginRight: width* 0.25}]}>Gửi đến...</Text>
+                            <TouchableOpacity style={[ {marginRight: width*0.05}]}>
+                                <Icon name="download" size={30} color="#FFFFFF" /> 
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={main_screen_styles.upper_zone}> 
+                            <TouchableOpacity style={main_screen_styles.button} onPress={() => {handlePresentModal("user_modal")}}>
+                                <Icon name="account-circle" size={30} color="#FFFFFF" />
+                            </TouchableOpacity>
 
-            {/* Upper Zone */}
-            
-            <View style={[main_screen_styles.upper_zone] }>
-            {isTakingPhoto ? (
-                <View style={[
-                    {display: "flex"}, 
-                    {flexDirection: "row"},
-                    {alignItems: "center"},
-                    {alignContent: "flex-end"},
-                    {justifyContent: "flex-end"},
-                    {width: "100%"}
-                ]}>
-                    
-                    <Text style={[main_screen_styles.add_friend_text,
-                        {fontSize: 20},
-                        {marginLeft: width * 0.25},
-                        {marginRight: width* 0.25}]}>Gửi đến...</Text>
-                    <TouchableOpacity style={[ {marginRight: width*0.05}]}>
-                        <Icon name="download" size={30} color="#FFFFFF" /> 
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <View style={main_screen_styles.upper_zone}> 
-                    <TouchableOpacity style={main_screen_styles.button} onPress={() => setModalVisible(true)}>
-                        <Icon name="account-circle" size={30} color="#FFFFFF" />
-                    </TouchableOpacity>
+                            <TouchableOpacity style={main_screen_styles.addfriend_button}>
+                                <Icon name="group" size={25} color="#FFFFFF" /> 
+                                <Text style={main_screen_styles.add_friend_text}>Thêm bạn bè</Text>
+                            </TouchableOpacity>
 
-                    <TouchableOpacity style={main_screen_styles.addfriend_button}>
-                        <Icon name="group" size={25} color="#FFFFFF" /> 
-                        <Text style={main_screen_styles.add_friend_text}>Thêm bạn bè</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={main_screen_styles.button} onPress={()=>{navigation.navigate("MessageScreen")}}>
-                        <Icon name="chat-bubble" size={30} color="#FFFFFF" /> 
-                    </TouchableOpacity>
-                </View> 
-            )}
-            </View>
+                            <TouchableOpacity style={main_screen_styles.button} onPress={()=>{navigation.navigate("MessageScreen")}}>
+                                <Icon name="chat-bubble" size={30} color="#FFFFFF" /> 
+                            </TouchableOpacity>
+                        </View> 
+                    )}
+                    </View>
 
 
-            {/* Image Zone */}
-            <View style={main_screen_styles.image_zone}>
-            {isTakingPhoto ? (
-                <View style={main_screen_styles.image_zone}>
-                {photoImg ? (
-                <Image 
-                    source={{ uri: photoImg.path }} 
-                    style={{ width: 200, height: 200 }} />
-            ) : (
-                <Text>No photo taken</Text>
-            )}
-                </View>
-            ):(
-                <View style={main_screen_styles.image_zone}>
-                    {hasPermission === false ? (
-                <CameraDenied />
-            ) : hasPermission === true && device ? (
-                <Camera
-                    style={[StyleSheet.absoluteFill]}
-                    device={device}
-                    ref={current_camera}
-                    isActive={true}
-                    photo={true}
-                    format={format}
-                />
-            ) : (
-                <Text>Không tìm thấy thiết bị camera</Text>
-            )}
-                </View>
-            )}
-            </View>
+                    {/* Image Zone */}
+                    <View style={main_screen_styles.image_zone}>
+                    {isTakingPhoto ? (
+                        <View style={main_screen_styles.image_zone}>
+                        {photoImg ? (
+                        <Image 
+                            source={{ uri: photoImg.path }} 
+                            style={{ width: 200, height: 200 }} />
+                    ) : (
+                        <Text>No photo taken</Text>
+                    )}
+                        </View>
+                    ):(
+                        <View style={main_screen_styles.image_zone}>
+                            {hasPermission === false ? (
+                        <CameraDenied />
+                    ) : hasPermission === true && device ? (
+                        <Camera
+                            style={[StyleSheet.absoluteFill]}
+                            device={device}
+                            ref={current_camera}
+                            isActive={true}
+                            photo={true}
+                            format={format}
+                        />
+                    ) : (
+                        <Text>Không tìm thấy thiết bị camera</Text>
+                    )}
+                        </View>
+                    )}
+                    </View>
 
-            {/* Button Zone */}
-            <View style={main_screen_styles.button_zone}>
-                {isTakingPhoto ? 
-                (
+                    {/* Button Zone */}
                     <View style={main_screen_styles.button_zone}>
-                        <TouchableOpacity style={main_screen_styles.centre_button}
-                            onPress={()=>{resetTakingPhoto()}}>
-                            <Icon name="close" size={45} color="#FFFFFF" />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[main_screen_styles.button, 
-                            {width: 100},
-                            {height: 100},
-                            {borderRadius: 50}]}>
-                            <Icon name="send" size={50} color="#FFFFFF"></Icon>
-                            {/* <Image source={require("./GUI/CaptureImageButton.png")}
-                            style={main_screen_styles.capture_image_button}></Image>   */}
-                        </TouchableOpacity>
-                        <TouchableOpacity style={main_screen_styles.centre_button}>
-                            <Icon name="edit-note" size={45} color="#FFFFFF" /> 
-                        </TouchableOpacity>
+                        {isTakingPhoto ? 
+                        (
+                            <View style={main_screen_styles.button_zone}>
+                                <TouchableOpacity style={main_screen_styles.centre_button}
+                                    onPress={()=>{resetTakingPhoto()}}>
+                                    <Icon name="close" size={45} color="#FFFFFF" />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[main_screen_styles.button, 
+                                    {width: 100},
+                                    {height: 100},
+                                    {borderRadius: 50}]}>
+                                    <Icon name="send" size={50} color="#FFFFFF"></Icon>
+                                    {/* <Image source={require("./GUI/CaptureImageButton.png")}
+                                    style={main_screen_styles.capture_image_button}></Image>   */}
+                                </TouchableOpacity>
+                                <TouchableOpacity style={main_screen_styles.centre_button}>
+                                    <Icon name="edit-note" size={45} color="#FFFFFF" /> 
+                                </TouchableOpacity>
+                            </View>
+                        ):(
+                            <View style={main_screen_styles.button_zone}>
+                                <TouchableOpacity style={main_screen_styles.centre_button}>
+                                    <Icon name="bolt" size={45} color="#FFFFFF" />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={main_screen_styles.centre_button}
+                                onPress={()=>{takePhoto()}}>
+                                    <Image source={require("./GUI/CaptureImageButton.png")}
+                                    style={main_screen_styles.capture_image_button}></Image>  
+                                </TouchableOpacity>
+                                <TouchableOpacity style={main_screen_styles.centre_button}>
+                                    <Icon name="photo-camera" size={45} color="#FFFFFF" /> 
+                                </TouchableOpacity>
+                            </View>
+                        )}
                     </View>
-                ):(
-                    <View style={main_screen_styles.button_zone}>
-                        <TouchableOpacity style={main_screen_styles.centre_button}>
-                            <Icon name="bolt" size={45} color="#FFFFFF" />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={main_screen_styles.centre_button}
-                        onPress={()=>{takePhoto()}}>
-                            <Image source={require("./GUI/CaptureImageButton.png")}
-                            style={main_screen_styles.capture_image_button}></Image>  
-                        </TouchableOpacity>
-                        <TouchableOpacity style={main_screen_styles.centre_button}>
-                            <Icon name="photo-camera" size={45} color="#FFFFFF" /> 
-                        </TouchableOpacity>
-                    </View>
-                )}
-            </View>
 
-            {/* History Zone */}
-            <View style={main_screen_styles.history_zone}>
-                <View style={main_screen_styles.history_child_zone}>
-                    <View style={main_screen_styles.history_icon_background}>
-                        <Icon name="photo-library" size={24} color="#FFFFFF" />
+                    {/* History Zone */}
+                    <View style={main_screen_styles.history_zone}>
+                        <View style={main_screen_styles.history_child_zone}>
+                            <View style={main_screen_styles.history_icon_background}>
+                                <Icon name="photo-library" size={24} color="#FFFFFF" />
+                            </View>
+                            <Text style={main_screen_styles.history_text}>Lịch sử</Text>
+                        </View>
+                        <Icon name="keyboard-arrow-down" size={45} color="#FFFFFF" /> 
                     </View>
-                    <Text style={main_screen_styles.history_text}>Lịch sử</Text>
                 </View>
-                <Icon name="keyboard-arrow-down" size={45} color="#FFFFFF" /> 
-            </View>
-
-            {/* General User Profile */}
-            <Modal animationType="slide"         
-                transparent={true}              
-                visible={modalVisible}          
-                onRequestClose={() => {setModalVisible(false);}}>
-                <View style={general_user_profile_styles.background}>
-                    <View style={general_user_profile_styles.upper_zone}>
-                        <View style={general_user_profile_styles.upper_line}></View>
-                    </View>
-                    <ScrollView contentContainerStyle={general_user_profile_styles.scroll_view}
-                        ref={scrollViewRef}
-                        onScroll={handleScroll}
-                        scrollEventThrottle={16}
-                        // refreshControl={
-                        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                        // }
-                        >
-                        <View style={general_user_profile_styles.user_avatar_zone}>
-                            {/* Avatar */}
-                            <View style={general_user_profile_styles.user_avatar_child_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                     
-                                </Image>
-                            </View>
-
-                            {/* Username */}
-                            <View style={general_user_profile_styles.username_zone}>
-                                <Text style={general_user_profile_styles.username_text}>Onion</Text>
-                            </View>
-
-                            {/* User Id and Change Profile */}
-                            <View style={general_user_profile_styles.userid_zone}>
-                                <View style={general_user_profile_styles.userid_background}>
-                                    <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
-                                </View>
-
-                                <TouchableOpacity style={general_user_profile_styles.user_setting_background}>
-                                    <Text style= {general_user_profile_styles.general_text}>Sửa thông tin</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View style={general_user_profile_styles.user_locket_share_zone}>
-                            <View style={general_user_profile_styles.locket_share_background}>
-                                <View style={general_user_profile_styles.locket_share_background_zone1}>
-                                    <View style={general_user_profile_styles.mini_avatar_zone}>
-                                        <Image source={require("./GUI/AvatarBorder.png")}
-                                        style={general_user_profile_styles.avatar_border}>
-                                            
-                                        </Image>
-                                    </View>
-
-                                    <View style={general_user_profile_styles.locket_share_text_zone}>
-                                        <Text style={[general_user_profile_styles.general_text ,{fontSize:15}]}
-                                        >Mời bạn bè tham gia Locket</Text>
-                                        <Text style={[general_user_profile_styles.general_text2, {fontSize:15}]}
-                                        >locket.cam/onion</Text>
-                                    </View>
-                                </View>
-
-                                <View style={general_user_profile_styles.locket_share_background_zone2}>
-                                <TouchableOpacity style={general_user_profile_styles.share_button_background}>
-                                    <Icon name="share" size={24} color="#FFFFFF" /> 
-                                </TouchableOpacity>
-                                </View>
-                            </View> 
-                        </View>
-                        
-                        <View style={general_user_profile_styles.button_wrapper}>
-                            <View style={general_user_profile_styles.extension_setting_zone}>
-                                <View style={general_user_profile_styles.text_option_zone}>
-                                    <Icon name="add-box" size={24} color="#AAAAAA" />
-                                    <Text style={{
-                                        fontFamily: 'SF-Pro-Rounded-Bold',
-                                        fontSize: 16,
-                                        color: "#AAAAAA",
-                                        marginLeft: 5 
-                                    }}>
-                                        Thiết lập tiện ích
-                                    </Text>
-                                </View>
-                                <TouchableOpacity style={[general_user_profile_styles.medium_button, 
-                                    {marginBottom: 1},
-                                    {borderTopLeftRadius : 20},
-                                    {borderTopRightRadius: 20},
-                                    {display: "flex"},
-                                    {justifyContent: "space-evenly"},
-                                    {alignItems: "center"},
-                                    {flexDirection: "row"}]}>
-                                    <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                        {marginLeft: 20},
-                                        {marginRight: 20}]}>
-                                        <Icon name="add-box" size={24} color="#AAAAAA" />
-                                        <Text style={{
-                                            fontFamily: 'SF-Pro-Rounded-Bold',
-                                            fontSize: 16,
-                                            color: "#AAAAAA",
-                                            marginLeft: 5 
-                                        }}>
-                                            Thêm tiện ích
-                                        </Text>
-                                    </View>
-                                    <View style={[{flex: 1},
-]}>
-                                        <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[general_user_profile_styles.medium_button,
-                                    {borderBottomLeftRadius: 20},
-                                    {borderBottomRightRadius: 20},
-                                    {display: "flex"},
-                                    {justifyContent: "space-evenly"},
-                                    {alignItems: "center"},
-                                    {flexDirection: "row"}]}>
-                                    <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                        {marginLeft: 20},
-                                        {marginRight: 20}]}>
-                                        <Icon name="help" size={24} color="#AAAAAA" />
-                                        <Text style={{
-                                            fontFamily: 'SF-Pro-Rounded-Bold',
-                                            fontSize: 16,
-                                            color: "#AAAAAA",
-                                            marginLeft: 5 
-                                        }}>
-                                            Hướng dẫn về tiện ích
-                                        </Text>
-                                    </View>
-                                    <View style={[{flex: 1}]}>
-                                        <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        <View style={general_user_profile_styles.button_wrapper}>
-                            <View style={general_user_profile_styles.extension_setting_zone}>
-                                <View style={general_user_profile_styles.text_option_zone}>
-                                    <Icon name="person" size={24} color="#AAAAAA" />
-                                    <Text style={{
-                                        fontFamily: 'SF-Pro-Rounded-Bold',
-                                        fontSize: 16,
-                                        color: "#AAAAAA",
-                                        marginLeft: 5 
-                                    }}>
-                                        Tổng quát
-                                    </Text>
-                                </View>
-                                <TouchableOpacity style={[general_user_profile_styles.medium_button, 
-                                    {marginBottom: 1},
-                                    {borderTopLeftRadius : 20},
-                                    {borderTopRightRadius: 20},
-                                    {display: "flex"},
-                                    {justifyContent: "space-evenly"},
-                                    {alignItems: "center"},
-                                    {flexDirection: "row"}]}>
-                                    <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                        {marginLeft: 20},
-                                        {marginRight: 20}]}>
-                                        <Icon name="mail" size={24} color="#AAAAAA" />
-                                        <Text style={{
-                                            fontFamily: 'SF-Pro-Rounded-Bold',
-                                            fontSize: 16,
-                                            color: "#AAAAAA",
-                                            marginLeft: 5 
-                                        }}>
-                                            Thay đổi địa chỉ email
-                                        </Text>
-                                    </View>
-                                    <View style={[{flex: 1}]}>
-                                        <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[general_user_profile_styles.medium_button,  
-                                    {marginBottom: 1},
-                                    {display: "flex"},
-                                    {justifyContent: "space-evenly"},
-                                    {alignItems: "center"},
-                                    {flexDirection: "row"}]}>
-                                    <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                        {marginLeft: 20},
-                                        {marginRight: 20}]}>
-                                        <Icon name="send" size={24} color="#AAAAAA" />
-                                        <Text style={{
-                                            fontFamily: 'SF-Pro-Rounded-Bold',
-                                            fontSize: 16,
-                                            color: "#AAAAAA",
-                                            marginLeft: 5 
-                                        }}>
-                                            Chia sẻ phản hồi
-                                        </Text>
-                                    </View>
-                                    <View style={[{flex: 1}]}>
-                                        <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[general_user_profile_styles.medium_button,
-                                    {borderBottomLeftRadius: 20},
-                                    {borderBottomRightRadius: 20},
-                                    {display: "flex"},
-                                    {justifyContent: "space-evenly"},
-                                    {alignItems: "center"},
-                                    {flexDirection: "row"}]}>
-                                    <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                        {marginLeft: 20},
-                                        {marginRight: 20}]}>
-                                        <Icon name="report" size={24} color="#AAAAAA" />
-                                        <Text style={{
-                                            fontFamily: 'SF-Pro-Rounded-Bold',
-                                            fontSize: 16,
-                                            color: "#AAAAAA",
-                                            marginLeft: 5 
-                                        }}>
-                                            Báo cáo sự cố
-                                        </Text>
-                                    </View>
-                                    <View style={[{flex: 1}]}>
-                                        <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        
-
-                        <View style={general_user_profile_styles.button_wrapper}>
-                            <View style={general_user_profile_styles.extension_setting_zone}>
-                                <View style={general_user_profile_styles.text_option_zone}>
-                                    <Icon name="lock" size={24} color="#AAAAAA" />
-                                    <Text style={{
-                                        fontFamily: 'SF-Pro-Rounded-Bold',
-                                        fontSize: 16,
-                                        color: "#AAAAAA",
-                                        marginLeft: 5 
-                                    }}>
-                                        Riêng tư & bảo mật
-                                    </Text>
-                                </View>
-                                <TouchableOpacity style={[general_user_profile_styles.medium_button, 
-                                    {marginBottom: 1},
-                                    {borderTopLeftRadius : 20},
-                                    {borderTopRightRadius: 20},
-                                    {display: "flex"},
-                                    {justifyContent: "space-evenly"},
-                                    {alignItems: "center"},
-                                    {flexDirection: "row"}]}>
-                                    <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                        {marginLeft: 20},
-                                        {marginRight: 20}]}>
-                                        <Icon name="person" size={24} color="#AAAAAA" />
-                                        <Text style={{
-                                            fontFamily: 'SF-Pro-Rounded-Bold',
-                                            fontSize: 16,
-                                            color: "#AAAAAA",
-                                            marginLeft: 5 
-                                        }}>
-                                            Tổng quát
-                                        </Text>
-                                    </View>
-                                    <View style={[{flex: 1}]}>
-                                        <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                                    </View>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[general_user_profile_styles.medium_button,  
-                                    {marginBottom: 1},
-                                    {display: "flex"},
-                                    {justifyContent: "space-evenly"},
-                                    {alignItems: "center"},
-                                    {flexDirection: "row"}]}>
-                                    <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                        {marginLeft: 20},
-                                        {marginRight: 20}]}>
-                                        <Icon name="person" size={24} color="#AAAAAA" />
-                                        <Text style={{
-                                            fontFamily: 'SF-Pro-Rounded-Bold',
-                                            fontSize: 16,
-                                            color: "#AAAAAA",
-                                            marginLeft: 5 
-                                        }}>
-                                            Tổng quát
-                                        </Text>
-                                    </View>
-                                    <View style={[{flex: 1}]}>
-                                        <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                                    </View>
-                                </TouchableOpacity>
-                                <View style={[general_user_profile_styles.medium_button,
-                                    {borderBottomLeftRadius: 20},
-                                    {borderBottomRightRadius: 20}]}>
-                                </View>
-                            </View>
-                        </View>
-                        
-                        
-                        
-                    </ScrollView>
-
-                </View>
-            </Modal>
-        </View>
+            </BottomSheetModalProvider>
+        </GestureHandlerRootView>
     )
 }
 
 export default MainScreen
+
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      borderTopLeftRadius: 45,
+      borderTopRightRadius:45,
+      backgroundColor: '#050505',
+    },
+    contentContainer: 
+    {
+      flex: 1,
+      alignItems: 'center',
+      borderTopLeftRadius: 45,
+      borderTopRightRadius:45,
+      backgroundColor: "#242424"
+    },
+  });
