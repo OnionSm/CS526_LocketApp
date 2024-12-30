@@ -7,7 +7,7 @@ function CameraDenied()
 {
     return( 
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Icon name="camera-off" size={50} color="#AAAAAA" />
+        <Icon name="camera" size={50} color="#AAAAAA" />
         <Text style={{ fontSize: 18, color: "#FFFFFF" }}>Camera không khả dụng</Text>
         </View>  
     )

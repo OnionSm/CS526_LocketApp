@@ -19,7 +19,8 @@ import { name as appName } from './app.json';
 import "./global.css";
 import PersonalChatScreen from './Scripts/layout/PersonalChatScreen';
 import { UserMessageProvider } from './Scripts/layout/context/UserMessageContext';
-
+import ChangeInfoModal from './Scripts/layout/ChangeInfoModal';
+import UserModal from './Scripts/layout/UserModal';
 const Stack = createNativeStackNavigator();
 
 function MainApp() {
@@ -30,6 +31,16 @@ function MainApp() {
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="ChangeInfoModal" 
+          component={ChangeInfoModal} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="UserModal" 
+          component={UserModal} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 

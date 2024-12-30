@@ -6,12 +6,21 @@ import FlagIcon from 'react-native-ico-flags';
 import change_password_styles from './styles/ChoosePasswordStyle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const saveUserData = async (access_token: string, refresh_token: string) => {
+const saveUserData = async (data: any) => {
     try {
-        await AsyncStorage.setItem('access_token', access_token);
-        await AsyncStorage.setItem("refresh_token", refresh_token);
+        await AsyncStorage.setItem("first_name", data.user.firstName);
+        await AsyncStorage.setItem("last_name", data.user.lastName);
+        await AsyncStorage.setItem("email", data.user.email);
+        await AsyncStorage.setItem("public_user_id", data.user.publicUserId);
+        await AsyncStorage.setItem("phone_number", data.user.phoneNumber);
+        await AsyncStorage.setItem("user_avatar_url", data.user.userAvatarURL);
+        await AsyncStorage.setItem("list_friends", JSON.stringify(data.user.friends));
+        await AsyncStorage.setItem('access_token', data.token.accessToken);
+        await AsyncStorage.setItem("refresh_token", data.token.refreshToken);
         console.log("Lưu token thành công");
-    } catch (error) {
+    } 
+    catch (error) 
+    {
         console.log("Không thể lưu token", error);
     }
 }
@@ -112,9 +121,9 @@ async function Login(email: string, password : string)
         const data = await response.json();  // Chờ phản hồi JSON
         if(data != null)
         {
-            console.log(data.accessToken);
-            console.log(data.refreshToken);
-            await saveUserData(data.accessToken, data.refreshToken);
+            console.log(data.token.accessToken);
+            console.log(data.token.refreshToken);
+            await saveUserData(data);
         }
         return data;
     } 
