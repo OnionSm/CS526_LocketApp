@@ -68,7 +68,6 @@ const general_user_profile_styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "flex-end",
         flexDirection: "column"
-
     },
     user_avatar_child_zone:
     {
@@ -82,10 +81,43 @@ const general_user_profile_styles = StyleSheet.create({
     },
     avatar_border:
     {
-        width: "65%",
-        height: "65%",
+        width: 125,
+        height: 125,
+        borderRadius: 90,
+        borderWidth: 5,
+        borderColor: "#F1B202",
+        display:"flex",
+        alignItems: "center",
+        justifyContent:"center"
+    },
+    mini_avatar_border:
+    {
+        width: 45,
+        height: 45,
+        borderRadius: 90,
+        borderWidth: 2,
+        borderColor: "#F1B202",
+        display:"flex",
+        alignItems: "center",
+        justifyContent:"center",
+        marginLeft: 5,
+        marginRight: 5
+    },
+    main_avt:
+    {
+        width: "95%",
+        height: "95%",
         resizeMode: "contain",
-        margin: 5
+        borderWidth: 3,
+        borderRadius: 90,
+    },
+    mini_main_avt:
+    {
+        width: "95%",
+        height: "95%",
+        resizeMode: "contain",
+        borderWidth: 1,
+        borderRadius: 90,
     },
     username_zone:
     {
