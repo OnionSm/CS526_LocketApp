@@ -20,12 +20,19 @@ import {
   BottomSheetView,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
+import DeleteAccountModal from './modals/DeleteAccountModal';
 
 
 function MainScreen({navigation}: {navigation: any})
 {      
 
     const[username, set_user_name] = useState("");
+    const [delete_account_modal_state, set_delete_account_modal] = useState(false);
+    
+    const toggle_delete_account_modal = () => 
+    {
+        set_delete_account_modal(!delete_account_modal_state);
+    }
 
     useEffect(()=>{
         const get_user_name_from_storage = async () => {
@@ -158,8 +165,9 @@ function MainScreen({navigation}: {navigation: any})
         <GestureHandlerRootView style={styles.container}>
             <BottomSheetModalProvider >
                 <View style={main_screen_styles.main_view}>
-                <UserModal username={username} modal_refs={modalRefs} modal_name = "user_modal" change_info_modal_name="change_info_modal" onClickChangeInfo={handlePresentModal} />
+                <UserModal navigation={navigation} username={username} modal_refs={modalRefs} modal_name = "user_modal" change_info_modal_name="change_info_modal" onClickChangeInfo={handlePresentModal} />
                 <ChangeInfoModal set_username={set_user_name} modal_refs={modalRefs} modal_name = "change_info_modal" handleCloseModal={handleCloseModal}></ChangeInfoModal>
+                {/* <DeleteAccountModal isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal> */}
                     {/* Upper Zone */}
                     <View style={[main_screen_styles.upper_zone] }>
                     {isTakingPhoto ? (
