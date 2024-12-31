@@ -27,7 +27,7 @@ function MainApp() {
   return (
     <UserMessageProvider>
       <NavigationContainer>
-      <Stack.Navigator initialRouteName="SignInScreen">
+      <Stack.Navigator initialRouteName="MainScreen">
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 

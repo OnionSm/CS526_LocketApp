@@ -4,6 +4,8 @@ import { Image, ImageBackground, Text, View, Button,
     import { useRef, useState, useEffect , createContext, useContext, useCallback} from 'react';
 import React from 'react';
 import general_user_profile_styles from './styles/GeneralUserprofileStyle';
+import FeedbackModal from './FeedbackModal';
+import ReportModal from './ReportModal';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,7 +20,30 @@ import ChangeInfoModal from './ChangeInfoModal';
 export default function UserModal({username, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo}:
     {username : string ; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void}){
 
-    
+    const feedbackModalRef = useRef<BottomSheetModal>(null);
+    const reportModalRef = useRef<BottomSheetModal>(null);
+    const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
+    const [isReportVisible, setIsReportVisible] = useState(false);
+
+    const openFeedbackModal = () => {
+        setIsFeedbackVisible(true);
+        feedbackModalRef.current?.present();
+    };
+
+    const closeFeedbackModal = () => {
+        setIsFeedbackVisible(false);
+        feedbackModalRef.current?.dismiss();
+    };
+
+    const openReportModal = () => {
+        setIsReportVisible(true);
+        reportModalRef.current?.present();
+    };
+
+    const closeReportModal = () => {
+        setIsReportVisible(false);
+        reportModalRef.current?.dismiss();
+    };
     
  
     return (
@@ -149,6 +174,7 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                     </View>
                 </View>
 
+                {/* Tổng quát */}
                 <View style={general_user_profile_styles.button_wrapper}>
                     <View style={general_user_profile_styles.extension_setting_zone}>
                         <View style={general_user_profile_styles.text_option_zone}>
@@ -162,6 +188,9 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                                 Tổng quát
                             </Text>
                         </View>
+
+                        
+                        {/* Thay đổi địa chỉ email */}
                         <TouchableOpacity style={[general_user_profile_styles.medium_button, 
                             {marginBottom: 1},
                             {borderTopLeftRadius : 20},
@@ -187,7 +216,10 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button,  
+
+                        {/* Chia sẻ phản hồi */}
+                        <TouchableOpacity  onPress={() => feedbackModalRef.current?.present()}
+                        style={[general_user_profile_styles.medium_button,  
                             {marginBottom: 1},
                             {display: "flex"},
                             {justifyContent: "space-evenly"},
@@ -210,7 +242,11 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button,
+                        <FeedbackModal modalRef={feedbackModalRef} onClose={closeFeedbackModal}/>
+
+                        {/* Báo cáo sự cố */}
+                        <TouchableOpacity onPress={() => reportModalRef.current?.present()}
+                            style={[general_user_profile_styles.medium_button, 
                             {borderBottomLeftRadius: 20},
                             {borderBottomRightRadius: 20},
                             {display: "flex"},
@@ -234,6 +270,8 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+                        <ReportModal modalRef={reportModalRef} onClose={closeReportModal}/>
+
                     </View>
                 </View>
                 
