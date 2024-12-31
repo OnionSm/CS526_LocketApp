@@ -108,7 +108,7 @@ async function Login(email: string, password : string)
     console.log(formData);
 
     try {
-        const response = await fetch('http://10.0.2.2:5115/api/login/email', 
+        const response = await fetch('http://10.0.2.45:5115/api/login/email', 
             {
             method: 'POST',
             body: formData, 
