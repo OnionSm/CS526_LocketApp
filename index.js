@@ -21,31 +21,31 @@ import PersonalChatScreen from './Scripts/layout/PersonalChatScreen';
 import { UserMessageProvider } from './Scripts/layout/context/UserMessageContext';
 import ChangeInfoModal from './Scripts/layout/ChangeInfoModal';
 import UserModal from './Scripts/layout/UserModal';
+import DeleteAccountModal from './Scripts/layout/modals/DeleteAccountModal';
+import ConfirmDeleteModal from './Scripts/layout/modals/ConfirmDeleteModal';
+import ErrorDeleteModal from './Scripts/layout/modals/ErrorDeleteModal';
+import AvatarImageBottomSheet from './Scripts/layout/bottom_sheets/AvatarImageBottomSheet';
+
 const Stack = createNativeStackNavigator();
 
 function MainApp() {
   return (
     <UserMessageProvider>
       <NavigationContainer>
-      <Stack.Navigator initialRouteName="SignInScreen">
+      <Stack.Navigator initialRouteName="MainScreen">
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="ChangeInfoModal" 
-          component={ChangeInfoModal} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="UserModal" 
-          component={UserModal} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
           name="PersonalChatScreen" 
           component={PersonalChatScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="AvatarImageBottomSheet" 
+          component={AvatarImageBottomSheet} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 

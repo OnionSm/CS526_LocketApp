@@ -12,28 +12,53 @@ import {
   BottomSheetModal,
   BottomSheetView,
   BottomSheetModalProvider,
+  BottomSheetScrollView
 } from '@gorhom/bottom-sheet';
 import ChangeInfoModal from './ChangeInfoModal';
+import DeleteAccountModal from './modals/DeleteAccountModal';
+import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
 
-export default function UserModal({username, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo}:
-    {username : string ; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void}){
+export default function UserModal({navigation, username, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo, }:
+    {navigation : any, username : string ; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void})
+{
 
+    const [delete_account_modal_state, set_delete_account_modal] = useState(false);
     
-    
- 
+    const toggle_delete_account_modal = () => 
+    {
+        set_delete_account_modal(!delete_account_modal_state);
+    }
+
+
+    const [avatar_image_modal_state, set_avatar_image_modal] = useState(false);
+
+    const toggle_avatar_image_modal = () =>
+    {
+        set_avatar_image_modal(!avatar_image_modal_state);
+    }
+
     return (
         <BottomSheetModal
             ref={(ref) => (modal_refs.current[modal_name] = ref)}
             backgroundStyle={{ backgroundColor: '#242424' }}
             handleStyle={{height:10}}
             handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}>
-            <BottomSheetView style={styles.contentContainer}>
+            <AvatarImageBottomSheet isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
+            <DeleteAccountModal navigation={navigation} isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal>
+            <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
                 <View style={general_user_profile_styles.user_avatar_zone}>
                     {/* Avatar */}
-                    <View style={general_user_profile_styles.user_avatar_child_zone}>
-                        <Image source={require("./GUI/AvatarBorder.png")}
+                    <View style={[general_user_profile_styles.user_avatar_child_zone]}>
+                        {/* <ImageBackground source={require("./GUI/AvatarBorder.png")}
                         style={general_user_profile_styles.avatar_border}>
-                        </Image>
+                        </ImageBackground> */}
+                        <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
+                        onPress={() => {toggle_avatar_image_modal()}}>
+                            <Image style={general_user_profile_styles.main_avt}
+                            source={{uri : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvvfkIrFvT059I7TTUWWmn93lUIvL9ti6HSQ&s"}}>
+                            </Image>
+                            
+                        </TouchableOpacity>
                     </View>
 
                     {/* Username */}
@@ -61,12 +86,12 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                 <View style={general_user_profile_styles.user_locket_share_zone}>
                     <View style={general_user_profile_styles.locket_share_background}>
                         <View style={general_user_profile_styles.locket_share_background_zone1}>
-                            <View style={general_user_profile_styles.mini_avatar_zone}>
-                                <Image source={require("./GUI/AvatarBorder.png")}
-                                style={general_user_profile_styles.avatar_border}>
-                                    
-                                </Image>
-                            </View>
+                        <View style={[general_user_profile_styles.mini_avatar_border]}>
+                            <Image style={general_user_profile_styles.mini_main_avt}
+                            source={{uri : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvvfkIrFvT059I7TTUWWmn93lUIvL9ti6HSQ&s"}}>
+                            </Image>
+                            
+                        </View>
 
                             <View style={general_user_profile_styles.locket_share_text_zone}>
                                 <Text style={[general_user_profile_styles.general_text ,{fontSize:15}]}
@@ -284,6 +309,51 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                             {flexDirection: "row"}]}>
                             <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
                                 {marginLeft: 20},
+                                {marginRight: 20},
+                                {borderBottomLeftRadius: 20},
+                                {borderBottomRightRadius: 20}]}>
+                                <Icon name="person" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }}>
+                                    Hiển thị tài khoản người dùng
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+
+                <View style={general_user_profile_styles.button_wrapper}>
+                    <View style={general_user_profile_styles.extension_setting_zone}>
+                        <View style={general_user_profile_styles.text_option_zone}>
+                            <Icon name="lock" size={24} color="#AAAAAA" />
+                            <Text style={{
+                                fontFamily: 'SF-Pro-Rounded-Bold',
+                                fontSize: 16,
+                                color: "#AAAAAA",
+                                marginLeft: 5 
+                            }}>
+                                Vùng nguy hiểm
+                            </Text>
+                        </View>
+                        <TouchableOpacity style={[general_user_profile_styles.medium_button, 
+                            {marginBottom: 1},
+                            {borderTopLeftRadius : 20},
+                            {borderTopRightRadius: 20},
+                            {display: "flex"},
+                            {justifyContent: "space-evenly"},
+                            {alignItems: "center"},
+                            {flexDirection: "row"}]}
+                            onPress={() => {log_out(navigation)}}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
                                 {marginRight: 20}]}>
                                 <Icon name="person" size={24} color="#AAAAAA" />
                                 <Text style={{
@@ -292,20 +362,43 @@ export default function UserModal({username, modal_refs, modal_name, change_info
                                     color: "#AAAAAA",
                                     marginLeft: 5 
                                 }}>
-                                    Tổng quát
+                                Đăng xuất
                                 </Text>
                             </View>
                             <View style={[{flex: 1}]}>
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
-                        <View style={[general_user_profile_styles.medium_button,
+                        <TouchableOpacity style={[general_user_profile_styles.medium_button,  
+                            {marginBottom: 1},
+                            {display: "flex"},
+                            {justifyContent: "space-evenly"},
+                            {alignItems: "center"},
+                            {flexDirection: "row"},
                             {borderBottomLeftRadius: 20},
-                            {borderBottomRightRadius: 20}]}>
-                        </View>
+                            {borderBottomRightRadius: 20}
+                            ]}
+                            onPress={()=> {toggle_delete_account_modal()}}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
+                                {marginRight: 20}]}>
+                                <Icon name="person" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }}>
+                                 Xóa tài khoản
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </BottomSheetView>
+            </BottomSheetScrollView>
         </BottomSheetModal>
     );
 }    
@@ -327,3 +420,14 @@ const styles = StyleSheet.create({
       backgroundColor: "#242424"
     },
   });
+
+const log_out = (navigation : any) => {
+    try
+    {
+        navigation.navigate("SignInScreen");
+    }
+    catch(ex)
+    {
+        console.log(ex);
+    }
+}
