@@ -110,7 +110,7 @@ async function CheckEmail(email: string) {
     console.log(formData);
 
     try {
-        const response = await fetch('http://10.0.2.45:5115/api/login/valid-email', {
+        const response = await fetch('http://10.0.2.2:5115/api/login/valid-email', {
             method: 'POST',
             body: formData, 
         });

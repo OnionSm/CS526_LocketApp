@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 
 
 
-const BASE_URL = "http://10.0.2.45:5115";
+const BASE_URL = "http://10.0.2.2:5115";
 let access_token = AsyncStorage.getItem("access_token");
 
 const AxiosInstance = axios.create({

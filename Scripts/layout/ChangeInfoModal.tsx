@@ -14,7 +14,8 @@ import {
 import AxiosInstance from "./instance/AxiosInstance";
 import Toast from 'react-native-toast-message';
 
-function ChangeInfoModal({set_username, modal_refs, modal_name, handleCloseModal} : {set_username: (username : string) => void ;  modal_refs : any, modal_name: string, handleCloseModal : (key: string) => void })
+function ChangeInfoModal({set_first_name, set_last_name, modal_refs, modal_name, handleCloseModal} : 
+    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modal_refs : any, modal_name: string, handleCloseModal : (key: string) => void })
 {
 
     const [first_name, SetFirstName] = useState("");
@@ -35,7 +36,8 @@ function ChangeInfoModal({set_username, modal_refs, modal_name, handleCloseModal
         {
             return false;
         }
-        set_username(first_name + " " + last_name);
+        set_first_name(first_name);
+        set_last_name(last_name);
         return true;
     }
 

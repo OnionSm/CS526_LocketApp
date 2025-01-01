@@ -7,52 +7,20 @@ import AxiosInstance from "../instance/AxiosInstance";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import RNFS from "react-native-fs";
 import ImagePicker from 'react-native-image-crop-picker';
+import { UriParser } from "../common/UriParser";
 
-const base64ToBinary = (base64String : string) => {
-  const binaryString = atob(base64String); 
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
 
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-
-  return bytes; 
-};
-
-const binaryToBase64 = (binaryData: any) => {
-  let binaryString = "";
-
-  for (let i = 0; i < binaryData.length; i++) {
-    binaryString += String.fromCharCode(binaryData[i]); 
-  }
-
-  return btoa(binaryString); 
-};
-
-const uriToBase64 = async (uri: any) => {
-  try 
-  {
-    const base64String = await RNFS.readFile(uri, "base64");
-    console.log("Base64 String:", base64String);
-    return base64String;
-  } catch (error) {
-    console.error("Error converting URI to Base64:", error);
-    throw error;
-  }
-};
-
-const AvatarImageBottomSheet = ({isVisible, toggleModal} : { isVisible : boolean ; toggleModal: () => void}) =>
+const AvatarImageBottomSheet = ({set_user_avatar, isVisible, toggleModal} : {set_user_avatar: (avt : string) => void ;  isVisible : boolean ; toggleModal: () => void}) =>
 {
   const [imageUri, setImageUri] = useState<string | null>(null);
 
-  useEffect(() => {
-    const test = async () => {
-      console.log(imageUri);
-    };
-    test();
+  // useEffect(() => {
+  //   const test = async () => {
+  //     console.log(imageUri);
+  //   };
+  //   test();
 
-  }, [imageUri])
+  // }, [imageUri])
 
   const openCamera = async () => {
     try {
@@ -64,22 +32,42 @@ const AvatarImageBottomSheet = ({isVisible, toggleModal} : { isVisible : boolean
         includeBase64: false,  
       });
 
-      setImageUri(image.path); 
+      setImageUri(image.path);
+      const res = await upload_avatar(image.path);
+    
+      if (res) {
+        var img_base64 = await UriParser.uriToBase64(image.path);
+        set_user_avatar(img_base64);
+      }
     } catch (error) {
       
         Alert.alert('Không thể chụp ảnh.');
       }
     }
 
-  const openGallery = () => {
-    ImagePicker.openPicker({
-      width: 300,
-      height: 400,
-      cropping: true,
-    }).then(image => {
-      setImageUri(image.path);
-    });
-  };
+    const openGallery = async () => {
+      try {
+        // Sử dụng await để đợi kết quả từ ImagePicker
+        const image = await ImagePicker.openPicker({
+          width: 300,
+          height: 400,
+          cropping: true,
+        });
+    
+        // Cập nhật URI của hình ảnh
+        setImageUri(image.path);
+    
+        // Gọi hàm upload_avatar và chờ kết quả trả về
+        const res = await upload_avatar(image.path);
+    
+        if (res) {
+          var img_base64 = await UriParser.uriToBase64(image.path);
+          set_user_avatar(img_base64);
+        }
+      } catch (error) {
+        console.error("Error opening gallery or uploading image:", error);
+      }
+    };
 
 
   return (
@@ -159,3 +147,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+
+const upload_avatar  = async (uri: any) => 
+{
+  var binary_array = await UriParser.uriToBinary(uri);
+  var respone =  await AxiosInstance.put("api/user/change_avatar", binary_array, {
+     headers: {
+      'Content-Type': 'application/octet-stream',
+     }
+  });
+  return respone.status === 200;
+}
