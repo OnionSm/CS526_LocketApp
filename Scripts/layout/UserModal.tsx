@@ -33,12 +33,12 @@ const get_user_avt = (user_id: string) => {
           (tx: any, results: any) => {
             const rows = results.rows;
             let user_avt = null;
-  
-            if (rows.length > 0) {
+
+            if (rows.length > 0) 
+            {
               user_avt = rows.item(0).userAvatarURL; 
             }
             resolve(user_avt); 
-            
           },
           (error: any) => {
             reject('Error retrieving user avatar: ' + error); 
@@ -52,26 +52,32 @@ const get_user_avt = (user_id: string) => {
 export default function UserModal({navigation, first_name, last_name, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo, }:
     {navigation : any, first_name : string; last_name:  string; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void})
 {
-
-    const [user_avt, set_user_avt] = useState<string | undefined>(undefined);
+    var [user_avt_uri, set_user_avt] = useState<string | undefined>();
 
     useEffect(() => {
-        const get_avt = async () => {
-          const public_user_id = await AsyncStorage.getItem("user_id");
-          
-    
-          if (public_user_id == null) {
-            return; 
+        const getAvatar = async () => {
+          try 
+          {
+            const publicUserId = await AsyncStorage.getItem("user_id");
+            if (!publicUserId) 
+            {
+              console.warn("No user ID found");
+              return;
+            }
+            const avatar = await get_user_avt(publicUserId);
+      
+            if (typeof avatar !== "string" || typeof avatar === "undefined") 
+            {
+                return;
+            }
+            set_user_avt(avatar);
+          } 
+          catch (error) 
+          {
+            console.error("Error fetching avatar:", error);
           }
-    
-          var avt = await get_user_avt(public_user_id); 
-          var base64_avt = UriParser.binaryToBase64(avt);
-          console.log("BASE 64 _ ", base64_avt);
-          set_user_avt(base64_avt); 
-          
         };
-    
-        get_avt(); 
+        getAvatar();
       }, []);
     
       
@@ -102,7 +108,6 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
     };
     
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
-    
     const toggle_delete_account_modal = () => 
     {
         set_delete_account_modal(!delete_account_modal_state);
@@ -110,7 +115,6 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
 
 
     const [avatar_image_modal_state, set_avatar_image_modal] = useState(false);
-
     const toggle_avatar_image_modal = () =>
     {
         set_avatar_image_modal(!avatar_image_modal_state);
@@ -125,26 +129,21 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
             backgroundStyle={{ backgroundColor: '#242424' }}
             handleStyle={{height:10}}
             handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}>
-            <AvatarImageBottomSheet isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
+            <AvatarImageBottomSheet set_user_avatar={set_user_avt} isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
             <DeleteAccountModal navigation={navigation} isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal>
             <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
                 <View style={general_user_profile_styles.user_avatar_zone}>
                     {/* Avatar */}
                     <View style={[general_user_profile_styles.user_avatar_child_zone]}>
-                        {/* <ImageBackground source={require("./GUI/AvatarBorder.png")}
-                        style={general_user_profile_styles.avatar_border}>
-                        </ImageBackground> */}
                         <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
                         onPress={() => {toggle_avatar_image_modal()}}>
-                            {user_avt !== undefined ? (
+                            {user_avt_uri !== ""? (
                                  <Image style={general_user_profile_styles.main_avt}
-                                 source={{uri : user_avt}}>
+                                 source={{uri : user_avt_uri}}>
                                  </Image>
                             ): (
                                 <UserAvatar size={100} name={`${first_name} ${last_name}`} />
                             )}
-                           
-                            
                         </TouchableOpacity>
                     </View>
 
@@ -174,9 +173,9 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                     <View style={general_user_profile_styles.locket_share_background}>
                         <View style={general_user_profile_styles.locket_share_background_zone1}>
                         <View style={[general_user_profile_styles.mini_avatar_border]}>
-                        {user_avt !== undefined ? (
+                        {user_avt_uri !== "" ? (
                                  <Image style={general_user_profile_styles.main_avt}
-                                 source={{uri : user_avt}}>
+                                 source={{uri : user_avt_uri}}>
                                  </Image>
                             ): (
                                 <UserAvatar size={35} name={`${first_name} ${last_name}`} />

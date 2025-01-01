@@ -8,66 +8,70 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import RNFS from "react-native-fs";
 import ImagePicker from 'react-native-image-crop-picker';
 import { UriParser } from "../common/UriParser";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import SQLite from 'react-native-sqlite-storage';
+import { sqliteService } from "../common/sqliteService";
 
 
 const AvatarImageBottomSheet = ({set_user_avatar, isVisible, toggleModal} : {set_user_avatar: (avt : string) => void ;  isVisible : boolean ; toggleModal: () => void}) =>
 {
   const [imageUri, setImageUri] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   const test = async () => {
-  //     console.log(imageUri);
-  //   };
-  //   test();
-
-  // }, [imageUri])
-
+  // Mở camera để chụp ảnh
   const openCamera = async () => {
-    try {
+    try 
+    {
       const image = await ImagePicker.openCamera({
         width: 300,           
-        height: 400,           
+        height: 300,           
         cropping: true,       
         compressImageQuality: 0.8,
         includeBase64: false,  
       });
-
-      setImageUri(image.path);
       const res = await upload_avatar(image.path);
-    
-      if (res) {
+      if (res) 
+      {
+        var user_id = await AsyncStorage.getItem("user_id");
+        if (user_id === null)
+        {
+          return;
+        }
         var img_base64 = await UriParser.uriToBase64(image.path);
         set_user_avatar(img_base64);
       }
-    } catch (error) {
-      
+    } 
+    catch (error)
+    {
         Alert.alert('Không thể chụp ảnh.');
-      }
     }
+  }
 
+    // Mở trình chọn ảnh từ Gallery
     const openGallery = async () => {
-      try {
-        // Sử dụng await để đợi kết quả từ ImagePicker
+      try 
+      {
         const image = await ImagePicker.openPicker({
           width: 300,
-          height: 400,
+          height: 300,
           cropping: true,
         });
-    
-        // Cập nhật URI của hình ảnh
-        setImageUri(image.path);
-    
-        // Gọi hàm upload_avatar và chờ kết quả trả về
         const res = await upload_avatar(image.path);
-    
-        if (res) {
+        if (res) 
+        {
+          var user_id = await AsyncStorage.getItem("user_id");
+          if (user_id === null)
+          {
+            return;
+          }
           var img_base64 = await UriParser.uriToBase64(image.path);
           set_user_avatar(img_base64);
         }
-      } catch (error) {
+      } 
+      catch (error) 
+      {
         console.error("Error opening gallery or uploading image:", error);
       }
-    };
+  };
 
 
   return (
@@ -148,10 +152,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const upload_avatar  = async (uri: any) => 
+const upload_avatar  = async (uri: string) => 
 {
-  var binary_array = await UriParser.uriToBinary(uri);
-  var respone =  await AxiosInstance.put("api/user/change_avatar", binary_array, {
+  var img_base64 = await UriParser.uriToBase64(uri);
+  var respone =  await AxiosInstance.put("api/user/change_avatar", img_base64, {
      headers: {
       'Content-Type': 'application/octet-stream',
      }
