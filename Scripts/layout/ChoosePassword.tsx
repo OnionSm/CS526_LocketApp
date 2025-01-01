@@ -5,9 +5,82 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlagIcon from 'react-native-ico-flags';
 import change_password_styles from './styles/ChoosePasswordStyle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SQLite from 'react-native-sqlite-storage';
 
 const saveUserData = async (data: any) => {
     try {
+        const db = SQLite.openDatabase(
+            {name: 'Locket.db', location: 'default'});
+        
+        // Chèn ảnh vào cơ sở dữ liệu
+
+        // Chạy giao dịch để tạo bảng
+        db.transaction((tx: any) => {
+            tx.executeSql(
+              `CREATE TABLE IF NOT EXISTS User (
+                user_id TEXT PRIMARY KEY,
+                publicUserId TEXT NOT NULL DEFAULT '',
+                firstName TEXT NOT NULL,
+                lastName TEXT NOT NULL,
+                age INTEGER,
+                gender TEXT DEFAULT '',
+                phoneNumber TEXT,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                userAvatarURL BLOB,
+                friends TEXT,  -- This will store the list as a comma-separated string (you'll need to handle this in your application logic)
+                accountDeleted INTEGER DEFAULT 0  -- Use 0 for false, 1 for true
+              )`,
+              [],
+              () => {
+                console.log('User table created successfully');
+              },
+              (error: any) => {
+                console.log('Error creating User table:', error);
+              }
+            );
+            console.log("id ", data.user.id);
+            console.log("Public user id", data.user.publicUserId);
+            console.log("first name ", data.user.firstName);
+            console.log("last name" , data.user.lastName);
+            console.log("phone number ", data.user.phoneNumber);
+            console.log("email ", data.user.email);
+            console.log("password ", data.user.password)
+
+            tx.executeSql(
+                `INSERT OR REPLACE INTO User (user_id, publicUserId, firstName, lastName, phoneNumber, email, password) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [
+                  data.user.id, 
+                  data.user.publicUserId, 
+                  data.user.firstName, 
+                  data.user.lastName, 
+                  data.user.phoneNumber, 
+                  data.user.email, 
+                  data.user.password,
+                ],
+                (tx: any, results: any) => {
+                  console.log('User added or updated successfully');
+                },
+                (error: any) => {
+                  console.log('Error adding or updating user:', error);
+                }
+              );
+          });
+
+        // Đóng database
+        db.close(
+            () => {
+            console.log('Database closed successfully');
+            },
+            (error: any) => {
+            console.log('Error closing database:', error);
+            }
+        );
+
+        
+
+        await AsyncStorage.setItem("user_id", data.user.id);
         await AsyncStorage.setItem("first_name", data.user.firstName);
         await AsyncStorage.setItem("last_name", data.user.lastName);
         await AsyncStorage.setItem("email", data.user.email);
@@ -108,7 +181,7 @@ async function Login(email: string, password : string)
     console.log(formData);
 
     try {
-        const response = await fetch('http://10.0.2.45:5115/api/login/email', 
+        const response = await fetch('http://10.0.2.2:5115/api/login/email', 
             {
             method: 'POST',
             body: formData, 

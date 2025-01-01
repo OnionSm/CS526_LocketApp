@@ -19,10 +19,62 @@ import {
 import ChangeInfoModal from './ChangeInfoModal';
 import DeleteAccountModal from './modals/DeleteAccountModal';
 import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
+import SQLite from 'react-native-sqlite-storage';
+import { UriParser } from './common/UriParser';
+import UserAvatar from 'react-native-user-avatar';
 
-export default function UserModal({navigation, username, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo, }:
-    {navigation : any, username : string ; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void})
+const get_user_avt = (user_id: string) => {
+    return new Promise((resolve, reject) => {
+      const db = SQLite.openDatabase({name: 'Locket.db', location: 'default'});
+      db.transaction((tx: any) => {
+        tx.executeSql(
+          'SELECT * FROM User WHERE user_id = ?',
+          [user_id],
+          (tx: any, results: any) => {
+            const rows = results.rows;
+            let user_avt = null;
+  
+            if (rows.length > 0) {
+              user_avt = rows.item(0).userAvatarURL; 
+            }
+            resolve(user_avt); 
+            
+          },
+          (error: any) => {
+            reject('Error retrieving user avatar: ' + error); 
+          }
+        );
+      });
+    });
+  };
+  
+
+export default function UserModal({navigation, first_name, last_name, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo, }:
+    {navigation : any, first_name : string; last_name:  string; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void})
 {
+
+    const [user_avt, set_user_avt] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        const get_avt = async () => {
+          const public_user_id = await AsyncStorage.getItem("user_id");
+          
+    
+          if (public_user_id == null) {
+            return; 
+          }
+    
+          var avt = await get_user_avt(public_user_id); 
+          var base64_avt = UriParser.binaryToBase64(avt);
+          console.log("BASE 64 _ ", base64_avt);
+          set_user_avt(base64_avt); 
+          
+        };
+    
+        get_avt(); 
+      }, []);
+    
+      
 
     const feedbackModalRef = useRef<BottomSheetModal>(null);
     const reportModalRef = useRef<BottomSheetModal>(null);
@@ -64,6 +116,9 @@ export default function UserModal({navigation, username, modal_refs, modal_name,
         set_avatar_image_modal(!avatar_image_modal_state);
     }
 
+    const firstLetter = first_name ? first_name[0].toUpperCase() : '';
+    const secondLetter = last_name ? last_name[0].toUpperCase() : '';
+
     return (
         <BottomSheetModal
             ref={(ref) => (modal_refs.current[modal_name] = ref)}
@@ -81,9 +136,14 @@ export default function UserModal({navigation, username, modal_refs, modal_name,
                         </ImageBackground> */}
                         <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
                         onPress={() => {toggle_avatar_image_modal()}}>
-                            <Image style={general_user_profile_styles.main_avt}
-                            source={{uri : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvvfkIrFvT059I7TTUWWmn93lUIvL9ti6HSQ&s"}}>
-                            </Image>
+                            {user_avt !== undefined ? (
+                                 <Image style={general_user_profile_styles.main_avt}
+                                 source={{uri : user_avt}}>
+                                 </Image>
+                            ): (
+                                <UserAvatar size={100} name={`${first_name} ${last_name}`} />
+                            )}
+                           
                             
                         </TouchableOpacity>
                     </View>
@@ -91,7 +151,7 @@ export default function UserModal({navigation, username, modal_refs, modal_name,
                     {/* Username */}
                     <View style={general_user_profile_styles.username_zone}>
                         <Text style={general_user_profile_styles.username_text}
-                        >{username}</Text>
+                        >{first_name} {last_name}</Text>
                     </View>
 
                     {/* User Id and Change Profile */}
@@ -114,9 +174,13 @@ export default function UserModal({navigation, username, modal_refs, modal_name,
                     <View style={general_user_profile_styles.locket_share_background}>
                         <View style={general_user_profile_styles.locket_share_background_zone1}>
                         <View style={[general_user_profile_styles.mini_avatar_border]}>
-                            <Image style={general_user_profile_styles.mini_main_avt}
-                            source={{uri : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvvfkIrFvT059I7TTUWWmn93lUIvL9ti6HSQ&s"}}>
-                            </Image>
+                        {user_avt !== undefined ? (
+                                 <Image style={general_user_profile_styles.main_avt}
+                                 source={{uri : user_avt}}>
+                                 </Image>
+                            ): (
+                                <UserAvatar size={35} name={`${first_name} ${last_name}`} />
+                            )}
                             
                         </View>
 

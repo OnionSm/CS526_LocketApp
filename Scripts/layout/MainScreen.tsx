@@ -26,7 +26,8 @@ import DeleteAccountModal from './modals/DeleteAccountModal';
 function MainScreen({navigation}: {navigation: any})
 {      
 
-    const[username, set_user_name] = useState("");
+    const[first_name, set_first_name] = useState("");
+    const[last_name, set_last_name] = useState("");
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
     
     const toggle_delete_account_modal = () => 
@@ -47,11 +48,11 @@ function MainScreen({navigation}: {navigation: any})
                 last_name = "";
             }
             const _user_name = first_name + " " + last_name;
-            console.log(_user_name);
-            set_user_name(_user_name);
+            set_first_name(first_name);
+            set_last_name(last_name);
         };
         get_user_name_from_storage();
-    }, [username])
+    }, [first_name, last_name])
 
 
     const [signalR_connection, SetConnection] = useState<signalR.HubConnection | null>(null);
@@ -165,8 +166,8 @@ function MainScreen({navigation}: {navigation: any})
         <GestureHandlerRootView style={styles.container}>
             <BottomSheetModalProvider >
                 <View style={main_screen_styles.main_view}>
-                <UserModal navigation={navigation} username={username} modal_refs={modalRefs} modal_name = "user_modal" change_info_modal_name="change_info_modal" onClickChangeInfo={handlePresentModal} />
-                <ChangeInfoModal set_username={set_user_name} modal_refs={modalRefs} modal_name = "change_info_modal" handleCloseModal={handleCloseModal}></ChangeInfoModal>
+                <UserModal navigation={navigation} first_name={first_name} last_name={last_name} modal_refs={modalRefs} modal_name = "user_modal" change_info_modal_name="change_info_modal" onClickChangeInfo={handlePresentModal} />
+                <ChangeInfoModal set_first_name={set_first_name} set_last_name={set_last_name} modal_refs={modalRefs} modal_name = "change_info_modal" handleCloseModal={handleCloseModal}></ChangeInfoModal>
                 {/* <DeleteAccountModal isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal> */}
                     {/* Upper Zone */}
                     <View style={[main_screen_styles.upper_zone] }>
