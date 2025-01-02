@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SQLite from 'react-native-sqlite-storage';
 import { UriParser } from './common/UriParser';
 import { sqliteService } from './common/sqliteService';
+import AxiosInstance from './instance/AxiosInstance';
 
 const saveUserData = async (data: any) => {
     try 
@@ -50,6 +51,7 @@ const saveUserData = async (data: any) => {
                 console.log('Error creating User table:', error);
               }
             );
+
             tx.executeSql(
                 `INSERT OR REPLACE INTO User (user_id, publicUserId, firstName, lastName, phoneNumber, email, password, userAvatarURL) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -83,6 +85,69 @@ const saveUserData = async (data: any) => {
     catch (error) 
     {
         console.log("Không thể lưu token", error);
+    }
+}
+
+const saveFriendData = async () => {
+    try {
+        // Gọi API để lấy danh sách bạn bè
+        var res = await AxiosInstance.get("api/user/friend/info");
+        if (res.status !== 200) {
+            console.log("Không lấy được dữ liệu bạn bè từ API");
+            return;
+        }
+
+        // Lấy dữ liệu bạn bè từ API
+        var data = res.data;
+        
+        console.log("DATA Friend:", data); // Kiểm tra dữ liệu bạn bè
+        
+        const db = SQLite.openDatabase({ name: 'Locket.db', location: 'default' });
+        
+        db.transaction((tx: any) => {
+            // Tạo bảng Friend nếu chưa có
+            tx.executeSql(
+                `CREATE TABLE IF NOT EXISTS Friend (    
+                    user_id TEXT NOT NULL,
+                    friend_id TEXT NOT NULL,
+                    friend_name TEXT,
+                    friend_avt TEXT,
+                    PRIMARY KEY (user_id, friend_id)
+                )`
+            );
+            
+            // Lặp qua từng bạn bè và thêm vào bảng Friend
+            data.forEach((friend: any) => {
+                tx.executeSql(
+                    `INSERT OR REPLACE INTO Friend (user_id, friend_id, friend_name, friend_avt) 
+                     VALUES (?, ?, ?, ?)`,
+                    [
+                        friend.user_id,      // user_id của bạn bè
+                        friend.friend_id,    // friend_id của bạn bè
+                        friend.friend_name,  // friend_name của bạn bè
+                        friend.friend_avt    // friend_avt của bạn bè
+                    ],
+                    (tx: any, results: any) => {
+                        console.log('User added or updated successfully');
+                    },
+                    (error: any) => {
+                        console.log('Error adding or updating friend:', error);
+                    }
+                );
+            });
+        });
+
+        // Đóng cơ sở dữ liệu sau khi xong
+        db.close(
+            () => {
+                console.log('Database closed successfully');
+            },
+            (error: any) => {
+                console.log('Error closing database:', error);
+            }
+        );
+    } catch (error) {
+        console.log("Không thể lưu data friend user", error);
     }
 }
 
@@ -168,7 +233,7 @@ async function Login(email: string, password : string)
     console.log(formData);
 
     try {
-        const response = await fetch('http://10.0.2.2:5115/api/login/email', 
+        const response = await fetch('http://192.168.43.64:5115/api/login/email', 
             {
             method: 'POST',
             body: formData, 
@@ -184,6 +249,7 @@ async function Login(email: string, password : string)
             console.log(data.token.accessToken);
             console.log(data.token.refreshToken);
             await saveUserData(data);
+            await saveFriendData();
         }
         return data;
     } 

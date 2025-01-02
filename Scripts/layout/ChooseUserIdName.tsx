@@ -149,7 +149,7 @@ async function CreateAccount(
     try
     {
         // Gửi yêu cầu POST với FormData
-        const response = await fetch('http://10.0.2.2:5115/api/user/create', {
+        const response = await fetch('http://192.168.43.64:5115/api/user/create', {
             method: 'POST',
             body: formData,
         });
