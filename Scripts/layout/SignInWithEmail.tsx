@@ -7,6 +7,7 @@ import FlagIcon from 'react-native-ico-flags';
 import sign_in_with_email from './frontend_logic/sign_in_with_email';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CONNECTION_IP } from '@env';
 
 
 
@@ -110,7 +111,7 @@ async function CheckEmail(email: string) {
     console.log(formData);
 
     try {
-        const response = await fetch('http://10.0.2.2:5115/api/login/valid-email', {
+        const response = await fetch(`http://${CONNECTION_IP}:5115/api/login/valid-email`, {
             method: 'POST',
             body: formData, 
         });

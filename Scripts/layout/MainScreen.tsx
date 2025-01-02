@@ -21,6 +21,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import DeleteAccountModal from './modals/DeleteAccountModal';
+import { CONNECTION_IP } from '@env';
 
 
 function MainScreen({navigation}: {navigation: any})
@@ -64,7 +65,7 @@ function MainScreen({navigation}: {navigation: any})
                 return;
             }
             const connection = new signalR.HubConnectionBuilder()
-                .withUrl("http://10.0.2.2:5115/chathub")
+                .withUrl(`http://${CONNECTION_IP}:5115/chathub`)
                 .withAutomaticReconnect()
                 .build();
             SetConnection(connection);

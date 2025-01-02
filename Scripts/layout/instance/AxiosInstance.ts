@@ -2,10 +2,11 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import dayjs from 'dayjs'
+import { CONNECTION_IP } from "@env";
 
 
 
-const BASE_URL = "http://10.0.2.2:5115";
+const BASE_URL = `http://${CONNECTION_IP}:5115`;
 let access_token = AsyncStorage.getItem("access_token");
 
 const AxiosInstance = axios.create({

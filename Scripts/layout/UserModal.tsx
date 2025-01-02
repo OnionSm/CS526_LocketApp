@@ -1,7 +1,7 @@
 import { Image, ImageBackground, Text, View, Button,
     TouchableOpacity, TextInput, Modal, ScrollView,
-    RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet} from 'react-native';
-    import { useRef, useState, useEffect , createContext, useContext, useCallback} from 'react';
+    RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet, Linking, Alert} from 'react-native';
+import { useRef, useState, useEffect , createContext, useContext, useCallback} from 'react';
 import React from 'react';
 import general_user_profile_styles from './styles/GeneralUserprofileStyle';
 import FeedbackModal from './FeedbackModal';
@@ -11,10 +11,10 @@ import { GestureHandlerRootView, PanGestureHandler } from 'react-native-gesture-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ChooseInfoScreen from './ChangeInfoModal';
 import {
-  BottomSheetModal,
-  BottomSheetView,
-  BottomSheetModalProvider,
-  BottomSheetScrollView
+    BottomSheetModal,
+    BottomSheetView,
+    BottomSheetModalProvider,
+    BottomSheetScrollView
 } from '@gorhom/bottom-sheet';
 import ChangeInfoModal from './ChangeInfoModal';
 import DeleteAccountModal from './modals/DeleteAccountModal';
@@ -22,6 +22,17 @@ import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
 import SQLite from 'react-native-sqlite-storage';
 import { UriParser } from './common/UriParser';
 import UserAvatar from 'react-native-user-avatar';
+
+const TiktokURL = 'https://www.tiktok.com/@locketcamera';
+const InstagramURL = 'https://www.instagram.com/locketcamera/';
+const TwitterURL = 'https://x.com/locketcamera';
+
+
+const handlePress = (url: string) => () => {
+    Linking.openURL(url)
+        .catch((err) => console.error('Error opening URL:', err));
+};
+
 
 const get_user_avt = (user_id: string) => {
     return new Promise((resolve, reject) => {
@@ -52,6 +63,7 @@ const get_user_avt = (user_id: string) => {
 export default function UserModal({navigation, first_name, last_name, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo, }:
     {navigation : any, first_name : string; last_name:  string; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void})
 {
+
 
     const [user_avt, set_user_avt] = useState<string | undefined>(undefined);
 
@@ -367,6 +379,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                 </View>
                 
 
+                 {/* Riêng tư và bảo mật */}
                 <View style={general_user_profile_styles.button_wrapper}>
                     <View style={general_user_profile_styles.extension_setting_zone}>
                         <View style={general_user_profile_styles.text_option_zone}>
@@ -380,6 +393,8 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                                 Riêng tư & bảo mật
                             </Text>
                         </View>
+
+                        {/* Tổng quát */}
                         <TouchableOpacity style={[general_user_profile_styles.medium_button, 
                             {marginBottom: 1},
                             {borderTopLeftRadius : 20},
@@ -405,12 +420,16 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+
+                        {/* Hiển thị tài khoản người dùng */}
                         <TouchableOpacity style={[general_user_profile_styles.medium_button,  
                             {marginBottom: 1},
                             {display: "flex"},
                             {justifyContent: "space-evenly"},
                             {alignItems: "center"},
-                            {flexDirection: "row"}]}>
+                            {flexDirection: "row"},
+                            {borderBottomLeftRadius: 20},
+                            {borderBottomRightRadius: 20}]}>
                             <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
                                 {marginLeft: 20},
                                 {marginRight: 20},
@@ -434,6 +453,196 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                 </View>
 
 
+                 {/* Giới thiệu */}
+                 <View style={general_user_profile_styles.button_wrapper}>
+                    <View style={general_user_profile_styles.extension_setting_zone}>
+                        <View style={general_user_profile_styles.text_option_zone}>
+                            <Icon name="favorite" size={24} color="#AAAAAA" />
+                            <Text style={{
+                                fontFamily: 'SF-Pro-Rounded-Bold',
+                                fontSize: 16,
+                                color: "#AAAAAA",
+                                marginLeft: 7 
+                            }}>
+                                Giới thiệu
+                            </Text>
+                        </View>
+
+                        {/* Tik tok */}
+                        <TouchableOpacity onPress={handlePress(TiktokURL)}
+                            style={[general_user_profile_styles.medium_button, 
+                                {marginBottom: 1},
+                                {borderTopLeftRadius : 20},
+                                {borderTopRightRadius: 20},
+                                {display: "flex"},
+                                {justifyContent: "space-evenly"},
+                                {alignItems: "center"},
+                                {flexDirection: "row"}]}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
+                                {marginRight: 20}]}>
+                                <Icon name="tiktok" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }
+                                }>
+                                    Tiktok
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
+
+
+                        {/* Instagram */}
+                        <TouchableOpacity onPress={handlePress(InstagramURL)}
+                            style={[general_user_profile_styles.medium_button, 
+                                {marginBottom: 0.5},
+                                {display: "flex"},
+                                {justifyContent: "space-evenly"},
+                                {alignItems: "center"},
+                                {flexDirection: "row"}]}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
+                                {marginRight: 20}]}>
+                                <Icon name="camera-alt" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }
+                                }>
+                                    Instagram
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
+
+                        
+                        {/* Twitter */}
+                        <TouchableOpacity onPress={handlePress(TwitterURL)}
+                            style={[general_user_profile_styles.medium_button, 
+                                {marginBottom: 0.5},
+                                {display: "flex"},
+                                {justifyContent: "space-evenly"},
+                                {alignItems: "center"},
+                                {flexDirection: "row"}]}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
+                                {marginRight: 20}]}>
+                                <Icon name="apps" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }
+                                }>
+                                    Twitter
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Chia sẻ */}
+                        <TouchableOpacity 
+                            style={[general_user_profile_styles.medium_button, 
+                                {marginBottom: 0.5},
+                                {display: "flex"},
+                                {justifyContent: "space-evenly"},
+                                {alignItems: "center"},
+                                {flexDirection: "row"}]}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
+                                {marginRight: 20}]}>
+                                <Icon name="share" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }
+                                }>
+                                    Chia sẻ
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
+
+                        {/* Điều khoản dịch vụ */}
+                        <TouchableOpacity onPress={() => navigation.navigate('TermsOfService')}
+                            style={[general_user_profile_styles.medium_button, 
+                                {marginBottom: 0.5},
+                                {display: "flex"},
+                                {justifyContent: "space-evenly"},
+                                {alignItems: "center"},
+                                {flexDirection: "row"}]}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
+                                {marginRight: 20}]}>
+                                <Icon name="policy" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }
+                                }>
+                                    Điều khoản dịch vụ
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
+
+                        
+
+                        {/* Chính sách quyền riêng tư */}
+                        <TouchableOpacity onPress={() => navigation.navigate('Policy')}
+                            style={[general_user_profile_styles.medium_button,  
+                            {marginBottom: 1},
+                            {display: "flex"},
+                            {justifyContent: "space-evenly"},
+                            {alignItems: "center"},
+                            {flexDirection: "row"},
+                            {borderBottomLeftRadius: 20},
+                            {borderBottomRightRadius: 20}]}>
+                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
+                                {marginLeft: 20},
+                                {marginRight: 20},
+                                {borderBottomLeftRadius: 20},
+                                {borderBottomRightRadius: 20}]}>
+                                <Icon name="lock" size={24} color="#AAAAAA" />
+                                <Text style={{
+                                    fontFamily: 'SF-Pro-Rounded-Bold',
+                                    fontSize: 16,
+                                    color: "#AAAAAA",
+                                    marginLeft: 5 
+                                }}>
+                                    Chính sách quyền riêng tư
+                                </Text>
+                            </View>
+                            <View style={[{flex: 1}]}>
+                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+
+                {/* Vùng nguy hiểm */}
                 <View style={general_user_profile_styles.button_wrapper}>
                     <View style={general_user_profile_styles.extension_setting_zone}>
                         <View style={general_user_profile_styles.text_option_zone}>
@@ -447,6 +656,9 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                                 Vùng nguy hiểm
                             </Text>
                         </View>
+
+                       
+                        {/* Đăng xuất */}
                         <TouchableOpacity style={[general_user_profile_styles.medium_button, 
                             {marginBottom: 1},
                             {borderTopLeftRadius : 20},
@@ -473,6 +685,8 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+
+                        {/* Xoá tài khoản */}
                         <TouchableOpacity style={[general_user_profile_styles.medium_button,  
                             {marginBottom: 1},
                             {display: "flex"},
@@ -493,7 +707,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                                     color: "#AAAAAA",
                                     marginLeft: 5 
                                 }}>
-                                 Xóa tài khoản
+                                    Xóa tài khoản
                                 </Text>
                             </View>
                             <View style={[{flex: 1}]}>
@@ -510,20 +724,25 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      borderTopLeftRadius: 45,
-      borderTopRightRadius:45,
-      backgroundColor: '#050505',
+        flex: 1,
+        borderTopLeftRadius: 45,
+        borderTopRightRadius:45,
+        backgroundColor: '#050505',
     },
     contentContainer: 
     {
-      flex: 1,
-      alignItems: 'center',
-      borderTopLeftRadius: 45,
-      borderTopRightRadius:45,
-      backgroundColor: "#242424"
+        flex: 1,
+        alignItems: 'center',
+        borderTopLeftRadius: 45,
+        borderTopRightRadius:45,
+        backgroundColor: "#242424"
     },
-  });
+    icon: {
+        width: 24,
+        height: 24,
+        marginRight: 10,
+    },
+    });
 
 const log_out = (navigation : any) => {
     try
