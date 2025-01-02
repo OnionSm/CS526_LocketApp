@@ -25,6 +25,10 @@ import DeleteAccountModal from './Scripts/layout/modals/DeleteAccountModal';
 import ConfirmDeleteModal from './Scripts/layout/modals/ConfirmDeleteModal';
 import ErrorDeleteModal from './Scripts/layout/modals/ErrorDeleteModal';
 import AvatarImageBottomSheet from './Scripts/layout/bottom_sheets/AvatarImageBottomSheet';
+import MainScreenHeader from './Scripts/layout/components/MainScreenHeader';
+import StoryBottomBar from './Scripts/layout/components/StoryBottomBar';
+import StoryItem from './Scripts/layout/components/StoryItem';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +40,21 @@ function MainApp() {
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="StoryItem" 
+          component={StoryItem} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="StoryBottomBar" 
+          component={StoryBottomBar} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="MainScreenHeader" 
+          component={MainScreenHeader} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
