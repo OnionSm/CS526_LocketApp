@@ -110,22 +110,6 @@ function MainScreen({navigation}: {navigation: any})
     }, []);  // [] đảm bảo useEffect chỉ chạy 1 lần khi component mount
 
 
-    
-    const devices = Camera.getAvailableCameraDevices();
-    const device = getCameraDevice(devices, 'back');
-    const format = useCameraFormat(device, [
-        { videoAspectRatio: 1 }, // Tỷ lệ 1:1
-        { videoResolution: { width: 1080, height: 1080 } },
-        { fps: 30 }
-      ])
-    const [hasPermission, setHasPermission] = useState(false);
-    const getPermission = async () => {
-        const status = await Camera.requestCameraPermission();
-        setHasPermission(status === "granted");
-        return;
-    };
-
-    if(!hasPermission)
     const { width, height } = Dimensions.get('window');
     const [isModalVisible, setModalVisible] = useState(false);
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
