@@ -9,7 +9,7 @@ import SQLite from 'react-native-sqlite-storage';
 import { UriParser } from './common/UriParser';
 import { sqliteService } from './common/sqliteService';
 import AxiosInstance from './instance/AxiosInstance';
-
+import { CONNECTION_IP } from '@env';
 const saveUserData = async (data: any) => {
     try 
     {
@@ -233,7 +233,7 @@ async function Login(email: string, password : string)
     console.log(formData);
 
     try {
-        const response = await fetch('http://192.168.43.64:5115/api/login/email', 
+        const response = await fetch(`http://${CONNECTION_IP}:5115/api/login/email`, 
             {
             method: 'POST',
             body: formData, 

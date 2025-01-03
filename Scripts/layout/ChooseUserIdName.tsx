@@ -5,7 +5,7 @@ import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput
 import Icon from 'react-native-vector-icons/AntDesign';
 import choose_username_style from './styles/ChooseUserNameStyle';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { CONNECTION_IP } from '@env';
 
 
 const saveToken = async (access_token: string, refresh_token: string) => {
@@ -149,7 +149,7 @@ async function CreateAccount(
     try
     {
         // Gửi yêu cầu POST với FormData
-        const response = await fetch('http://192.168.43.64:5115/api/user/create', {
+        const response = await fetch(`http://${CONNECTION_IP}:5115/api/user/create`, {
             method: 'POST',
             body: formData,
         });
@@ -185,7 +185,7 @@ async function Login(email: string, password : string)
     console.log(formData);
 
     try {
-        const response = await fetch('http://10.0.2.2:5115/api/login/email', 
+        const response = await fetch(`http://${CONNECTION_IP}:5115/api/login/email`, 
             {
             method: 'POST',
             body: formData, 
