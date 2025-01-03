@@ -22,6 +22,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import DeleteAccountModal from './modals/DeleteAccountModal';
+import { CONNECTION_IP } from '@env';
 import RNFS from 'react-native-fs'; 
 
 
@@ -71,6 +72,60 @@ function MainScreen({navigation}: {navigation: any})
     }, [first_name, last_name])
 
 
+    const [signalR_connection, SetConnection] = useState<signalR.HubConnection | null>(null);
+    useEffect(() => {
+        const GetUserMessage = async () => {
+            if(signalR_connection != null)
+            {
+                console.log("has connect")
+                return;
+            }
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(`http://${CONNECTION_IP}:5115/chathub`)
+                .withAutomaticReconnect()
+                .build();
+            SetConnection(connection);
+            // Lắng nghe sự kiện 'SendMessage' từ server
+            connection.on("SendMessage", (message) => {
+                console.log("Received message from server:", message);  
+            });
+    
+            try {
+                await connection.start();
+                console.log("SignalR connected");
+            } catch (err) {
+                console.error("Connection failed:", err);
+            }
+    
+            // Dọn dẹp kết nối khi component tháo dỡ
+            return () => {
+                if (connection) {
+                    connection.stop();  // Dừng kết nối SignalR
+                    console.log("SignalR connection stopped");
+                }
+            };
+        };
+    
+        GetUserMessage();
+    }, []);  // [] đảm bảo useEffect chỉ chạy 1 lần khi component mount
+
+
+    
+    const devices = Camera.getAvailableCameraDevices();
+    const device = getCameraDevice(devices, 'back');
+    const format = useCameraFormat(device, [
+        { videoAspectRatio: 1 }, // Tỷ lệ 1:1
+        { videoResolution: { width: 1080, height: 1080 } },
+        { fps: 30 }
+      ])
+    const [hasPermission, setHasPermission] = useState(false);
+    const getPermission = async () => {
+        const status = await Camera.requestCameraPermission();
+        setHasPermission(status === "granted");
+        return;
+    };
+
+    if(!hasPermission)
     const { width, height } = Dimensions.get('window');
     const [isModalVisible, setModalVisible] = useState(false);
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);

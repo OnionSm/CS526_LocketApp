@@ -25,6 +25,8 @@ import DeleteAccountModal from './Scripts/layout/modals/DeleteAccountModal';
 import ConfirmDeleteModal from './Scripts/layout/modals/ConfirmDeleteModal';
 import ErrorDeleteModal from './Scripts/layout/modals/ErrorDeleteModal';
 import AvatarImageBottomSheet from './Scripts/layout/bottom_sheets/AvatarImageBottomSheet';
+import TermsOfService from './Scripts/layout/TermsOfService';
+import Policy from './Scripts/layout/Policy';
 import MainScreenHeader from './Scripts/layout/components/MainScreenHeader';
 import StoryBottomBar from './Scripts/layout/components/StoryBottomBar';
 import StoryItem from './Scripts/layout/components/StoryItem';
@@ -73,6 +75,11 @@ function MainApp() {
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
+          name="UserModal" 
+          component={UserModal} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
           name="AddFriendScreen" 
           component={AddFriendScreen} 
           options={{ headerShown: false }} 
@@ -106,6 +113,16 @@ function MainApp() {
         <Stack.Screen 
           name="SignInWithEmail" 
           component={SignInWithEmail} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="TermsOfService" 
+          component={TermsOfService} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="Policy" 
+          component={Policy} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
