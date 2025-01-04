@@ -61,9 +61,6 @@ function ChooseUserIdName({navigation}: {navigation: any})
         <View style={choose_username_style.main_view}>
             {/* Back Zone */}
             <View style={choose_username_style.backzone}>
-                {/* <TouchableOpacity style={choose_username_style.backbutton}>
-                    <Icon name="left" size={24} color="#FFFFFF" /> 
-                </TouchableOpacity> */}
             </View>
 
             {/* Type Password Zone */}
@@ -144,7 +141,7 @@ async function CreateAccount(
         formData.append('LastName', last_name);
         formData.append('Email', email);
         formData.append('Password', password);
-        console.log(formData)
+        console.log(formData);
 
     try
     {
@@ -155,7 +152,8 @@ async function CreateAccount(
         });
 
         // Kiểm tra phản hồi từ server
-        if (!response.ok) {
+        if (!response.ok) 
+        {
             throw new Error('Network response was not ok');
         }
 

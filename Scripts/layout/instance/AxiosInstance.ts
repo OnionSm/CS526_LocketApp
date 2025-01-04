@@ -15,22 +15,16 @@ const AxiosInstance = axios.create({
 });
 
 AxiosInstance.interceptors.request.use(async (req) => {
-    // Get the access token from AsyncStorage asynchronously
     let access_token = await AsyncStorage.getItem("access_token");
-    //console.log("access_token : ", access_token);
     if (access_token) 
     {
         req.headers.Authorization = `Bearer ${access_token}`;
-
-        // Decode the token to check expiration
         const decoded_token = jwtDecode(access_token);
-        //console.log(decoded_token);
         const isExpired = decoded_token.exp!= undefined ? dayjs.unix(decoded_token.exp).diff(dayjs()) < 1 : true;
         if (!isExpired) return req; 
     }
 
     const refresh_token = await AsyncStorage.getItem("refresh_token");
-    //console.log(refresh_token);
     if (refresh_token) 
     {
         
@@ -39,7 +33,7 @@ AxiosInstance.interceptors.request.use(async (req) => {
 
         const response = await axios.post(`${BASE_URL}/api/refresh-token`, formData, {
             headers: {
-                'Content-Type': 'multipart/form-data', // Đảm bảo gửi đúng Content-Type
+                'Content-Type': 'multipart/form-data', 
             }
         });
 

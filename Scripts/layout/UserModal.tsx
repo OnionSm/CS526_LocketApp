@@ -22,6 +22,7 @@ import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
 import SQLite from 'react-native-sqlite-storage';
 import { UriParser } from './common/UriParser';
 import UserAvatar from 'react-native-user-avatar';
+import { SqliteDbContext } from './context/SqliteDbContext';
 
 const TiktokURL = 'https://www.tiktok.com/@locketcamera';
 const InstagramURL = 'https://www.instagram.com/locketcamera/';
@@ -34,9 +35,9 @@ const handlePress = (url: string) => () => {
 };
 
 
-const get_user_avt = (user_id: string) => {
-    return new Promise((resolve, reject) => {
-      const db = SQLite.openDatabase({name: 'Locket.db', location: 'default'});
+const get_user_avt = (user_id: string, db: any) => {
+    return new Promise((resolve, reject) => 
+    {
       db.transaction((tx: any) => {
         tx.executeSql(
           'SELECT * FROM User WHERE user_id = ?',
@@ -49,7 +50,7 @@ const get_user_avt = (user_id: string) => {
             {
               user_avt = rows.item(0).userAvatarURL; 
             }
-            resolve(user_avt); 
+            resolve(user_avt !== null ? user_avt : ""); 
           },
           (error: any) => {
             reject('Error retrieving user avatar: ' + error); 
@@ -60,9 +61,10 @@ const get_user_avt = (user_id: string) => {
   };
   
 
-export default function UserModal({navigation, first_name, last_name, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo, }:
-    {navigation : any, first_name : string; last_name:  string; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void})
+export default function UserModal({navigation, first_name, last_name, set_first_name, set_last_name, user_modal_refs}:
+    {navigation : any, first_name : string; last_name:  string; set_first_name: (name: string) => void; set_last_name: (name: string) => void;  user_modal_refs: any})
 {
+    const sqlite_db_context = useContext(SqliteDbContext);
     var [user_avt_uri, set_user_avt] = useState<string | undefined>();
 
     useEffect(() => {
@@ -75,7 +77,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
               console.warn("No user ID found");
               return;
             }
-            const avatar = await get_user_avt(publicUserId);
+            const avatar = await get_user_avt(publicUserId, sqlite_db_context.db);
       
             if (typeof avatar !== "string" || typeof avatar === "undefined") 
             {
@@ -92,7 +94,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
       }, []);
     
       
-
+// --------------------------------------------- FEEDBACK AND REPORT MODAL -------------------------------------
     const feedbackModalRef = useRef<BottomSheetModal>(null);
     const reportModalRef = useRef<BottomSheetModal>(null);
     const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
@@ -117,6 +119,8 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
         setIsReportVisible(false);
         reportModalRef.current?.dismiss();
     };
+
+// -----------------------------------------------------------------------------------------------------------------------------------
     
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
     const toggle_delete_account_modal = () => 
@@ -134,13 +138,35 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
     const firstLetter = first_name ? first_name[0].toUpperCase() : '';
     const secondLetter = last_name ? last_name[0].toUpperCase() : '';
 
+
+// -------------------------------- CHANGE INFO MODAL --------------------------------------------------
+    const change_info_modal_ref = useRef<BottomSheetModal>(null);
+        const [change_info_modal_visible, set_change_info_modal_visible] = useState(false);
+
+    const handlePresentChangeInfoModal = useCallback(() => {
+        change_info_modal_ref.current?.present();
+    }, []);
+
+    const handleCloseChangeInfoModal = useCallback(() => {
+        change_info_modal_ref.current?.dismiss();
+      }, []);
+
+// --------------------------------------------------------------------------------------------------------
+
+
+
+
     return (
         <BottomSheetModal
-            ref={(ref) => (modal_refs.current[modal_name] = ref)}
+            ref={user_modal_refs}
             backgroundStyle={{ backgroundColor: '#242424' }}
             handleStyle={{height:10}}
+            containerStyle={{
+                zIndex: 11,
+              }}
             handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}>
             <AvatarImageBottomSheet set_user_avatar={set_user_avt} isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
+            <ChangeInfoModal set_first_name={set_first_name} set_last_name={set_last_name} modal_refs={change_info_modal_ref} handleCloseModal={handleCloseChangeInfoModal}></ChangeInfoModal>
             <DeleteAccountModal navigation={navigation} isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal>
             <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
                 <View style={general_user_profile_styles.user_avatar_zone}>
@@ -148,7 +174,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                     <View style={[general_user_profile_styles.user_avatar_child_zone]}>
                         <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
                         onPress={() => {toggle_avatar_image_modal()}}>
-                            {user_avt_uri !== ""? (
+                            {user_avt_uri != null && user_avt_uri != undefined &&  user_avt_uri !== "" ? (
                                  <Image style={general_user_profile_styles.main_avt}
                                  source={{uri : user_avt_uri}}>
                                  </Image>
@@ -173,7 +199,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                         <TouchableOpacity style={general_user_profile_styles.user_setting_background}
                         onPress={() =>
                         {
-                            onClickChangeInfo(change_info_modal_name);
+                            handlePresentChangeInfoModal();
                         }
                         }>
                             <Text style= {general_user_profile_styles.general_text}>Sửa thông tin</Text>
