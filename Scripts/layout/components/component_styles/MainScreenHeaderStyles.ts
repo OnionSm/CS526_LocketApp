@@ -7,10 +7,16 @@ const main_screen_header_styles = StyleSheet.create({
         width: width,
         height: height * 0.15,
         display: "flex",
+        position: "absolute",
         flexDirection: "row",
         justifyContent: "space-between",
         alignContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        backgroundColor: "#050505",
+        top: 0,
+        left: 0,
+        zIndex: 10
+ 
     },
     add_friend_text:
     {

@@ -30,6 +30,7 @@ const shareLink = async () => {
 function AddFriendScreen({ navigation }: {navigation: any })
 {
     return(
+        
         <View style={add_friend_screen_style.main_view}>
             {/* Find Zone */}
             <View style={add_friend_screen_style.find_zone}>
@@ -177,7 +178,7 @@ function AddFriendScreen({ navigation }: {navigation: any })
                 <TouchableOpacity style={add_friend_screen_style.continuebutton}
                 onPress={async () => 
                 {
-                    navigation.navigate("MainScreen");
+                    navigation.navigate("MainScreenRoot");
                 }
                 }>
                     <Text style ={add_friend_screen_style.continuetext}>Tiếp tục</Text>

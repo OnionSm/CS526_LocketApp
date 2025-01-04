@@ -30,124 +30,107 @@ import Policy from './Scripts/layout/Policy';
 import MainScreenHeader from './Scripts/layout/components/MainScreenHeader';
 import StoryBottomBar from './Scripts/layout/components/StoryBottomBar';
 import StoryItem from './Scripts/layout/components/StoryItem';
-
-
+import MainScreenStoryTab from './Scripts/layout/MainScreenStoryTab';
+import MainScreenRoot from './Scripts/layout/MainScreenRoot';
+import AddFriendModal from './Scripts/layout/AddFriendModal';
+import { SqliteDbProvider } from './Scripts/layout/context/SqliteDbContext';
+import { IntervalProvider } from './Scripts/layout/context/IntervalContext';
 const Stack = createNativeStackNavigator();
 
 function MainApp() {
   return (
+    <IntervalProvider>
     <UserMessageProvider>
-      <NavigationContainer>
-      <Stack.Navigator initialRouteName="SignInScreen">
-        <Stack.Screen 
-          name="SignInScreen" 
-          component={SignInScreen} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="StoryItem" 
-          component={StoryItem} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="StoryBottomBar" 
-          component={StoryBottomBar} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="MainScreenHeader" 
-          component={MainScreenHeader} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="PersonalChatScreen" 
-          component={PersonalChatScreen} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="AvatarImageBottomSheet" 
-          component={AvatarImageBottomSheet} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="MessageScreen" 
-          component={MessageScreen} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="UserModal" 
-          component={UserModal} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="AddFriendScreen" 
-          component={AddFriendScreen} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="OfficialStory" 
-          component={OfficialStory} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="ChooseUserIdName" 
-          component={ChooseUserIdName} 
-          options={{ headerShown: false }} 
-        />
+      <SqliteDbProvider>
+        <NavigationContainer>
+        <Stack.Navigator initialRouteName="SignInScreen">
+          <Stack.Screen 
+            name="SignInScreen" 
+            component={SignInScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="MainScreenRoot" 
+            component={MainScreenRoot} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="PersonalChatScreen" 
+            component={PersonalChatScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="AvatarImageBottomSheet" 
+            component={AvatarImageBottomSheet} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="MessageScreen" 
+            component={MessageScreen} 
+            options={{ headerShown: false }} 
+          />
+          
+          <Stack.Screen 
+            name="AddFriendScreen" 
+            component={AddFriendScreen} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="OfficialStory" 
+            component={OfficialStory} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="ChooseUserIdName" 
+            component={ChooseUserIdName} 
+            options={{ headerShown: false }} 
+          />
 
-        <Stack.Screen 
-          name="SignUpWithEmail" 
-          component={SignUpWithEmail} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="SignUpChoosePassword" 
-          component={SignUpChoosePassword} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="GetPhoneNumber" 
-          component={GetPhoneNumber} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="SignInWithEmail" 
-          component={SignInWithEmail} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="TermsOfService" 
-          component={TermsOfService} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="Policy" 
-          component={Policy} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="ChoosePassword" 
-          component={ChoosePassword} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="ChooseUserName" 
-          component={ChooseUserName} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="GeneralUserProfile" 
-          component={GeneralUserProfile} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
-          name="MainScreen" 
-          component={MainScreen} 
-          options={{ headerShown: false }} 
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+          <Stack.Screen 
+            name="SignUpWithEmail" 
+            component={SignUpWithEmail} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="SignUpChoosePassword" 
+            component={SignUpChoosePassword} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="GetPhoneNumber" 
+            component={GetPhoneNumber} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="SignInWithEmail" 
+            component={SignInWithEmail} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="TermsOfService" 
+            component={TermsOfService} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="Policy" 
+            component={Policy} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="ChoosePassword" 
+            component={ChoosePassword} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="ChooseUserName" 
+            component={ChooseUserName} 
+            options={{ headerShown: false }} 
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+      </SqliteDbProvider>
     </UserMessageProvider>
+    </IntervalProvider>
     
   );
 }

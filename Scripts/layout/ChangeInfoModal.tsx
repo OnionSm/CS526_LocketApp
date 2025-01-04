@@ -14,8 +14,8 @@ import {
 import AxiosInstance from "./instance/AxiosInstance";
 import Toast from 'react-native-toast-message';
 
-function ChangeInfoModal({set_first_name, set_last_name, modal_refs, modal_name, handleCloseModal} : 
-    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modal_refs : any, modal_name: string, handleCloseModal : (key: string) => void })
+function ChangeInfoModal({set_first_name, set_last_name, modal_refs, handleCloseModal} : 
+    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modal_refs : any, handleCloseModal : () => void })
 {
 
     const [first_name, SetFirstName] = useState("");
@@ -75,9 +75,12 @@ function ChangeInfoModal({set_first_name, set_last_name, modal_refs, modal_name,
     // renders
     return (
         <BottomSheetModal
-            ref={(ref) => (modal_refs.current[modal_name] = ref)}
+            ref={modal_refs}
             backgroundStyle={{ backgroundColor: '#242424' }}
             handleStyle={{height:10}}
+            containerStyle={{
+                zIndex: 12,
+              }}
             handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}
         >
             <BottomSheetView style={styles.contentContainer}>
@@ -116,7 +119,7 @@ function ChangeInfoModal({set_first_name, set_last_name, modal_refs, modal_name,
                         if(CanSaveUserName(first_name, last_name))
                         {
                             await SaveUserName();
-                            handleCloseModal(modal_name);
+                            handleCloseModal();
                         }
                         else
                         {

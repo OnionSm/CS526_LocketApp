@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import {useState, type PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -9,10 +9,14 @@ import SQLite from 'react-native-sqlite-storage';
 import { UriParser } from './common/UriParser';
 import { sqliteService } from './common/sqliteService';
 import AxiosInstance from './instance/AxiosInstance';
+import { CONNECTION_IP } from '@env';
+import { SqliteDbContext } from './context/SqliteDbContext';
+import { GET_FRIEND_DATA_COOLDOWN } from "@env"
 
-const saveUserData = async (data: any) => {
+const saveUserData = async (data: any, db: any) => {
     try 
     {
+        
         await AsyncStorage.setItem("user_id", data.user.id);
         await AsyncStorage.setItem("first_name", data.user.firstName);
         await AsyncStorage.setItem("last_name", data.user.lastName);
@@ -25,8 +29,7 @@ const saveUserData = async (data: any) => {
         await AsyncStorage.setItem("refresh_token", data.token.refreshToken);
         console.log("Lưu token thành công");
 
-        const db = SQLite.openDatabase(
-            {name: 'Locket.db', location: 'default'});
+     
         db.transaction((tx: any) => {
             tx.executeSql(
               `CREATE TABLE IF NOT EXISTS User (
@@ -73,14 +76,6 @@ const saveUserData = async (data: any) => {
                 }
               );
           });
-        db.close(
-            () => {
-            console.log('Database closed successfully');
-            },
-            (error: any) => {
-            console.log('Error closing database:', error);
-            }
-        );
     } 
     catch (error) 
     {
@@ -88,44 +83,43 @@ const saveUserData = async (data: any) => {
     }
 }
 
-const saveFriendData = async () => {
-    try {
-        // Gọi API để lấy danh sách bạn bè
+const saveFriendData = async (db: any) => 
+{
+    try 
+    {   
+        var user_id = await AsyncStorage.getItem("user_id");
         var res = await AxiosInstance.get("api/user/friend/info");
-        if (res.status !== 200) {
+        if (res.status !== 200) 
+        {
             console.log("Không lấy được dữ liệu bạn bè từ API");
             return;
         }
 
-        // Lấy dữ liệu bạn bè từ API
-        var data = res.data;
-        
-        console.log("DATA Friend:", data); // Kiểm tra dữ liệu bạn bè
-        
-        const db = SQLite.openDatabase({ name: 'Locket.db', location: 'default' });
+        var data = res.data;  
         
         db.transaction((tx: any) => {
-            // Tạo bảng Friend nếu chưa có
             tx.executeSql(
                 `CREATE TABLE IF NOT EXISTS Friend (    
                     user_id TEXT NOT NULL,
                     friend_id TEXT NOT NULL,
-                    friend_name TEXT,
+                    first_name TEXT,
+                    last_name TEXT,
                     friend_avt TEXT,
                     PRIMARY KEY (user_id, friend_id)
                 )`
             );
             
-            // Lặp qua từng bạn bè và thêm vào bảng Friend
             data.forEach((friend: any) => {
+                
                 tx.executeSql(
-                    `INSERT OR REPLACE INTO Friend (user_id, friend_id, friend_name, friend_avt) 
-                     VALUES (?, ?, ?, ?)`,
+                    `INSERT OR REPLACE INTO Friend (user_id, friend_id, first_name, last_name, friend_avt) 
+                     VALUES (?, ?, ?, ?, ?)`,
                     [
-                        friend.user_id,      // user_id của bạn bè
-                        friend.friend_id,    // friend_id của bạn bè
-                        friend.friend_name,  // friend_name của bạn bè
-                        friend.friend_avt    // friend_avt của bạn bè
+                        user_id,      
+                        friend.id,
+                        friend.first_name,  
+                        friend.last_name,
+                        friend.userAvatarURL    
                     ],
                     (tx: any, results: any) => {
                         console.log('User added or updated successfully');
@@ -136,23 +130,44 @@ const saveFriendData = async () => {
                 );
             });
         });
-
-        // Đóng cơ sở dữ liệu sau khi xong
-        db.close(
-            () => {
-                console.log('Database closed successfully');
-            },
-            (error: any) => {
-                console.log('Error closing database:', error);
-            }
-        );
-    } catch (error) {
+    } catch (error) 
+    {
         console.log("Không thể lưu data friend user", error);
     }
 }
 
 function ChoosePassword({ navigation }: {navigation: any })
 {
+
+// ------------------------------ SET DATABASE --------------------------------
+    const sqlite_db_context = useContext(SqliteDbContext);
+
+    useEffect(() =>{
+        const open_database = async () =>
+        {
+            const db = SQLite.openDatabase(
+                {name: 'Locket.db', location: 'default'});
+            sqlite_db_context.set_db(db);
+        };
+        open_database();
+    }, []);
+
+// -------------------------------------------------------------------------------
+
+
+
+// ----------------------------------------  SET FRIEND DATA ---------------------------------
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            saveFriendData(sqlite_db_context.db); 
+        }, Number(GET_FRIEND_DATA_COOLDOWN)); 
+        return () => clearInterval(intervalId); 
+    }, []);
+
+// ----------------------------------------------------------------------------------------------
+
+
     const [login_email, setEmail] = useState("");
     const [input_password, SetPassword] = useState("");
     
@@ -168,8 +183,9 @@ function ChoosePassword({ navigation }: {navigation: any })
         LoadEmail();
     }, []);
 
-    
 
+
+    
     return(
         <View style={change_password_styles.main_view}>
             {/* Back Zone */}
@@ -203,14 +219,14 @@ function ChoosePassword({ navigation }: {navigation: any })
                 <TouchableOpacity style={change_password_styles.continuebutton}
                 onPress={async() => 
                 {
-                    var data = await Login(login_email, input_password);
+                    var data = await Login(login_email, input_password, sqlite_db_context.db);
                     if(!data)
                     {
                         console.log("Mật khẩu không chính xác xin vui lòng thử lại");
                     }
                     else
                     {
-                        navigation.navigate("MainScreen");
+                        navigation.navigate("MainScreenRoot");
                     }
                     
                 }
@@ -224,7 +240,7 @@ function ChoosePassword({ navigation }: {navigation: any })
 
 export default ChoosePassword
 
-async function Login(email: string, password : string) 
+async function Login(email: string, password : string, db: any) 
 {
     const formData = new FormData();
     formData.append('Email', email);
@@ -233,7 +249,7 @@ async function Login(email: string, password : string)
     console.log(formData);
 
     try {
-        const response = await fetch('http://192.168.43.64:5115/api/login/email', 
+        const response = await fetch(`http://${CONNECTION_IP}:5115/api/login/email`, 
             {
             method: 'POST',
             body: formData, 
@@ -248,8 +264,8 @@ async function Login(email: string, password : string)
         {
             console.log(data.token.accessToken);
             console.log(data.token.refreshToken);
-            await saveUserData(data);
-            await saveFriendData();
+            await saveUserData(data, db);
+            await saveFriendData(db);
         }
         return data;
     } 

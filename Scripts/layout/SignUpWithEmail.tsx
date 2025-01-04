@@ -9,6 +9,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CONNECTION_IP } from '@env';
 
+console.log(CONNECTION_IP);
+
 function SignUpWithEmail({navigation}: {navigation: any})
 {
     const [sign_up_email, setEmail] = useState("");
@@ -109,6 +111,7 @@ async function CheckEmail(email: string) {
     console.log(formData);
 
     try {
+        console.log(CONNECTION_IP);
         const response = await fetch(`http://${CONNECTION_IP}:5115/api/user/email`, {
             method: 'POST',
             body: formData, 

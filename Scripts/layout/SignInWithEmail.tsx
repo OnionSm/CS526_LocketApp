@@ -8,11 +8,28 @@ import sign_in_with_email from './frontend_logic/sign_in_with_email';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CONNECTION_IP } from '@env';
-
-
+import { CommonActions } from '@react-navigation/native';
 
 function SignInWithEmail({navigation}: {navigation: any})
 {
+    
+    const resetToCurrentScreen = (navigation: any, currentScreenName: string, params?: any) => {
+        navigation.dispatch(
+        CommonActions.reset({
+            index: 0, 
+            routes: [{ name: currentScreenName, params }],
+        })
+        );
+    };
+    
+    useEffect(() => 
+    {
+        const handleReset = () => {
+            resetToCurrentScreen(navigation, 'SignInWithEmail'); 
+          };
+    }, [])
+    
+
     const [login_email, setEmail] = useState("");
 
     useEffect(() => {
