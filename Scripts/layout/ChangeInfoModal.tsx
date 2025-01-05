@@ -1,25 +1,26 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, StyleSheet, Dimensions} from 'react-native';
+import { Alert, Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, StyleSheet, Dimensions} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import change_info_style from "./styles/ChangeInfoModalStyle";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
-  BottomSheetModal,
-  BottomSheetView,
-  BottomSheetModalProvider,
+    BottomSheetModal,
+    BottomSheetView,
+    BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import AxiosInstance from "./instance/AxiosInstance";
 import Toast from 'react-native-toast-message';
 
-function ChangeInfoModal({set_first_name, set_last_name, modal_refs, handleCloseModal} : 
-    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modal_refs : any, handleCloseModal : () => void })
+export default function ChangeInfoModal({ set_first_name, set_last_name, modalRef, onClose} : 
+    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modalRef : any; onClose : () => void})
 {
 
     const [first_name, SetFirstName] = useState("");
     const [last_name, SetLastName] = useState("");
+
+    const isFormValid = first_name.trim() !== '' && last_name.trim() !== '';
 
 
     const form_data = new FormData();
@@ -52,8 +53,7 @@ function ChangeInfoModal({set_first_name, set_last_name, modal_refs, handleClose
                 Toast.show({
                     type: 'error',
                     text1: 'Thay đổi tên người dùng không thành công!',
-                  });
-                  
+                    });
             }
             else
             {
@@ -62,7 +62,7 @@ function ChangeInfoModal({set_first_name, set_last_name, modal_refs, handleClose
             Toast.show({
                 type: 'success',
                 text1: 'Thay đổi tên người dùng thành công',
-              });
+                });
             }
         }
         catch(error)
@@ -71,92 +71,68 @@ function ChangeInfoModal({set_first_name, set_last_name, modal_refs, handleClose
         }
     }
 
-   
+    const HandlePress = () => {
+        try {
+            SaveUserName();
+            Alert.alert('Thành công',`Tên của bạn đã được thay đổi`);
+            SetFirstName('');
+            SetLastName('');
+            onClose();
+        }
+        catch{
+            Alert.alert('Lỗi', 'Không thể thực hiện thay đổi');
+            SetFirstName('');
+            SetLastName('');
+            onClose();
+        }
+    }
+
     // renders
     return (
         <BottomSheetModal
-            ref={modal_refs}
-            backgroundStyle={{ backgroundColor: '#242424' }}
-            handleStyle={{height:10}}
-            containerStyle={{
-                zIndex: 12,
-              }}
-            handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}
+            ref={modalRef}
+            snapPoints={['100%']}
+            backgroundStyle={{ backgroundColor: '#1F1F1F' }}
+            handleStyle={{ height: 10 }}
+            handleIndicatorStyle={[{ backgroundColor: '#505050', width: 45, height: 5 }]}
         >
-            <BottomSheetView style={styles.contentContainer}>
-            <View style={change_info_style.main_view}>
+        <BottomSheetView style={change_info_style.container}>
 
-                {/* Type Password Zone */}
-                <View style={change_info_style.getusernamezone}>
-                    <Text style={change_info_style.getusernamezonetitle}>Sửa tên của bạn</Text>
+            {/* Tiêu đề */}
+            <Text style={change_info_style.header}>Sửa tên của bạn</Text>
 
-                    <View style ={change_info_style.inputzone}>
-                        <TextInput  style={change_info_style.inputzonetext}
-                            placeholder="Họ"
-                            placeholderTextColor="#888888"
-                            value={first_name}
-                            onChangeText={n => SetFirstName(n)}>
+            {/* Nhập họ */}
+            <TextInput
+                style={change_info_style.input}
+                placeholder="Họ"
+                placeholderTextColor="#AAAAAA"
+                keyboardType="email-address"
+                onChangeText={SetFirstName}
+            />
 
-                        </TextInput>
-                        
-                    </View>
-                    <View style ={change_info_style.inputzone}>
-                        <TextInput  style={change_info_style.inputzonetext}
-                            placeholder="Tên"
-                            placeholderTextColor="#888888"
-                            value={last_name}
-                            onChangeText={n => SetLastName(n)}>
+            {/* Nhập tên */}
+            <TextInput
+                style={[change_info_style.input]}
+                placeholder="Tên"
+                placeholderTextColor="#AAAAAA"
+                onChangeText={SetLastName}
+            />
+        
+            {/* Button Zone */}
+            <TouchableOpacity 
+                style={[change_info_style.button, isFormValid && {backgroundColor: '#F1B202'}]}
+                onPress={HandlePress}
+                disabled={!isFormValid}
+            >
+                <Text style ={[isFormValid ? change_info_style.buttonTextActive : change_info_style.buttonTextInactive]}>Lưu</Text>
+            </TouchableOpacity>
 
-                        </TextInput>
-                    </View>
-                </View>
-
-                {/* Button Zone */}
-                <View style={change_info_style.buttonzone}>
-                    <TouchableOpacity style={change_info_style.continuebutton}
-                    onPress={async () => 
-                    {
-                        if(CanSaveUserName(first_name, last_name))
-                        {
-                            await SaveUserName();
-                            handleCloseModal();
-                        }
-                        else
-                        {
-                            console.log("Có lỗi trong quá trình xử lí");
-                        }
-                    }
-                    }>
-                        <Text style ={change_info_style.continuetext}>Lưu</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-            </BottomSheetView>
+        </BottomSheetView>
         </BottomSheetModal>
     );
 };
-
-export default ChangeInfoModal
 
 function CanSaveUserName(first_name: string , last_name: string)
 {
     return first_name.length > 0 && last_name.length > 0;
 }
-
-
-const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      borderTopLeftRadius: 45,
-      borderTopRightRadius:45,
-      backgroundColor: '#050505',
-    },
-    contentContainer: 
-    {
-      flex: 1,
-      alignItems: 'center',
-      borderTopLeftRadius: 45,
-      borderTopRightRadius:45,
-      backgroundColor: "#242424"
-    },
-  });

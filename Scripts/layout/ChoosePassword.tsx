@@ -32,7 +32,7 @@ const saveUserData = async (data: any, db: any) => {
      
         db.transaction((tx: any) => {
             tx.executeSql(
-              `CREATE TABLE IF NOT EXISTS User (
+                `CREATE TABLE IF NOT EXISTS User (
                 user_id TEXT PRIMARY KEY,
                 publicUserId TEXT NOT NULL DEFAULT '',
                 firstName TEXT NOT NULL,
@@ -45,34 +45,34 @@ const saveUserData = async (data: any, db: any) => {
                 userAvatarURL TEXT,
                 friends TEXT,  -- This will store the list as a comma-separated string (you'll need to handle this in your application logic)
                 accountDeleted INTEGER DEFAULT 0  -- Use 0 for false, 1 for true
-              )`,
-              [],
-              () => {
+                )`,
+                [],
+                () => {
                 console.log('User table created successfully');
-              },
-              (error: any) => {
-                console.log('Error creating User table:', error);
-              }
-            );
-
-            tx.executeSql(
-                `INSERT OR REPLACE INTO User (user_id, publicUserId, firstName, lastName, phoneNumber, email, password, userAvatarURL) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                  data.user.id, 
-                  data.user.publicUserId, 
-                  data.user.firstName, 
-                  data.user.lastName, 
-                  data.user.phoneNumber, 
-                  data.user.email, 
-                  data.user.password,
-                  data.user.userAvatarURL
-                ],
-                (tx: any, results: any) => {
-                  console.log('User added or updated successfully');
                 },
                 (error: any) => {
-                  console.log('Error adding or updating user:', error);
+                    console.log('Error creating User table:', error);
+                }
+                );
+
+            tx.executeSql(
+                    `INSERT OR REPLACE INTO User (user_id, publicUserId, firstName, lastName, phoneNumber, email, password, userAvatarURL) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    data.user.id, 
+                    data.user.publicUserId, 
+                    data.user.firstName, 
+                    data.user.lastName, 
+                    data.user.phoneNumber, 
+                    data.user.email, 
+                    data.user.password,
+                    data.user.userAvatarURL
+                ],
+                (tx: any, results: any) => {
+                    console.log('User added or updated successfully');
+                },
+                (error: any) => {
+                    console.log('Error adding or updating user:', error);
                 }
               );
           });

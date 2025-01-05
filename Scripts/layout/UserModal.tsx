@@ -17,6 +17,8 @@ import {
     BottomSheetScrollView
 } from '@gorhom/bottom-sheet';
 import ChangeInfoModal from './ChangeInfoModal';
+import CheckPasswordModal from './CheckPasswordModal';
+import ChangeEmailModal from './ChangeEmailModal';
 import DeleteAccountModal from './modals/DeleteAccountModal';
 import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
 import SQLite from 'react-native-sqlite-storage';
@@ -41,22 +43,22 @@ const get_user_avt = (user_id: string, db: any) => {
       db.transaction((tx: any) => {
         tx.executeSql(
           'SELECT * FROM User WHERE user_id = ?',
-          [user_id],
-          (tx: any, results: any) => {
+            [user_id],
+            (tx: any, results: any) => {
             const rows = results.rows;
             let user_avt = null;
 
             if (rows.length > 0) 
             {
-              user_avt = rows.item(0).userAvatarURL; 
+                user_avt = rows.item(0).userAvatarURL; 
             }
             resolve(user_avt !== null ? user_avt : ""); 
           },
           (error: any) => {
             reject('Error retrieving user avatar: ' + error); 
-          }
+            }
         );
-      });
+        });
     });
   };
   
@@ -69,13 +71,13 @@ export default function UserModal({navigation, first_name, last_name, set_first_
 
     useEffect(() => {
         const getAvatar = async () => {
-          try 
-          {
+            try 
+            {
             const publicUserId = await AsyncStorage.getItem("user_id");
             if (!publicUserId) 
             {
-              console.warn("No user ID found");
-              return;
+                console.warn("No user ID found");
+                return;
             }
             const avatar = await get_user_avt(publicUserId, sqlite_db_context.db);
       
@@ -84,11 +86,11 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                 return;
             }
             set_user_avt(avatar);
-          } 
-          catch (error) 
-          {
+            } 
+            catch (error) 
+            {
             console.error("Error fetching avatar:", error);
-          }
+            }
         };
         getAvatar();
       }, []);
@@ -97,22 +99,16 @@ export default function UserModal({navigation, first_name, last_name, set_first_
 // --------------------------------------------- FEEDBACK AND REPORT MODAL -------------------------------------
     const feedbackModalRef = useRef<BottomSheetModal>(null);
     const reportModalRef = useRef<BottomSheetModal>(null);
+    const changeInfoModalRef = useRef<BottomSheetModal>(null);
+    const checkPasswordModalRef = useRef<BottomSheetModal>(null);
     const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
     const [isReportVisible, setIsReportVisible] = useState(false);
-
-    const openFeedbackModal = () => {
-        setIsFeedbackVisible(true);
-        feedbackModalRef.current?.present();
-    };
+    const [isChangeInfoVisible, setIsChangeInfoVisible] = useState(false);
+    const [isCheckPasswordVisible, setIsCheckPasswordVisible] = useState(false);
 
     const closeFeedbackModal = () => {
         setIsFeedbackVisible(false);
         feedbackModalRef.current?.dismiss();
-    };
-
-    const openReportModal = () => {
-        setIsReportVisible(true);
-        reportModalRef.current?.present();
     };
 
     const closeReportModal = () => {
@@ -121,6 +117,17 @@ export default function UserModal({navigation, first_name, last_name, set_first_
     };
 
 // -----------------------------------------------------------------------------------------------------------------------------------
+
+    const closeChangeInfoModal = () => {
+        setIsChangeInfoVisible(false);
+        changeInfoModalRef.current?.dismiss();
+    };
+
+    const closeCheckPasswordModal = () => {
+        setIsCheckPasswordVisible(false);
+        checkPasswordModalRef.current?.dismiss();
+    };
+
     
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
     const toggle_delete_account_modal = () => 
@@ -138,23 +145,14 @@ export default function UserModal({navigation, first_name, last_name, set_first_
     const firstLetter = first_name ? first_name[0].toUpperCase() : '';
     const secondLetter = last_name ? last_name[0].toUpperCase() : '';
 
+    const [FirstName, setFirstName] = useState(first_name);
+    const [LastName, setLastName] = useState(last_name);
+    const [isChangeInfo, setIsChangeInfo] = useState(false);
 
-// -------------------------------- CHANGE INFO MODAL --------------------------------------------------
-    const change_info_modal_ref = useRef<BottomSheetModal>(null);
-        const [change_info_modal_visible, set_change_info_modal_visible] = useState(false);
-
-    const handlePresentChangeInfoModal = useCallback(() => {
-        change_info_modal_ref.current?.present();
-    }, []);
-
-    const handleCloseChangeInfoModal = useCallback(() => {
-        change_info_modal_ref.current?.dismiss();
-      }, []);
-
-// --------------------------------------------------------------------------------------------------------
-
-
-
+    const handleChangeInfoPress = () => {
+        setIsChangeInfo(true);
+        changeInfoModalRef.current?.present() 
+    }
 
     return (
         <BottomSheetModal
@@ -166,7 +164,6 @@ export default function UserModal({navigation, first_name, last_name, set_first_
               }}
             handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}>
             <AvatarImageBottomSheet set_user_avatar={set_user_avt} isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
-            <ChangeInfoModal set_first_name={set_first_name} set_last_name={set_last_name} modal_refs={change_info_modal_ref} handleCloseModal={handleCloseChangeInfoModal}></ChangeInfoModal>
             <DeleteAccountModal navigation={navigation} isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal>
             <BottomSheetScrollView contentContainerStyle={styles.contentContainer}>
                 <View style={general_user_profile_styles.user_avatar_zone}>
@@ -187,7 +184,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                     {/* Username */}
                     <View style={general_user_profile_styles.username_zone}>
                         <Text style={general_user_profile_styles.username_text}
-                        >{first_name} {last_name}</Text>
+                        >{isChangeInfo ? FirstName : first_name} {isChangeInfo ? LastName : last_name}</Text>
                     </View>
 
                     {/* User Id and Change Profile */}
@@ -197,23 +194,26 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                         </View>
 
                         <TouchableOpacity style={general_user_profile_styles.user_setting_background}
-                        onPress={() =>
-                        {
-                            handlePresentChangeInfoModal();
-                        }
-                        }>
+                                            onPress={handleChangeInfoPress}
+                        >
                             <Text style= {general_user_profile_styles.general_text}>Sửa thông tin</Text>
                         </TouchableOpacity>
                     </View>
+                    <View>
+                        <ChangeInfoModal set_first_name={setFirstName} set_last_name={setLastName} modalRef={changeInfoModalRef} onClose={closeChangeInfoModal} />
+                    </View>
                 </View>
+                
+
+                {/* Mời bạn bè tham gia locket*/}
                 <View style={general_user_profile_styles.user_locket_share_zone}>
                     <View style={general_user_profile_styles.locket_share_background}>
                         <View style={general_user_profile_styles.locket_share_background_zone1}>
                         <View style={[general_user_profile_styles.mini_avatar_border]}>
                         {user_avt_uri !== "" ? (
-                                 <Image style={general_user_profile_styles.main_avt}
-                                 source={{uri : user_avt_uri}}>
-                                 </Image>
+                                    <Image style={general_user_profile_styles.main_avt}
+                                    source={{uri : user_avt_uri}}>
+                                    </Image>
                             ): (
                                 <UserAvatar size={35} name={`${first_name} ${last_name}`} />
                             )}
@@ -274,6 +274,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+
                         <TouchableOpacity style={[general_user_profile_styles.medium_button,
                             {borderBottomLeftRadius: 20},
                             {borderBottomRightRadius: 20},
@@ -318,7 +319,8 @@ export default function UserModal({navigation, first_name, last_name, set_first_
 
                         
                         {/* Thay đổi địa chỉ email */}
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button, 
+                        <TouchableOpacity onPress={() => checkPasswordModalRef.current?.present()}
+                            style={[general_user_profile_styles.medium_button, 
                             {marginBottom: 1},
                             {borderTopLeftRadius : 20},
                             {borderTopRightRadius: 20},
@@ -343,6 +345,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+                        <CheckPasswordModal modalRef={checkPasswordModalRef}/>
 
                         {/* Chia sẻ phản hồi */}
                         <TouchableOpacity  onPress={() => feedbackModalRef.current?.present()}
@@ -418,33 +421,6 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                             </Text>
                         </View>
 
-                        {/* Tổng quát */}
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button, 
-                            {marginBottom: 1},
-                            {borderTopLeftRadius : 20},
-                            {borderTopRightRadius: 20},
-                            {display: "flex"},
-                            {justifyContent: "space-evenly"},
-                            {alignItems: "center"},
-                            {flexDirection: "row"}]}>
-                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                {marginLeft: 20},
-                                {marginRight: 20}]}>
-                                <Icon name="person" size={24} color="#AAAAAA" />
-                                <Text style={{
-                                    fontFamily: 'SF-Pro-Rounded-Bold',
-                                    fontSize: 16,
-                                    color: "#AAAAAA",
-                                    marginLeft: 5 
-                                }}>
-                                    Tổng quát
-                                </Text>
-                            </View>
-                            <View style={[{flex: 1}]}>
-                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                            </View>
-                        </TouchableOpacity>
-
                         {/* Hiển thị tài khoản người dùng */}
                         <TouchableOpacity style={[general_user_profile_styles.medium_button,  
                             {marginBottom: 1},
@@ -453,6 +429,8 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                             {alignItems: "center"},
                             {flexDirection: "row"},
                             {borderBottomLeftRadius: 20},
+                            {borderTopLeftRadius:20},
+                            {borderTopRightRadius: 20},
                             {borderBottomRightRadius: 20}]}>
                             <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
                                 {marginLeft: 20},

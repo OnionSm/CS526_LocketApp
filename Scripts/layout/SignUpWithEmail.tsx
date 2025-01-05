@@ -44,7 +44,7 @@ function SignUpWithEmail({navigation}: {navigation: any})
             {/* Back Zone */}
             <View style={sign_in_with_email_styles.backzone}>
                 <TouchableOpacity style={sign_in_with_email_styles.backbutton}
-                 onPress={() => navigation.navigate("SignInScreen")}>
+                    onPress={() => navigation.navigate("SignInScreen")}>
                     <Icon name="arrow-back-ios" size={24} color="#FFFFFF" /> 
                 </TouchableOpacity>
             </View>
@@ -93,7 +93,7 @@ function SignUpWithEmail({navigation}: {navigation: any})
                         console.log(`Có lỗi khi nhập email`);
                     }
                 }
-                 }>
+                }>
                     <Text style ={sign_in_with_email_styles.continuetext}>Tiếp tục</Text>
                 </TouchableOpacity>
             </View>

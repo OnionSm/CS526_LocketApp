@@ -30,6 +30,9 @@ import Policy from './Scripts/layout/Policy';
 import MainScreenHeader from './Scripts/layout/components/MainScreenHeader';
 import StoryBottomBar from './Scripts/layout/components/StoryBottomBar';
 import StoryItem from './Scripts/layout/components/StoryItem';
+import ChangeEmailModal from './Scripts/layout/ChangeEmailModal';
+import CheckPasswordModal from './Scripts/layout/CheckPasswordModal';
+
 import MainScreenStoryTab from './Scripts/layout/MainScreenStoryTab';
 import MainScreenRoot from './Scripts/layout/MainScreenRoot';
 import AddFriendModal from './Scripts/layout/AddFriendModal';
