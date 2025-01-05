@@ -9,6 +9,7 @@ import SQLite from 'react-native-sqlite-storage';
 import { UriParser } from './common/UriParser';
 import { sqliteService } from './common/sqliteService';
 import AxiosInstance from './instance/AxiosInstance';
+import { CONNECTION_IP } from '@env';
 
 const saveUserData = async (data: any) => {
     try 
@@ -29,7 +30,7 @@ const saveUserData = async (data: any) => {
             {name: 'Locket.db', location: 'default'});
         db.transaction((tx: any) => {
             tx.executeSql(
-              `CREATE TABLE IF NOT EXISTS User (
+                `CREATE TABLE IF NOT EXISTS User (
                 user_id TEXT PRIMARY KEY,
                 publicUserId TEXT NOT NULL DEFAULT '',
                 firstName TEXT NOT NULL,
@@ -42,37 +43,37 @@ const saveUserData = async (data: any) => {
                 userAvatarURL TEXT,
                 friends TEXT,  -- This will store the list as a comma-separated string (you'll need to handle this in your application logic)
                 accountDeleted INTEGER DEFAULT 0  -- Use 0 for false, 1 for true
-              )`,
-              [],
-              () => {
+                )`,
+                [],
+                () => {
                 console.log('User table created successfully');
-              },
-              (error: any) => {
-                console.log('Error creating User table:', error);
-              }
-            );
-
-            tx.executeSql(
-                `INSERT OR REPLACE INTO User (user_id, publicUserId, firstName, lastName, phoneNumber, email, password, userAvatarURL) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                  data.user.id, 
-                  data.user.publicUserId, 
-                  data.user.firstName, 
-                  data.user.lastName, 
-                  data.user.phoneNumber, 
-                  data.user.email, 
-                  data.user.password,
-                  data.user.userAvatarURL
-                ],
-                (tx: any, results: any) => {
-                  console.log('User added or updated successfully');
                 },
                 (error: any) => {
-                  console.log('Error adding or updating user:', error);
+                    console.log('Error creating User table:', error);
                 }
-              );
-          });
+                );
+
+            tx.executeSql(
+                    `INSERT OR REPLACE INTO User (user_id, publicUserId, firstName, lastName, phoneNumber, email, password, userAvatarURL) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    data.user.id, 
+                    data.user.publicUserId, 
+                    data.user.firstName, 
+                    data.user.lastName, 
+                    data.user.phoneNumber, 
+                    data.user.email, 
+                    data.user.password,
+                    data.user.userAvatarURL
+                ],
+                (tx: any, results: any) => {
+                    console.log('User added or updated successfully');
+                },
+                (error: any) => {
+                    console.log('Error adding or updating user:', error);
+                }
+                );
+            });
         db.close(
             () => {
             console.log('Database closed successfully');
@@ -120,7 +121,7 @@ const saveFriendData = async () => {
             data.forEach((friend: any) => {
                 tx.executeSql(
                     `INSERT OR REPLACE INTO Friend (user_id, friend_id, friend_name, friend_avt) 
-                     VALUES (?, ?, ?, ?)`,
+                        VALUES (?, ?, ?, ?)`,
                     [
                         friend.user_id,      // user_id của bạn bè
                         friend.friend_id,    // friend_id của bạn bè
@@ -233,7 +234,7 @@ async function Login(email: string, password : string)
     console.log(formData);
 
     try {
-        const response = await fetch('http://192.168.43.64:5115/api/login/email', 
+        const response = await fetch(`http://${CONNECTION_IP}:5115/api/login/email`, 
             {
             method: 'POST',
             body: formData, 

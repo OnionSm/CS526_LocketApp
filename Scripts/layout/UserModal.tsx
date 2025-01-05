@@ -17,6 +17,8 @@ import {
     BottomSheetScrollView
 } from '@gorhom/bottom-sheet';
 import ChangeInfoModal from './ChangeInfoModal';
+import CheckPasswordModal from './CheckPasswordModal';
+import ChangeEmailModal from './ChangeEmailModal';
 import DeleteAccountModal from './modals/DeleteAccountModal';
 import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
 import SQLite from 'react-native-sqlite-storage';
@@ -36,87 +38,90 @@ const handlePress = (url: string) => () => {
 
 const get_user_avt = (user_id: string) => {
     return new Promise((resolve, reject) => {
-      const db = SQLite.openDatabase({name: 'Locket.db', location: 'default'});
-      db.transaction((tx: any) => {
+        const db = SQLite.openDatabase({name: 'Locket.db', location: 'default'});
+        db.transaction((tx: any) => {
         tx.executeSql(
           'SELECT * FROM User WHERE user_id = ?',
-          [user_id],
-          (tx: any, results: any) => {
+            [user_id],
+            (tx: any, results: any) => {
             const rows = results.rows;
             let user_avt = null;
 
             if (rows.length > 0) 
             {
-              user_avt = rows.item(0).userAvatarURL; 
+                user_avt = rows.item(0).userAvatarURL; 
             }
             resolve(user_avt); 
-          },
-          (error: any) => {
+            },
+            (error: any) => {
             reject('Error retrieving user avatar: ' + error); 
-          }
+            }
         );
-      });
+        });
     });
-  };
-  
+    };
 
-export default function UserModal({navigation, first_name, last_name, modal_refs, modal_name, change_info_modal_name, onClickChangeInfo, }:
-    {navigation : any, first_name : string; last_name:  string; modal_refs: any; modal_name: string; change_info_modal_name: string; onClickChangeInfo: (key: string) => void})
+export default function UserModal({navigation, first_name, last_name, modal_refs, modal_name,  }:
+    {navigation : any, first_name : string; last_name:  string; modal_refs: any; modal_name: string})
 {
     var [user_avt_uri, set_user_avt] = useState<string | undefined>();
 
     useEffect(() => {
         const getAvatar = async () => {
-          try 
-          {
+            try 
+            {
             const publicUserId = await AsyncStorage.getItem("user_id");
             if (!publicUserId) 
             {
-              console.warn("No user ID found");
-              return;
+                console.warn("No user ID found");
+                return;
             }
             const avatar = await get_user_avt(publicUserId);
-      
             if (typeof avatar !== "string" || typeof avatar === "undefined") 
             {
                 return;
             }
             set_user_avt(avatar);
-          } 
-          catch (error) 
-          {
+            } 
+            catch (error) 
+            {
             console.error("Error fetching avatar:", error);
-          }
+            }
         };
         getAvatar();
-      }, []);
-    
-      
+        }, []);
+        
+        
 
     const feedbackModalRef = useRef<BottomSheetModal>(null);
     const reportModalRef = useRef<BottomSheetModal>(null);
+    const changeInfoModalRef = useRef<BottomSheetModal>(null);
+    const checkPasswordModalRef = useRef<BottomSheetModal>(null);
     const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
     const [isReportVisible, setIsReportVisible] = useState(false);
-
-    const openFeedbackModal = () => {
-        setIsFeedbackVisible(true);
-        feedbackModalRef.current?.present();
-    };
+    const [isChangeInfoVisible, setIsChangeInfoVisible] = useState(false);
+    const [isCheckPasswordVisible, setIsCheckPasswordVisible] = useState(false);
 
     const closeFeedbackModal = () => {
         setIsFeedbackVisible(false);
         feedbackModalRef.current?.dismiss();
     };
 
-    const openReportModal = () => {
-        setIsReportVisible(true);
-        reportModalRef.current?.present();
-    };
-
     const closeReportModal = () => {
         setIsReportVisible(false);
         reportModalRef.current?.dismiss();
     };
+
+    const closeChangeInfoModal = () => {
+        setIsChangeInfoVisible(false);
+        changeInfoModalRef.current?.dismiss();
+    };
+
+    const closeCheckPasswordModal = () => {
+        setIsCheckPasswordVisible(false);
+        checkPasswordModalRef.current?.dismiss();
+    };
+
     
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
     const toggle_delete_account_modal = () => 
@@ -134,6 +139,15 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
     const firstLetter = first_name ? first_name[0].toUpperCase() : '';
     const secondLetter = last_name ? last_name[0].toUpperCase() : '';
 
+    const [FirstName, setFirstName] = useState(first_name);
+    const [LastName, setLastName] = useState(last_name);
+    const [isChangeInfo, setIsChangeInfo] = useState(false);
+
+    const handleChangeInfoPress = () => {
+        setIsChangeInfo(true);
+        changeInfoModalRef.current?.present() 
+    }
+
     return (
         <BottomSheetModal
             ref={(ref) => (modal_refs.current[modal_name] = ref)}
@@ -149,9 +163,9 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                         <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
                         onPress={() => {toggle_avatar_image_modal()}}>
                             {user_avt_uri !== ""? (
-                                 <Image style={general_user_profile_styles.main_avt}
-                                 source={{uri : user_avt_uri}}>
-                                 </Image>
+                                    <Image style={general_user_profile_styles.main_avt}
+                                    source={{uri : user_avt_uri}}>
+                                    </Image>
                             ): (
                                 <UserAvatar size={100} name={`${first_name} ${last_name}`} />
                             )}
@@ -161,7 +175,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                     {/* Username */}
                     <View style={general_user_profile_styles.username_zone}>
                         <Text style={general_user_profile_styles.username_text}
-                        >{first_name} {last_name}</Text>
+                        >{isChangeInfo ? FirstName : first_name} {isChangeInfo ? LastName : last_name}</Text>
                     </View>
 
                     {/* User Id and Change Profile */}
@@ -171,23 +185,26 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                         </View>
 
                         <TouchableOpacity style={general_user_profile_styles.user_setting_background}
-                        onPress={() =>
-                        {
-                            onClickChangeInfo(change_info_modal_name);
-                        }
-                        }>
+                                            onPress={handleChangeInfoPress}
+                        >
                             <Text style= {general_user_profile_styles.general_text}>Sửa thông tin</Text>
                         </TouchableOpacity>
                     </View>
+                    <View>
+                        <ChangeInfoModal set_first_name={setFirstName} set_last_name={setLastName} modalRef={changeInfoModalRef} onClose={closeChangeInfoModal} />
+                    </View>
                 </View>
+                
+
+                {/* Mời bạn bè tham gia locket*/}
                 <View style={general_user_profile_styles.user_locket_share_zone}>
                     <View style={general_user_profile_styles.locket_share_background}>
                         <View style={general_user_profile_styles.locket_share_background_zone1}>
                         <View style={[general_user_profile_styles.mini_avatar_border]}>
                         {user_avt_uri !== "" ? (
-                                 <Image style={general_user_profile_styles.main_avt}
-                                 source={{uri : user_avt_uri}}>
-                                 </Image>
+                                    <Image style={general_user_profile_styles.main_avt}
+                                    source={{uri : user_avt_uri}}>
+                                    </Image>
                             ): (
                                 <UserAvatar size={35} name={`${first_name} ${last_name}`} />
                             )}
@@ -248,6 +265,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+
                         <TouchableOpacity style={[general_user_profile_styles.medium_button,
                             {borderBottomLeftRadius: 20},
                             {borderBottomRightRadius: 20},
@@ -292,7 +310,8 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
 
                         
                         {/* Thay đổi địa chỉ email */}
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button, 
+                        <TouchableOpacity onPress={() => checkPasswordModalRef.current?.present()}
+                            style={[general_user_profile_styles.medium_button, 
                             {marginBottom: 1},
                             {borderTopLeftRadius : 20},
                             {borderTopRightRadius: 20},
@@ -317,6 +336,7 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+                        <CheckPasswordModal modalRef={checkPasswordModalRef}/>
 
                         {/* Chia sẻ phản hồi */}
                         <TouchableOpacity  onPress={() => feedbackModalRef.current?.present()}
@@ -392,33 +412,6 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                             </Text>
                         </View>
 
-                        {/* Tổng quát */}
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button, 
-                            {marginBottom: 1},
-                            {borderTopLeftRadius : 20},
-                            {borderTopRightRadius: 20},
-                            {display: "flex"},
-                            {justifyContent: "space-evenly"},
-                            {alignItems: "center"},
-                            {flexDirection: "row"}]}>
-                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                {marginLeft: 20},
-                                {marginRight: 20}]}>
-                                <Icon name="person" size={24} color="#AAAAAA" />
-                                <Text style={{
-                                    fontFamily: 'SF-Pro-Rounded-Bold',
-                                    fontSize: 16,
-                                    color: "#AAAAAA",
-                                    marginLeft: 5 
-                                }}>
-                                    Tổng quát
-                                </Text>
-                            </View>
-                            <View style={[{flex: 1}]}>
-                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                            </View>
-                        </TouchableOpacity>
-
                         {/* Hiển thị tài khoản người dùng */}
                         <TouchableOpacity style={[general_user_profile_styles.medium_button,  
                             {marginBottom: 1},
@@ -427,6 +420,8 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                             {alignItems: "center"},
                             {flexDirection: "row"},
                             {borderBottomLeftRadius: 20},
+                            {borderTopLeftRadius:20},
+                            {borderTopRightRadius: 20},
                             {borderBottomRightRadius: 20}]}>
                             <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
                                 {marginLeft: 20},

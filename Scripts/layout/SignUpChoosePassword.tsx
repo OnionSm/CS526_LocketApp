@@ -20,7 +20,6 @@ function SignUpChoosePassword({ navigation }: {navigation: any })
         }
     }
     
-    
 
     return(
         <View style={change_password_styles.main_view}>

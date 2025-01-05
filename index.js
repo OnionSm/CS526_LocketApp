@@ -30,7 +30,8 @@ import Policy from './Scripts/layout/Policy';
 import MainScreenHeader from './Scripts/layout/components/MainScreenHeader';
 import StoryBottomBar from './Scripts/layout/components/StoryBottomBar';
 import StoryItem from './Scripts/layout/components/StoryItem';
-
+import ChangeEmailModal from './Scripts/layout/ChangeEmailModal';
+import CheckPasswordModal from './Scripts/layout/CheckPasswordModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,7 +39,7 @@ function MainApp() {
   return (
     <UserMessageProvider>
       <NavigationContainer>
-      <Stack.Navigator initialRouteName="SignInScreen">
+      <Stack.Navigator initialRouteName="MainScreen">
         <Stack.Screen 
           name="SignInScreen" 
           component={SignInScreen} 
@@ -60,6 +61,16 @@ function MainApp() {
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
+          name="ChangeEmailModal" 
+          component={ChangeEmailModal} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="CheckPasswordModal" 
+          component={CheckPasswordModal} 
+          options={{ presentation: 'modal', headerShown: false }}
+        />
+        <Stack.Screen 
           name="PersonalChatScreen" 
           component={PersonalChatScreen} 
           options={{ headerShown: false }} 
@@ -77,6 +88,11 @@ function MainApp() {
         <Stack.Screen 
           name="UserModal" 
           component={UserModal} 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="ChangeInfoModal" 
+          component={ChangeInfoModal} 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 

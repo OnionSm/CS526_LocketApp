@@ -4,12 +4,13 @@ import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useState, useEffect , createContext, useContext, useCallback} from 'react';
 import AxiosInstance from './instance/AxiosInstance';
+import { Dimensions } from "react-native";
+const { width, height } = Dimensions.get('window');
 
 
-export default function ReportModal({ modalRef, onClose }: { modalRef: any, onClose: () => void }) {
+export default function ChangeEmailModal ({ modalRef}: { modalRef: any}) {
 
     const [email, setEmail] = useState('');
-    const [Description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
 
     // Regex kiểm tra định dạng email
@@ -19,51 +20,13 @@ export default function ReportModal({ modalRef, onClose }: { modalRef: any, onCl
     };   
 
     // Kiểm tra định dạng form
-    const isFormValid = isValidEmail(email) && Description.trim() !== '';
+    const isFormValid = isValidEmail(email);
 
-    // Hàm gửi báo cáo sự cố
-    const sendIncidentReport = async () => {
-        setLoading(true);
-    
-        const formData = new FormData();
-        formData.append('UserEmail', email); 
-        formData.append('Description', Description); 
-        formData.append('TypeFeedback', "Report"); 
-    
-    
-        try {
-            const response = await AxiosInstance.post("api/feedback", formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-    
-            // Nếu HTTP status không phải 200, báo lỗi
-            if (response.status !== 200) { 
-                const errorMessage = response.data;
-                throw new Error(`Failed to send report: ${errorMessage}`);
-                setDescription('');
-                setEmail('');
-            }
-    
-            const result = response.data;
-            Alert.alert('Thành công', `Báo cáo sự cố của bạn đã được gửi.`);
-            setDescription('');
-            setEmail('');
-            onClose();
-        } catch (error) {
-            const err = error as Error;
-            Alert.alert('Lỗi', err.message || 'Không thể gửi báo cáo.');
-            setDescription('');
-            setEmail('');
-        } finally {
-            setLoading(false); 
-            setDescription('');
-            setEmail('');
-        }
-    };
-
-
+    const handlePress = () => {
+        // console.log(isFormValid);
+        console.log(email);
+        modalRef.current?.dismiss();
+    }
 
     return (
     
@@ -75,37 +38,27 @@ export default function ReportModal({ modalRef, onClose }: { modalRef: any, onCl
         handleStyle={{ height: 10 }}
         handleIndicatorStyle={[{ backgroundColor: '#505050', width: 45, height: 5 }]}>
 
-        <BottomSheetView style={styles.container}>
+    <BottomSheetView style={styles.container}>
         {/* Tiêu đề */}
-        <Text style={styles.header}>Báo cáo sự cố</Text>
+        <Text style={styles.header}>Địa chỉ Email mới của bạn</Text>
 
         {/* Nhập email */}
         <TextInput
+            value={email}
             style={styles.input}
-            placeholder="Địa chỉ email của bạn"
+            placeholder="Nhập Email"
             placeholderTextColor="#AAAAAA"
             keyboardType="email-address"
             onChangeText={setEmail}
         />
 
-        {/* Nhập nội dung đề xuất */}
-        <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Hãy cho chúng tôi biết điều gì đang xảy ra ..."
-            placeholderTextColor="#AAAAAA"
-            multiline
-            numberOfLines={4}
-            onChangeText={setDescription}
-        />
-
         {/* Nút gửi */}
-        <TouchableOpacity
-        style={[styles.button, isFormValid && {backgroundColor: '#F1B202'}, loading && { backgroundColor: '#aaa' }]}
-        onPress={sendIncidentReport}
-        disabled={!isFormValid} // Vô hiệu hóa button khi form không hợp lệ
+        <TouchableOpacity onPress={handlePress}
+            style={[styles.button, isFormValid && {backgroundColor: '#F1B202'}]}
+            disabled={!isFormValid} // Vô hiệu hóa button khi form không hợp lệ
         >
             <Text style = {[isFormValid ? styles.buttonTextActive : styles.buttonTextInactive]}>
-                {loading ? 'Đang gửi...' : 'Gửi'}
+                Lưu
             </Text>
         </TouchableOpacity>
 
@@ -120,11 +73,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#1F1F1F', 
     },
     header: {
+        marginTop: 0.3*height,
         fontSize: 27,
         fontWeight: 'bold',
         color: '#FFFFFF', 
         textAlign: 'center',
-        marginVertical: 20,
     },
     input: {
         backgroundColor: '#2F2F2F',
@@ -140,7 +93,6 @@ const styles = StyleSheet.create({
     },
     textArea: {
         height: 150, 
-        textAlignVertical: 'top',
     },
     button: {
         position: 'absolute',
