@@ -8,7 +8,9 @@ const story_item_styles = StyleSheet.create({
         alignItems: "center",
         alignContent: "center",
         justifyContent: "center",
-        flex: 1
+        flex: 1,
+        width: width,
+        height: height
     },
     main_zone:
     {
@@ -18,7 +20,8 @@ const story_item_styles = StyleSheet.create({
         height: "47%",
         backgroundColor: "#000000",
         borderRadius: 50,
-        alignItems: "center"
+        alignItems: "center",
+        marginBottom: "20%"
     }, 
     image:
     {

@@ -24,6 +24,7 @@ import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
 import SQLite from 'react-native-sqlite-storage';
 import { UriParser } from './common/UriParser';
 import UserAvatar from 'react-native-user-avatar';
+import { SqliteDbContext } from './context/SqliteDbContext';
 
 const TiktokURL = 'https://www.tiktok.com/@locketcamera';
 const InstagramURL = 'https://www.instagram.com/locketcamera/';
@@ -36,10 +37,10 @@ const handlePress = (url: string) => () => {
 };
 
 
-const get_user_avt = (user_id: string) => {
-    return new Promise((resolve, reject) => {
-        const db = SQLite.openDatabase({name: 'Locket.db', location: 'default'});
-        db.transaction((tx: any) => {
+const get_user_avt = (user_id: string, db: any) => {
+    return new Promise((resolve, reject) => 
+    {
+      db.transaction((tx: any) => {
         tx.executeSql(
           'SELECT * FROM User WHERE user_id = ?',
             [user_id],
@@ -51,19 +52,21 @@ const get_user_avt = (user_id: string) => {
             {
                 user_avt = rows.item(0).userAvatarURL; 
             }
-            resolve(user_avt); 
-            },
-            (error: any) => {
+            resolve(user_avt !== null ? user_avt : ""); 
+          },
+          (error: any) => {
             reject('Error retrieving user avatar: ' + error); 
             }
         );
         });
     });
-    };
+  };
+  
 
-export default function UserModal({navigation, first_name, last_name, modal_refs, modal_name,  }:
-    {navigation : any, first_name : string; last_name:  string; modal_refs: any; modal_name: string})
+export default function UserModal({navigation, first_name, last_name, set_first_name, set_last_name, user_modal_refs}:
+    {navigation : any, first_name : string; last_name:  string; set_first_name: (name: string) => void; set_last_name: (name: string) => void;  user_modal_refs: any})
 {
+    const sqlite_db_context = useContext(SqliteDbContext);
     var [user_avt_uri, set_user_avt] = useState<string | undefined>();
 
     useEffect(() => {
@@ -76,7 +79,8 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                 console.warn("No user ID found");
                 return;
             }
-            const avatar = await get_user_avt(publicUserId);
+            const avatar = await get_user_avt(publicUserId, sqlite_db_context.db);
+      
             if (typeof avatar !== "string" || typeof avatar === "undefined") 
             {
                 return;
@@ -89,10 +93,10 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
             }
         };
         getAvatar();
-        }, []);
-        
-        
-
+      }, []);
+    
+      
+// --------------------------------------------- FEEDBACK AND REPORT MODAL -------------------------------------
     const feedbackModalRef = useRef<BottomSheetModal>(null);
     const reportModalRef = useRef<BottomSheetModal>(null);
     const changeInfoModalRef = useRef<BottomSheetModal>(null);
@@ -111,6 +115,8 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
         setIsReportVisible(false);
         reportModalRef.current?.dismiss();
     };
+
+// -----------------------------------------------------------------------------------------------------------------------------------
 
     const closeChangeInfoModal = () => {
         setIsChangeInfoVisible(false);
@@ -150,9 +156,12 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
 
     return (
         <BottomSheetModal
-            ref={(ref) => (modal_refs.current[modal_name] = ref)}
+            ref={user_modal_refs}
             backgroundStyle={{ backgroundColor: '#242424' }}
             handleStyle={{height:10}}
+            containerStyle={{
+                zIndex: 11,
+              }}
             handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}>
             <AvatarImageBottomSheet set_user_avatar={set_user_avt} isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
             <DeleteAccountModal navigation={navigation} isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal>
@@ -162,10 +171,10 @@ export default function UserModal({navigation, first_name, last_name, modal_refs
                     <View style={[general_user_profile_styles.user_avatar_child_zone]}>
                         <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
                         onPress={() => {toggle_avatar_image_modal()}}>
-                            {user_avt_uri !== ""? (
-                                    <Image style={general_user_profile_styles.main_avt}
-                                    source={{uri : user_avt_uri}}>
-                                    </Image>
+                            {user_avt_uri != null && user_avt_uri != undefined &&  user_avt_uri !== "" ? (
+                                 <Image style={general_user_profile_styles.main_avt}
+                                 source={{uri : user_avt_uri}}>
+                                 </Image>
                             ): (
                                 <UserAvatar size={100} name={`${first_name} ${last_name}`} />
                             )}

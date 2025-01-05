@@ -4,11 +4,14 @@ const { width, height } = Dimensions.get('window');
 const backgroundcolor = "#242424";
 const main_screen_styles = StyleSheet.create({
     main_view:{
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
         opacity: 1,
         backgroundColor: "#050505",
         width : width,
-        height: height
+        height: height,
+        display: 'flex',
+        flexDirection: "column",
+
     },
     upper_zone:
     {
