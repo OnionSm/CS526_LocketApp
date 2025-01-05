@@ -71,7 +71,7 @@ const main_screen_styles = StyleSheet.create({
     button_zone:
     {
         width: width,
-        height: height * 0.25,
+        height: height * 0.20,
         display: "flex",
         flexDirection: "row",
         justifyContent: "space-around",
@@ -94,12 +94,22 @@ const main_screen_styles = StyleSheet.create({
     history_zone:
     {
         width: width,
-        height: height * 0.15,
+        height: height * 0.2,
         display: "flex",
         flexDirection: "column",
         alignContent: "center",
         alignItems: "center",
         justifyContent:"center"
+    },
+    history_zone_2:
+    {
+        width: width,
+        height: height * 0.2,
+        display: "flex",
+        flexDirection: "row",
+        alignContent: "center",
+        alignItems: "center",
+        justifyContent:"center",
     },
     history_child_zone:
     {
@@ -127,7 +137,48 @@ const main_screen_styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: "SF-Pro-Rounded-Bold",
         marginLeft: 5,
+    },
+    mini_avatar_border:
+    {
+        width: 48,
+        height: 48,
+        borderRadius: 90,
+        borderWidth: 3,
+        borderColor: "#F1B202",
+        display:"flex",
+        alignItems: "center",
+        justifyContent:"center",
+    },
+    mini_avatar_border_2:
+    {
+        width: 48,
+        height: 48,
+        borderRadius: 90,
+        borderWidth: 3,
+        borderColor: "#2D2D2D",
+        display:"flex",
+        alignItems: "center",
+        justifyContent:"center",
+        marginLeft: 10,
+        marginRight: 10
+    },
+    mini_main_avt:
+    {
+        width: "95%",
+        height: "95%",
+        resizeMode: "contain",
+        borderWidth: 1,
+        borderRadius: 90,
+    },
+    main_avt:
+    {
+        width: "90%",
+        height: "90%",
+        resizeMode: "contain",
+        borderWidth: 3,
+        borderRadius: 90,
     }
+    
 });
 
 
