@@ -19,19 +19,12 @@ import { GET_FRIEND_REQUEST_COOLDOWN } from '@env';
 import { SqliteDbContext } from './context/SqliteDbContext';
 import { GET_FRIEND_DATA_COOLDOWN } from '@env';
 import { IntervalContext } from './context/IntervalContext';
-
+import { FriendData } from './types/FriendData';
 type FriendSearch = {
     id: string,
     publicUserId: string,
     firstName: string,
     lastName: string,
-    userAvatarURL: string
-}
-
-type FriendData = {
-    id: string,
-    first_name: string,
-    last_name: string,
     userAvatarURL: string
 }
 
@@ -158,7 +151,7 @@ const renderItemRequest = ({item, removeFriendInvitation}:{item: FriendInvitatio
     );
     
 
-function AddFriendModal({modal_refs} : {modal_refs: any})
+function AddFriendModal({modal_refs, data_friend} : {modal_refs: any, data_friend: Array<FriendData>})
 {
     const interval_context = useContext(IntervalContext);
     const sqlite_db_context = useContext(SqliteDbContext);
@@ -234,73 +227,6 @@ function AddFriendModal({modal_refs} : {modal_refs: any})
 
 // --------------------------------------------------------------------------------------------------------------------------
 
-
-
-// ------------------------------------------------------------ GET LIST FRIEND ------------------------------------------------------
-
-    const [data_friend, set_data_friend] = useState<Array<FriendData>>([]);
-
-    
-    const get_friend_data = async () => {
-        try {
-    
-            var user_id = await AsyncStorage.getItem("user_id");
-            if (!user_id) {
-                console.error("User ID is null or undefined.");
-                return;
-            }
-
-            sqlite_db_context.db.transaction((tx: any) => {
-                tx.executeSql(
-                    `SELECT * 
-                    FROM Friend
-                    WHERE user_id == ?`, 
-                    [user_id],
-                    (_: any, resultSet: any) => {
-                        if (resultSet.rows.length > 0) 
-                        {
-                            const friends: Array<FriendData> = [];
-                            for (let i = 0; i < resultSet.rows.length; i++) 
-                            {
-                                const item = resultSet.rows.item(i);
-                    
-                                const friend: FriendData = 
-                                {
-                                    id: item.friend_id, 
-                                    first_name: item.first_name,
-                                    last_name: item.last_name,
-                                    userAvatarURL: item.friend_avt
-                                };
-
-                                friends.push(friend);
-                            }
-                            set_data_friend(friends);
-                        } else {
-                            console.log("No friends found for this user.");
-                        }
-                    },
-                    (_: any , error: any) => {
-                        console.error("Error querying Friend table:", error);
-                        return false; 
-                    }
-                );
-            });
-        } catch (error) {
-            console.error("Error in get_friend_data:", error);
-        }
-    };
-    get_friend_data();
-
-    useEffect(() => {
-        const intervalId = setInterval(() => 
-        {
-            get_friend_data(); 
-        }, Number(GET_FRIEND_DATA_COOLDOWN)); 
-        return () => clearInterval(intervalId); 
-    }, []);
-
-
-// --------------------------------------------------------------------------------------------------------------------------------------
 
 
 
