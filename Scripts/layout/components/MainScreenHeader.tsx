@@ -4,10 +4,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import main_screen_header_styles from "./component_styles/MainScreenHeaderStyles";
 import AddFriendModal from "../AddFriendModal";
 import BottomSheet, { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { FriendData } from "../types/FriendData";
+
 
 const {width, height} = Dimensions.get("window");
-const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserModal, navigation} : 
-    {isTakingPhoto : boolean; back_button_enable: boolean; handlePresentUserModal: () => void;  navigation: any}) => 
+const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserModal, navigation, data_friend} : 
+    {isTakingPhoto : boolean; back_button_enable: boolean; handlePresentUserModal: () => void;  navigation: any, data_friend: Array<FriendData>}) => 
 {
 
     const add_friend_modal_ref = useRef<BottomSheetModal>(null);
@@ -18,7 +20,7 @@ const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserM
 
     return(
         <View style={main_screen_header_styles.upper_zone}>
-            <AddFriendModal modal_refs={add_friend_modal_ref}></AddFriendModal>
+            <AddFriendModal modal_refs={add_friend_modal_ref} data_friend={data_friend}></AddFriendModal>
             {isTakingPhoto ? (
                 <View style={[
                     {display: "flex"}, 

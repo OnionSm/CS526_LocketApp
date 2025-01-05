@@ -7,26 +7,13 @@ import { Image, ImageBackground, Text, View, Button,
      SectionList} from 'react-native';
 import main_screen_styles from './styles/MainScreenStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import general_user_profile_styles from './styles/GeneralUserprofileStyle';
 import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat, PhotoFile } from 'react-native-vision-camera';
-import PermissionsPage from './components/PermissionsPage';
 import CameraDenied from './components/CameraDenied';
-import * as signalR from "@microsoft/signalr";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import UserModal from './UserModal';
-import ChangeInfoModal from './ChangeInfoModal';
-import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
-import {
-  BottomSheetModal,
-  BottomSheetView,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
 import DeleteAccountModal from './modals/DeleteAccountModal';
 import { CONNECTION_IP } from '@env';
 import RNFS from 'react-native-fs'; 
 import StoryItem from './components/StoryItem';
 
-// Hàm để lấy MIME type từ phần mở rộng của file
 const getMimeType = (path: any) => {
     const extension = path.split('.').pop().toLowerCase();
     switch (extension) {
@@ -49,43 +36,6 @@ const getMimeType = (path: any) => {
 function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto, setIsTakingPhoto}: 
     {hasPermission: boolean; setHasPermission: (state: boolean) => void; navigation: any; isTakingPhoto: boolean; setIsTakingPhoto: (state: boolean) => void})
 {      
-    // const [signalR_connection, SetConnection] = useState<signalR.HubConnection | null>(null);
-    // useEffect(() => {
-    //     const GetUserMessage = async () => {
-    //         if(signalR_connection != null)
-    //         {
-    //             console.log("has connect")
-    //             return;
-    //         }
-    //         const connection = new signalR.HubConnectionBuilder()
-    //             .withUrl(`http://${CONNECTION_IP}:5115/chathub`)
-    //             .withAutomaticReconnect()
-    //             .build();
-    //         SetConnection(connection);
-    //         // Lắng nghe sự kiện 'SendMessage' từ server
-    //         connection.on("SendMessage", (message) => {
-    //             console.log("Received message from server:", message);  
-    //         });
-    
-    //         try {
-    //             await connection.start();
-    //             console.log("SignalR connected");
-    //         } catch (err) {
-    //             console.error("Connection failed:", err);
-    //         }
-    
-    //         // Dọn dẹp kết nối khi component tháo dỡ
-    //         return () => {
-    //             if (connection) {
-    //                 connection.stop();  // Dừng kết nối SignalR
-    //                 console.log("SignalR connection stopped");
-    //             }
-    //         };
-    //     };
-    
-    //     GetUserMessage();
-    // }, []);  // [] đảm bảo useEffect chỉ chạy 1 lần khi component mount
-
 
     const { width, height } = Dimensions.get('window');
 
