@@ -8,8 +8,8 @@ import { FriendData } from "../types/FriendData";
 
 
 const {width, height} = Dimensions.get("window");
-const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserModal, navigation, data_friend} : 
-    {isTakingPhoto : boolean; back_button_enable: boolean; handlePresentUserModal: () => void;  navigation: any, data_friend: Array<FriendData>}) => 
+const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserModal, navigation, data_friend, set_data_friend} : 
+    {isTakingPhoto : boolean; back_button_enable: boolean; handlePresentUserModal: () => void;  navigation: any, data_friend: Array<FriendData>, set_data_friend: (fr : Array<FriendData>) => void}) => 
 {
 
     const add_friend_modal_ref = useRef<BottomSheetModal>(null);
@@ -20,7 +20,7 @@ const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserM
 
     return(
         <View style={main_screen_header_styles.upper_zone}>
-            <AddFriendModal modal_refs={add_friend_modal_ref} data_friend={data_friend}></AddFriendModal>
+            <AddFriendModal modal_refs={add_friend_modal_ref} data_friend={data_friend} set_data_friend={set_data_friend}></AddFriendModal>
             {isTakingPhoto ? (
                 <View style={[
                     {display: "flex"}, 

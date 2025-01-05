@@ -37,7 +37,8 @@ import { GET_FRIEND_DATA_COOLDOWN } from '@env';
 import { GET_FRIEND_REQUEST_COOLDOWN } from '@env';
 import { SqliteDbContext } from './context/SqliteDbContext';
 import { FriendData } from './types/FriendData';
-
+import AxiosInstance from './instance/AxiosInstance';
+import { Story } from './types/Strory';
 // Hàm để lấy MIME type từ phần mở rộng của file
 const getMimeType = (path: any) => {
     const extension = path.split('.').pop().toLowerCase();
@@ -110,8 +111,24 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         set_back_button(currentPage === 1); 
     };
 
+
 // ------------------------------------------------------------------------------------
 
+
+
+// ------------------------------------ HISTORY BUTTON -------------------------------------------
+
+    const go_to_page_story_tab = () => 
+    {
+        if (pagerViewRef.current) 
+        {
+            console.log(back_button_enable);
+            pagerViewRef.current.setPage(1); 
+            set_back_button(!back_button_enable);
+        
+            
+        }
+    };
 
 // ---------------------------------- SET HEADER STATE -----------------------------------
 
@@ -134,11 +151,13 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         setHasPermission(status === "granted");
         return;
     };
-    if(!hasPermission)
+    useEffect(() =>
     {
-        getPermission();
-    }
-    console.log("Camera Permission " ,hasPermission);
+        if(!hasPermission)
+        {
+            getPermission();
+        }
+    },[]);
 
     const [isTakingPhoto, setIsTakingPhoto] = useState(false);
     const [photoImg, setPhoto] = useState<string | null>(null); 
@@ -212,15 +231,88 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
     }, []);
 
 
-// --------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------- GET STORY DATA ------------------------------------------------------------------
+    const [list_story, set_list_story] = useState<Array<Story>>([]);
 
+    useEffect(() => {
+        const get_list_story_from_local_storage = async () =>
+        {
+            try
+            {
+                var user_id = await AsyncStorage.getItem("user_id");
+                if (user_id == null || user_id == undefined)
+                {
+                    return;
+                }
+
+                sqlite_db_context.db.transaction((tx: any) => {
+                    tx.executeSql(
+                        `CREATE TABLE IF NOT EXISTS Story (
+                            user_id TEXT,
+                            story_id TEXT,
+                            uploader_id TEXT,
+                            image TEXT,
+                            description TEXT,
+                            create_at TEXT,
+                            seen INTEGER,
+                            PRIMARY KEY (user_id, story_id)
+                        )`
+                    );
+                    tx.executeSql(
+                        `SELECT * 
+                        FROM Story 
+                        WHERE user_id = ?`,
+                        [user_id],
+                        (_: any, resultSet: any) => {
+                            if (resultSet.rows.length > 0) 
+                            {
+                                const stories: Array<Story> = [];
+                                for (let i = 0; i < resultSet.rows.length; i++) 
+                                {
+                                    const item = resultSet.rows.item(i);
+                        
+                                    const story: Story = 
+                                    {
+                                        story_id: item.story_id,
+                                        uploader_id: item.uploader_id,
+                                        image: item.image,
+                                        description: item.description,
+                                        create_at: item.create_at,
+                                        seen: item.seen
+                                    };
+
+                                    stories.push(story);
+                                }
+                                set_list_story(stories);
+                            } 
+                            else 
+                            {
+                                console.log("No story for this user.");
+                            }
+                        },
+                        (_: any , error: any) => {
+                            console.error("Error querying Story table:", error);
+                            return false; 
+                        }
+                    );
+                });
+            }
+            catch (error)
+            {
+                console.log("Error in get list story:", error);
+            }
+        };
+        get_list_story_from_local_storage();
+    }, []);
+
+// --------------------------------------------------------------------------------------------------------------------------------------
 
     return (
         <GestureHandlerRootView>
             <BottomSheetModalProvider>
                 <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} user_modal_refs={user_modal_ref}/>
                 <MainScreenHeader isTakingPhoto={isTakingPhoto} back_button_enable={back_button_enable} handlePresentUserModal={handlePresentUserModal} 
-                navigation={navigation} data_friend={data_friend}/>
+                navigation={navigation} data_friend={data_friend} set_data_friend={set_data_friend}/>
                 <BackToMainScreenButton 
                     enable={back_button_enable} 
                     scroll_to_top={goToTop} 
@@ -233,10 +325,11 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                     onPageSelected={onPageSelected} 
                 >
                     <View key="0">
-                        <MainScreen navigation={navigation} hasPermission={hasPermission} setHasPermission={setHasPermission} isTakingPhoto={isTakingPhoto} setIsTakingPhoto={setIsTakingPhoto}/>
+                        <MainScreen navigation={navigation} hasPermission={hasPermission} setHasPermission={setHasPermission} data_friend={data_friend} 
+                        isTakingPhoto={isTakingPhoto} setIsTakingPhoto={setIsTakingPhoto} go_to_page_story_tab={go_to_page_story_tab}/>
                     </View>
                     <View key="1">
-                        <MainScreenStoryTab data_friend={data_friend}/>
+                        <MainScreenStoryTab data_friend={data_friend} list_story={list_story} goToTop={goToTop}/>
                     </View>
                 </PagerView>
             </BottomSheetModalProvider>

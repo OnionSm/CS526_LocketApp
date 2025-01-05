@@ -10,7 +10,8 @@ const story_item_styles = StyleSheet.create({
         justifyContent: "center",
         flex: 1,
         width: width,
-        height: height
+        height: height,
+        
     },
     main_zone:
     {
@@ -18,7 +19,7 @@ const story_item_styles = StyleSheet.create({
         position: "relative",
         width: width,
         height: "47%",
-        backgroundColor: "#000000",
+        backgroundColor: "#171717",
         borderRadius: 50,
         alignItems: "center",
         marginBottom: "20%"
@@ -71,8 +72,8 @@ const story_item_styles = StyleSheet.create({
     },
     upload_time:
     {
-        fontFamily: "SF-Pro-Rounded-SemiBold",
-        fontSize: 18,
+        fontFamily: "SF-Pro-Rounded-Bold",
+        fontSize: 16,
         color: "#FFFFFF",
         marginHorizontal: 5
     },

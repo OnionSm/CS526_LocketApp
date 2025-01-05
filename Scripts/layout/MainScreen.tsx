@@ -13,6 +13,9 @@ import DeleteAccountModal from './modals/DeleteAccountModal';
 import { CONNECTION_IP } from '@env';
 import RNFS from 'react-native-fs'; 
 import StoryItem from './components/StoryItem';
+import { FriendData } from './types/FriendData';
+import UserAvatar from 'react-native-user-avatar';
+import { FlatList } from 'react-native-gesture-handler';
 
 const getMimeType = (path: any) => {
     const extension = path.split('.').pop().toLowerCase();
@@ -33,8 +36,9 @@ const getMimeType = (path: any) => {
   | { id: string;  content: string }; // Cho FriendNew Section
 
 
-function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto, setIsTakingPhoto}: 
-    {hasPermission: boolean; setHasPermission: (state: boolean) => void; navigation: any; isTakingPhoto: boolean; setIsTakingPhoto: (state: boolean) => void})
+function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto, setIsTakingPhoto, go_to_page_story_tab, data_friend}: 
+    {hasPermission: boolean; setHasPermission: (state: boolean) => void; navigation: any; isTakingPhoto: boolean; 
+    setIsTakingPhoto: (state: boolean) => void, go_to_page_story_tab: () => void, data_friend: Array<FriendData>})
 {      
 
     const { width, height } = Dimensions.get('window');
@@ -56,7 +60,15 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
     
 
     const devices = Camera.getAvailableCameraDevices();
-    const device = getCameraDevice(devices, 'back');
+    const [use_back_camera, set_use_back_camera] = useState(false);
+    if (!devices || devices.length === 0) {
+    console.error("Không tìm thấy thiết bị camera");
+    }
+
+    const device = devices.find((d) => d.position === (use_back_camera ? "back" : "front"));
+    if (!device) {
+    console.error("Không tìm thấy camera sau");
+    }
     const format = useCameraFormat(device, [
         { photoResolution: { width: 1080, height: 1080 }},
         { videoAspectRatio: 1 },
@@ -64,18 +76,6 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
         { fps: 30 }
       ]);
     const [flash_state, set_flash_state] = useState(false);
-    const getPermission = async () => 
-    {
-        const status = await Camera.requestCameraPermission();
-        setHasPermission(status === "granted");
-        return;
-    };
-    if(!hasPermission)
-    {
-        getPermission();
-    }
-    console.log("Camera Permission " ,hasPermission);
-
     const [photoImg, setPhoto] = useState<string | null>(null); 
     const current_camera = useRef<Camera>(null);
 
@@ -89,7 +89,7 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
                 console.error("Camera is not initialized");
                 return;
             }
-            const photo = await current_camera.current.takePhoto({flash: flash_state === true ? "on" : "off"});
+            const photo = await current_camera.current.takePhoto({flash: (flash_state === true  && use_back_camera ) ? "on" : "off" });
             setIsTakingPhoto(true);
             console.log("Photo: ", photo); 
             const base64Image = await RNFS.readFile(photo.path, 'base64');
@@ -169,14 +169,15 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
                     <View style={main_screen_styles.button_zone}>
                         <TouchableOpacity style={main_screen_styles.centre_button}
                         onPress={() => {set_flash_state(!flash_state)}}>
-                            <Icon name="bolt" size={45} color="#FFFFFF" />
+                            <Icon name="bolt" size={45} color = {flash_state === true ? "#F1B202" : "#FFFFFF" }/>
                         </TouchableOpacity>
                         <TouchableOpacity style={main_screen_styles.centre_button}
                         onPress={()=>{takePhoto()}}>
                             <Image source={require("./GUI/CaptureImageButton.png")}
                             style={main_screen_styles.capture_image_button}></Image>  
                         </TouchableOpacity>
-                        <TouchableOpacity style={main_screen_styles.centre_button}>
+                        <TouchableOpacity style={main_screen_styles.centre_button}
+                        onPress={() => {set_use_back_camera(!use_back_camera)}}>
                             <Icon name="photo-camera" size={45} color="#FFFFFF" /> 
                         </TouchableOpacity>
                     </View>
@@ -184,15 +185,52 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
             </View>
 
             {/* History Zone */}
-            <View style={main_screen_styles.history_zone}>
-                <View style={main_screen_styles.history_child_zone}>
-                    <View style={main_screen_styles.history_icon_background}>
-                        <Icon name="photo-library" size={24} color="#FFFFFF" />
+            {!isTakingPhoto ? (
+                <TouchableOpacity style={main_screen_styles.history_zone} 
+                onPress={() => {go_to_page_story_tab()}}>
+                    <View style={main_screen_styles.history_child_zone}>
+                        <View style={main_screen_styles.history_icon_background}>
+                            <Icon name="photo-library" size={24} color="#FFFFFF" />
+                        </View>
+                        <Text style={main_screen_styles.history_text}>Lịch sử</Text>
                     </View>
-                    <Text style={main_screen_styles.history_text}>Lịch sử</Text>
+                    <Icon name="keyboard-arrow-down" size={45} color="#FFFFFF" /> 
+                </TouchableOpacity>
+            ) : (
+                <View style={main_screen_styles.history_zone_2}>
+                    <View style={{display: "flex", flexDirection: "column", marginLeft: width * 0.2, marginRight: 10 ,
+                        justifyContent: "center", alignItems: "center"}}>
+                        <View style={[main_screen_styles.mini_avatar_border]}>
+                            <Icon name="group" size={24} color="#B6B6B6" />
+                        </View>
+                        <Text style={{fontFamily: "SF-Pro-Rounded-Bold", color: "#7B7B7B"}}>Tất cả</Text>
+                    </View>
+
+                    <FlatList
+                        data={data_friend}
+                        horizontal={true} 
+                        keyExtractor={(item: FriendData) => item.id}
+                        renderItem={({ item }) => (  
+                            <View style={{display: "flex", flexDirection: "column",
+                                justifyContent: "center", alignItems: "center"
+                            }}>
+                                <View style={[main_screen_styles.mini_avatar_border_2]}>
+                                    {item.userAvatarURL !== "" ? (
+                                        <Image 
+                                            style={main_screen_styles.main_avt} 
+                                            source={{ uri: item.userAvatarURL }} 
+                                        />
+                                    ) : (
+                                        <UserAvatar size={36} name={`${item.first_name} ${item.last_name}`} />
+                                    )}
+                                </View>
+                                <Text style={{fontFamily: "SF-Pro-Rounded-Bold", color: "#7B7B7B"}}>{item.first_name}</Text>
+                            </View>
+                        )}
+                    />
                 </View>
-                <Icon name="keyboard-arrow-down" size={45} color="#FFFFFF" /> 
-            </View>
+            )}
+            
         </View>
     )
 }

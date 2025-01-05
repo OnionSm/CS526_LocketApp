@@ -19,12 +19,19 @@ import { GET_FRIEND_REQUEST_COOLDOWN } from '@env';
 import { SqliteDbContext } from './context/SqliteDbContext';
 import { GET_FRIEND_DATA_COOLDOWN } from '@env';
 import { IntervalContext } from './context/IntervalContext';
-import { FriendData } from './types/FriendData';
+
 type FriendSearch = {
     id: string,
     publicUserId: string,
     firstName: string,
     lastName: string,
+    userAvatarURL: string
+}
+
+type FriendData = {
+    id: string,
+    first_name: string,
+    last_name: string,
     userAvatarURL: string
 }
 
@@ -151,7 +158,7 @@ const renderItemRequest = ({item, removeFriendInvitation}:{item: FriendInvitatio
     );
     
 
-function AddFriendModal({modal_refs, data_friend} : {modal_refs: any, data_friend: Array<FriendData>})
+function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs: any; data_friend: Array<FriendData>; set_data_friend: (fr: Array<FriendData>) => void})
 {
     const interval_context = useContext(IntervalContext);
     const sqlite_db_context = useContext(SqliteDbContext);
@@ -269,6 +276,7 @@ function AddFriendModal({modal_refs, data_friend} : {modal_refs: any, data_frien
     return(
         <BottomSheetModal
         ref={modal_refs}
+
         backgroundStyle={{ backgroundColor: '#242424' }}
         handleStyle={{height:10}}
         containerStyle={{zIndex: 13}}
@@ -415,7 +423,6 @@ function AddFriendModal({modal_refs, data_friend} : {modal_refs: any, data_frien
                         </View>
                     )}
                     
-
 
 
                     {data_add_friends != null && data_add_friends.length >= 1 ? (
