@@ -158,7 +158,7 @@ const renderItemRequest = ({item, removeFriendInvitation}:{item: FriendInvitatio
     );
     
 
-function AddFriendModal({modal_refs} : {modal_refs: any})
+function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs: any; data_friend: Array<FriendData>; set_data_friend: (fr: Array<FriendData>) => void})
 {
     const interval_context = useContext(IntervalContext);
     const sqlite_db_context = useContext(SqliteDbContext);
@@ -236,73 +236,6 @@ function AddFriendModal({modal_refs} : {modal_refs: any})
 
 
 
-// ------------------------------------------------------------ GET LIST FRIEND ------------------------------------------------------
-
-    const [data_friend, set_data_friend] = useState<Array<FriendData>>([]);
-
-    
-    const get_friend_data = async () => {
-        try {
-    
-            var user_id = await AsyncStorage.getItem("user_id");
-            if (!user_id) {
-                //console.error("User ID is null or undefined.");
-                return;
-            }
-
-            sqlite_db_context.db.transaction((tx: any) => {
-                tx.executeSql(
-                    `SELECT * 
-                    FROM Friend
-                    WHERE user_id == ?`, 
-                    [user_id],
-                    (_: any, resultSet: any) => {
-                        if (resultSet.rows.length > 0) 
-                        {
-                            const friends: Array<FriendData> = [];
-                            for (let i = 0; i < resultSet.rows.length; i++) 
-                            {
-                                const item = resultSet.rows.item(i);
-                    
-                                const friend: FriendData = 
-                                {
-                                    id: item.friend_id, 
-                                    first_name: item.first_name,
-                                    last_name: item.last_name,
-                                    userAvatarURL: item.friend_avt
-                                };
-
-                                friends.push(friend);
-                            }
-                            set_data_friend(friends);
-                        } else {
-                            //console.log("No friends found for this user.");
-                        }
-                    },
-                    (_: any , error: any) => {
-                        //console.error("Error querying Friend table:", error);
-                        return false; 
-                    }
-                );
-            });
-        } catch (error) {
-            //console.error("Error in get_friend_data:", error);
-        }
-    };
-    get_friend_data();
-
-    useEffect(() => {
-        const intervalId = setInterval(() => 
-        {
-            get_friend_data(); 
-        }, Number(GET_FRIEND_DATA_COOLDOWN)); 
-        return () => clearInterval(intervalId); 
-    }, []);
-
-
-// --------------------------------------------------------------------------------------------------------------------------------------
-
-
 
 // --------------------------------------------------------------- GET FRIEND INVITATION -------------------------------------------------
 
@@ -343,6 +276,7 @@ function AddFriendModal({modal_refs} : {modal_refs: any})
     return(
         <BottomSheetModal
         ref={modal_refs}
+
         backgroundStyle={{ backgroundColor: '#242424' }}
         handleStyle={{height:10}}
         containerStyle={{zIndex: 13}}
@@ -489,7 +423,6 @@ function AddFriendModal({modal_refs} : {modal_refs: any})
                         </View>
                     )}
                     
-
 
 
                     {data_add_friends != null && data_add_friends.length >= 1 ? (

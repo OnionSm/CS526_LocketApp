@@ -38,6 +38,16 @@ import MainScreenRoot from './Scripts/layout/MainScreenRoot';
 import AddFriendModal from './Scripts/layout/AddFriendModal';
 import { SqliteDbProvider } from './Scripts/layout/context/SqliteDbContext';
 import { IntervalProvider } from './Scripts/layout/context/IntervalContext';
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from 'react-native-reanimated';
+
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false, // Reanimated runs in strict mode by default
+});
 const Stack = createNativeStackNavigator();
 
 function MainApp() {

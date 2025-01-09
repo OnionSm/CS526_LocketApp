@@ -3,7 +3,7 @@ import { View } from "react-native";
 import story_bottom_bar_styles from "./component_styles/StoryBottomBarStyles";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const StoryBottomBar = () =>
+const StoryBottomBar = ({goToTop, handleGoToFirstPage} : {goToTop: () => void; handleGoToFirstPage: () => void}) =>
 {
    return(
     <View style={story_bottom_bar_styles.container_bar_zone}>  
@@ -25,7 +25,7 @@ const StoryBottomBar = () =>
             <View style={story_bottom_bar_styles.section2}>
                 <Icon name="view-cozy" size={45} color="#FFFFFF" style={{marginHorizontal: 5}}/>
                 <TouchableOpacity style={[story_bottom_bar_styles.centre_button, {marginHorizontal: 5}]}
-                                    onPress={()=>{}}>
+                                    onPress={() => {goToTop(); handleGoToFirstPage()}}>
                     <Image source={require("../GUI/CaptureImageButton.png")}
                         style={story_bottom_bar_styles.capture_image_button}>
                     </Image>  
