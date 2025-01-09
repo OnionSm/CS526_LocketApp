@@ -3,7 +3,7 @@ import {useState, type PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, Share} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlagIcon from 'react-native-ico-flags';
-import add_friend_screen_style from './styles/AddFriendScreenStyle';
+import add_friend_screen_style from './styles/AddFriendModalStyle';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const shareLink = async () => {
@@ -82,8 +82,7 @@ function AddFriendScreen({ navigation }: {navigation: any })
                     <TouchableOpacity style={add_friend_screen_style.list_other_app_item} 
                     onPress={() => shareLink()}>
                         <Image source={require('./GUI/ShareButton.png')}
-                        style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}>
-                        </Image>
+                        style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}/>
                         <Text style={add_friend_screen_style.other_app_button_text}>Khác</Text>
                     </TouchableOpacity>
                 </View>
@@ -112,8 +111,7 @@ function AddFriendScreen({ navigation }: {navigation: any })
                     <View style={[add_friend_screen_style.text_option_zone, {flex: 6},
                         ]}>
                         <Image source={require('./GUI/MessengerIcon.png')}
-                        style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}>
-                        </Image>
+                        style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}/>
                         <Text style={{
                             fontFamily: 'SF-Pro-Rounded-Bold',
                             fontSize: 16,
@@ -132,8 +130,7 @@ function AddFriendScreen({ navigation }: {navigation: any })
                     <View style={[add_friend_screen_style.text_option_zone, {flex: 6},
                         ]}>
                         <Image source={require('./GUI/InstaIcon.png')}
-                        style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}>
-                        </Image>
+                        style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}/>
                         <Text style={{
                             fontFamily: 'SF-Pro-Rounded-Bold',
                             fontSize: 16,
@@ -153,8 +150,7 @@ function AddFriendScreen({ navigation }: {navigation: any })
                     <View style={[add_friend_screen_style.text_option_zone, {flex: 6},
                         ]}>
                         <Image source={require('./GUI/ShareButton.png')}
-                        style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}>
-                        </Image>
+                        style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}/>
                         <Text style={{
                             fontFamily: 'SF-Pro-Rounded-Bold',
                             fontSize: 16,

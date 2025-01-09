@@ -55,7 +55,6 @@ export default function ChangeEmailModal ({ modalRef}: { modalRef: any}) {
                 'Content-Type': 'multipart/form-data',
             },
         });
-        console.log(checkValidEmail.data);
 
         if( checkValidEmail.data ){
             Alert.alert("Lỗi", "Email đã tồn tại, vui lòng nhập Email khác.");

@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useContext } from 'react';
 import {useState, type PropsWithChildren} from 'react';
-import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, Share} from 'react-native';
+import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, Share, Alert} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlagIcon from 'react-native-ico-flags';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FlatList, GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import {
-  BottomSheetModal,
-  BottomSheetView,
-  BottomSheetModalProvider,
-  BottomSheetScrollView
+    BottomSheetModal,
+    BottomSheetView,
+    BottomSheetModalProvider,
+    BottomSheetScrollView
 } from '@gorhom/bottom-sheet';
 import add_friend_modal_styles from './styles/AddFriendModalStyle';
 import { Dimensions } from 'react-native';
@@ -19,6 +19,7 @@ import { GET_FRIEND_REQUEST_COOLDOWN } from '@env';
 import { SqliteDbContext } from './context/SqliteDbContext';
 import { GET_FRIEND_DATA_COOLDOWN } from '@env';
 import { IntervalContext } from './context/IntervalContext';
+import { Linking } from 'react-native';
 
 type FriendSearch = {
     id: string,
@@ -43,6 +44,18 @@ type FriendInvitation = {
     userAvatarURL: string
 }
 
+const link = 'https://example.com';
+const url_messenger = `fb-messenger://share?link=${encodeURIComponent(link)}`;
+const url_instagram = `https://www.instagram.com/direct/inbox`;
+const phoneNumber = '0123456789'; // Số điện thoại của người nhận
+const url_zalo = `https://zalo.me/share?text=Hello!`;
+
+
+const shareDirection = async ({link, url}: {link: string, url: string}) => {
+    const supported = await Linking.canOpenURL(url);
+    Linking.openURL(url)
+        .catch((err) => console.error('Error opening URL:', err));
+};
 
 
 
@@ -108,8 +121,7 @@ const renderItemFriend = ({item}:{item: FriendData}) => (
             <View style={[add_friend_modal_styles.mini_avatar_border]}>
                 {item.userAvatarURL !== "" ? (
                     <Image style={add_friend_modal_styles.main_avt}
-                    source={{uri : item.userAvatarURL}}>
-                    </Image>
+                    source={{uri : item.userAvatarURL}}/>
                 ): (
                     <UserAvatar size={35} name={`${item.first_name} ${item.last_name}`} />
                 )}                       
@@ -124,18 +136,13 @@ const renderItemFriend = ({item}:{item: FriendData}) => (
     );
 
 
-
-
-
-
 const renderItemRequest = ({item, removeFriendInvitation}:{item: FriendInvitation, removeFriendInvitation: (id : string) => void}) => (
     <View style={[{display: "flex"}, {width: width}, {height: height * 0.08}, {marginVertical: 3}, {flexDirection: "row"}, {justifyContent: "space-between"}, {alignItems: "center"}]}>
         <View style={[{display: "flex"},{flexDirection: "row"}, {marginHorizontal : width * 0.05}, {alignItems: "center"}]}>
             <View style={[add_friend_modal_styles.mini_avatar_border]}>
                 {item.userAvatarURL !== "" ? (
                     <Image style={add_friend_modal_styles.main_avt}
-                    source={{uri : item.userAvatarURL}}>
-                    </Image>
+                    source={{uri : item.userAvatarURL}}/>
                 ): (
                     <UserAvatar size={35} name={`${item.first_name} ${item.last_name}`} />
                 )}                       
@@ -282,22 +289,21 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
         containerStyle={{zIndex: 13}}
         handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}
         >
-            <BottomSheetScrollView contentContainerStyle={add_friend_modal_styles.contentContainer}>
+            <BottomSheetScrollView contentContainerStyle={[add_friend_modal_styles.contentContainer, , {minHeight: height}]}>
                 <View style={add_friend_modal_styles.main_view}>
                     <ScrollView>
 
                     
                     {/* Find Zone */}
                     <View style={add_friend_modal_styles.find_zone}>
-                        <Text style={add_friend_modal_styles.find_zone_title}>Thêm bạn bè của bạn</Text>
+                        <Text style={add_friend_modal_styles.find_zone_title}>Bạn bè của bạn</Text>
                         <Text style={add_friend_modal_styles.find_zone_amout_friend}>0/20 người đã được bổ sung</Text>
                         <TouchableOpacity style={add_friend_modal_styles.search_bar}>
-                            <Icon name="search" size={24} color="#FFFFFF" /> 
+                            <Icon name="search" size={24} color="#E7E7E7" /> 
                             <TextInput style={add_friend_modal_styles.search_bar_text}
                             placeholder='Thêm một người bạn'
                             placeholderTextColor="#888888"
-                            value = {search_text}
-                            onChangeText={(text: string) => set_search_text(text)}></TextInput>
+                            onChangeText={set_search_text}/>
                         </TouchableOpacity>
                     </View>
 
@@ -307,8 +313,7 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                             <View style={[add_friend_modal_styles.mini_avatar_border]}>
                                 {searched_user.userAvatarURL !== ""  ? (
                                     <Image style={add_friend_modal_styles.main_avt}
-                                    source={{uri : searched_user.userAvatarURL }}>
-                                    </Image>
+                                    source={{uri : searched_user.userAvatarURL }}/>
                                 ): (
                                     <UserAvatar size={35} name={`${searched_user.firstName} ${searched_user.lastName}`} />
                                 )}                       
@@ -350,17 +355,35 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                                             }}>Tìm bạn bè từ các ứng dụng khác</Text>
                         </View>
                         <View style={add_friend_modal_styles.list_other_app_zone}>
-                            <TouchableOpacity style={add_friend_modal_styles.list_other_app_item}>
+
+                            {/* Share Messenger */}
+                            <TouchableOpacity 
+                                onPress={() => {
+                                    shareDirection({
+                                        link: link, 
+                                        url: url_messenger
+                                    })
+                                } 
+                            }
+                                style={add_friend_modal_styles.list_other_app_item}>
                                 <Image source={require('./GUI/MessengerIcon.png')}
                                 style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}></Image>
                                 <Text style={add_friend_modal_styles.other_app_button_text}>Messenger</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={add_friend_modal_styles.list_other_app_item}>
+
+                            {/* Share Instagram */}
+                            <TouchableOpacity 
+                                onPress={() => shareLink()}
+                                style={add_friend_modal_styles.list_other_app_item}>
                                 <Image source={require('./GUI/InstaIcon.png')}
                                 style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}></Image>
                                 <Text style={add_friend_modal_styles.other_app_button_text}>Instagram</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={add_friend_modal_styles.list_other_app_item}>
+
+                            {/* Share Zalo */}
+                            <TouchableOpacity 
+                                onPress={() => shareLink()}                     
+                                style={add_friend_modal_styles.list_other_app_item}>
                                 <Image source={require('./GUI/ZaloIcon.png')}
                                 style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}></Image>
                                 <Text style={add_friend_modal_styles.other_app_button_text}>Zalo</Text>
@@ -368,8 +391,7 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                             <TouchableOpacity style={add_friend_modal_styles.list_other_app_item} 
                             onPress={() => shareLink()}>
                                 <Image source={require('./GUI/ShareButton.png')}
-                                style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}>
-                                </Image>
+                                style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}/>
                                 <Text style={add_friend_modal_styles.other_app_button_text}>Khác</Text>
                             </TouchableOpacity>
                         </View>
@@ -442,7 +464,7 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                             data={show_full_data_addfriend ? data_add_friends : data_add_friends.slice(0, 3)} 
                             renderItem={({ item }) =>
                                 renderItemRequest({ item, removeFriendInvitation })
-                              }
+                            }
                             keyExtractor={(item) => item.id} 
                             scrollEnabled={false}
                             />
@@ -499,12 +521,20 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                                                 marginLeft: 5 
                                             }}>Mời từ các ứng dụng khác</Text>
                         </View>
-                        <TouchableOpacity style={[add_friend_modal_styles.medium_button]}>
+                        <TouchableOpacity 
+        
+                                onPress={() => {
+                                    shareDirection({
+                                        link: link, 
+                                        url: url_messenger
+                                    })
+                                } 
+                            }
+                        style={[add_friend_modal_styles.medium_button]}>
                             <View style={[add_friend_modal_styles.text_option_zone, {flex: 8},
                                 ]}>
                                 <Image source={require('./GUI/MessengerIcon.png')}
-                                style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}>
-                                </Image>
+                                style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}/>
                                 <Text style={{
                                     fontFamily: 'SF-Pro-Rounded-Bold',
                                     fontSize: 16,
@@ -519,12 +549,13 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={[add_friend_modal_styles.medium_button]}>
+                        <TouchableOpacity 
+                            onPress={shareLink}
+                            style={[add_friend_modal_styles.medium_button]}>
                             <View style={[add_friend_modal_styles.text_option_zone, {flex: 8},
                                 ]}>
                                 <Image source={require('./GUI/InstaIcon.png')}
-                                style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}>
-                                </Image>
+                                style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}/>
                                 <Text style={{
                                     fontFamily: 'SF-Pro-Rounded-Bold',
                                     fontSize: 16,
@@ -544,8 +575,7 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                             <View style={[add_friend_modal_styles.text_option_zone, {flex: 8},
                                 ]}>
                                 <Image source={require('./GUI/ShareButton.png')}
-                                style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}>
-                                </Image>
+                                style={[{width: 60}, {height: 60}, {resizeMode: "contain"}]}/>
                                 <Text style={{
                                     fontFamily: 'SF-Pro-Rounded-Bold',
                                     fontSize: 16,

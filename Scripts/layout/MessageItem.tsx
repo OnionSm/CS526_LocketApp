@@ -16,8 +16,8 @@ const MessageItem = ()=>
                 <View style={message_screen_style.story_border}>
                     <View style={message_screen_style.invisible_zone}>
                         <Image style={message_screen_style.avatar}
-                        source={require('./GUI/DefaultAvatar.jpg')}>
-                        </Image> 
+                        source={require('./GUI/DefaultAvatar.jpg')}/>
+
                     </View>
                 </View>
             </View>

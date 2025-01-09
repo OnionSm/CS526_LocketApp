@@ -12,7 +12,7 @@ const { width, height } = Dimensions.get('window');
 export default function ShowUerModal ({modalRef} : {modalRef : any}) {
 
     // State để lưu trạng thái của switch
-    const [isEnabled, setIsEnabled] = useState();
+    const [isEnabled, setIsEnabled] = useState(true);
 
     // Lấy trạng thái Show user từ AsyncStorage
     useEffect(() => {

@@ -18,7 +18,7 @@ const add_friend_modal_styles = StyleSheet.create({
         alignContent: "center",
         alignItems: "center",
         justifyContent: "flex-start",
-        backgroundColor: "#050505",
+        backgroundColor: "#242424",
         width : width,
         height: height,
         flexDirection: "column",
@@ -26,8 +26,8 @@ const add_friend_modal_styles = StyleSheet.create({
     header_text:
     {
         color: "#FFFFFF",
-        fontFamily: "SF-Pro-Rounded-Semibold",
-        fontSize: 24,
+        fontFamily: "SF-Pro-Rounded-Bold",
+        fontSize: 26,
         textAlign: "center",
         marginTop: "8%"
     },
@@ -64,35 +64,40 @@ const add_friend_modal_styles = StyleSheet.create({
         // margin: "3%",
         textAlign: 'center',
         color:"#E7E7E7",
-        fontSize: 25,
-        fontFamily: "SF-Pro-Rounded-Semibold"
+        fontSize: 26,
+        fontFamily: "SF-Pro-Rounded-Bold"
     },
     search_bar:
     {
         width: "90%",
         height: "30%",
-        backgroundColor: "#202020",
+        backgroundColor: "#333232",
         borderRadius: 15,
         display: "flex",
         flexDirection: "row",
         alignContent: "center",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
+        marginVertical: 3,
     },
     search_bar_text:
     {
         textAlign: 'center',
         color:"#E7E7E7",
         fontSize: 18,
-        fontFamily: "SF-Pro-Rounded-Semibold"
+        fontFamily: "SF-Pro-Rounded-Semibold",
+        marginTop: 6,
     },
     find_zone_amout_friend:
     {
         // margin: "3%",
         textAlign: 'center',
+        justifyContent: 'center',
         color:"#AAAAAA",
-        fontSize: 20,
-        fontFamily: "SF-Pro-Rounded-Semibold"
+        fontSize: 18,
+        fontFamily: "SF-Pro-Rounded-Semibold",
+        marginVertical: 6, 
+
     },
 
     // -------------------------------------------------------------------
@@ -110,7 +115,7 @@ const add_friend_modal_styles = StyleSheet.create({
     {
         width: "90%",
         height: "65%",
-        backgroundColor: "#202020" ,
+        backgroundColor: "#333232" ,
         borderRadius: 20,
         display: "flex",
         flexDirection: "row",
@@ -167,15 +172,15 @@ const add_friend_modal_styles = StyleSheet.create({
     buttonzone:
     {
         width: width,
-        height: height * 0.2,
+        height: height * 0.3,
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
-        justifyContent:"center"
+        justifyContent:"center",
     },
     continuebutton:{
         backgroundColor: '#F1B202',
-        borderRadius: 30, 
+        borderRadius: 25, 
         width: '85%', 
         height: "27%",
         display: "flex",
@@ -184,7 +189,7 @@ const add_friend_modal_styles = StyleSheet.create({
     continuetext:
     {
         textAlign: 'center',
-        color:"#505050",
+        color:"#1a1b1c",
         fontSize: 22,
         fontFamily: "SF-Pro-Rounded-Bold"
     },

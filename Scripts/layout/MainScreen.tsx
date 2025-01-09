@@ -2,9 +2,9 @@ import { useRef, useState, useEffect , createContext, useContext, useCallback} f
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button,
-     TouchableOpacity, TextInput, Modal, ScrollView,
-     RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet,
-     SectionList} from 'react-native';
+    TouchableOpacity, TextInput, Modal, ScrollView,
+    RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet,
+    SectionList} from 'react-native';
 import main_screen_styles from './styles/MainScreenStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat, PhotoFile } from 'react-native-vision-camera';

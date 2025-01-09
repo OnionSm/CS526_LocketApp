@@ -18,7 +18,7 @@ const avatar_bottom_sheet_styles = StyleSheet.create({
     {
         backgroundColor: '#242424',
         width: width,
-        height: 0.4 * height,
+        height: 0.35 * height,
         display: "flex",
         justifyContent: 'space-evenly',
         flexDirection: "column",

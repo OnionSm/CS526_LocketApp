@@ -5,4 +5,6 @@ declare module '@env' {
     export const GET_STORY_REQUEST_COOLDOWN: number
 }
 
+declare module 'react-native-user-avatar';
 
+declare module 'react-native-parallax-scroll-view';

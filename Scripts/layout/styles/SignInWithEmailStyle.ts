@@ -3,81 +3,44 @@ import { StyleSheet, Dimensions } from "react-native";
 const { width, height } = Dimensions.get('window');
 const sign_in_with_email_styles = StyleSheet.create({
     main_view:{
-        justifyContent: 'center',
-        opacity: 1,
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        backgroundColor: "#050505",
-        width : width,
-        height: height
-    },
-
-    backzone: {
-        display: "flex",
-        width: width,
-        height: height * 0.1,
-        flexDirection: "row", 
-        alignItems: "center", 
-        justifyContent: "flex-start", 
+        flex:1,
+        backgroundColor: "#121212",
     },
     backbutton:
     {
-        width: 45, 
-        height: 45, 
-        borderRadius: 30, 
-        backgroundColor: '#212121', 
-        display: "flex",
-        justifyContent: 'center', 
-        alignItems: 'center',
-        marginLeft: 20,
-        marginRight:20
-    },
-
-    getphonezone:
-    {
-        width: width,
-        height: height * 0.6,
-        display: "flex",
-        alignItems: "center",
-        alignContent:"center",
-        justifyContent:'center',
-        flexDirection: "column",
-        
+        width: 40, 
+        height: 40, 
+        borderRadius: 40, 
+        backgroundColor: '#3d3d3d',
+        marginVertical: 0.04*height,
+        marginHorizontal: 0.05*width,
+        justifyContent: 'center',
+        alignContent:'center',
+        alignItems:'center',
     },
     getphonezonetitle:
     {
-        margin: "3%",
-        textAlign: 'center',
-        color:"#E7E7E7",
-        fontSize: 27,
-        fontFamily: "SF-Pro-Rounded-Semibold"
+        marginTop: 0.16*height,
+        marginLeft: 0.07*width,
+        color:"#ffffff",
+        fontSize: 25,
+        fontFamily: "SF-Pro-Rounded-Bold"
         
     },
-    inputzone:
-    {
-        height: 55, 
-        width: '85%', 
-        borderRadius: 18, 
-        backgroundColor: "#1F1B1A",
-        display: "flex",
-        alignItems: "center",
-        alignContent:"center",
-        justifyContent: "flex-start",
-        flexDirection: "row"
+    input: {
+        backgroundColor: '#2F2F2F',
+        color: '#FFFFFF',
+        borderRadius: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 15,
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginVertical: 10,
+        marginHorizontal: 0.07*width,
+        height: 60,
     },
-    inputzoneicon:
-    {
-        width: "50%",
-        height: "50%",
-        marginLeft: 20,
-        marginRight: 15
-    },
-    inputzonetext:
-    { 
-        color:"#949494",
-        fontSize: 20,
-        fontFamily: "SF-Pro-Rounded-Semibold",
+    textArea: {
+        height: 150, 
     },
     useemailbutton:
     {
@@ -89,54 +52,37 @@ const sign_in_with_email_styles = StyleSheet.create({
         display: "flex",
         justifyContent:"center",
     },
-    useemailtext:
-    {
+    textView:{
+        marginTop: 0.35*height,
+    },
+    text: {
+        fontSize: 13.5,
+        fontWeight: '400',
+        color: '#c4c0c0', 
         textAlign: 'center',
-        color:"#E7E7E7",
-        fontSize: 18,
-        fontFamily: "SF-Pro-Rounded-Semibold"
     },
-    guidelinezone:
-    {
-        width: width,
-        height: height * 0.1,
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        justifyContent: "flex-end"
+    button: {
+        position: 'absolute',
+        bottom: 20, // Đặt nút cách đáy màn hình 20px
+        left: 20,
+        right: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#2F2F2F',
+        borderRadius: 25,
+        paddingVertical: 20,
+        marginTop: 20,
     },
-    guidelinetext:{
-        marginRight: "10%",
-        marginLeft: "10%",
-        textAlign: 'center',
-        color:"#BEBDBB",
-        fontSize: 15,
-        fontFamily: "SF-Pro-Rounded-Semibold"
+    buttonTextActive: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#242424',
     },
-    buttonzone:
-    {
-        width: width,
-        height: height * 0.2,
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        justifyContent:"center"
+    buttonTextInactive: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#999999',
     },
-    continuebutton:{
-        backgroundColor: '#F1B202',
-        borderRadius: 30, 
-        width: '85%', 
-        height: "27%",
-        display: "flex",
-        justifyContent:"center",
-    },
-    continuetext:
-    {
-        textAlign: 'center',
-        color:"#505050",
-        fontSize: 22,
-        fontFamily: "SF-Pro-Rounded-Bold"
-    }
 });
 
 export default sign_in_with_email_styles

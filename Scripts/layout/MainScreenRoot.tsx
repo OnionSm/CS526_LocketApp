@@ -553,7 +553,7 @@ const get_user_avt = (user_id: string, db: any) => {
     return (
         <GestureHandlerRootView>
             <BottomSheetModalProvider>
-                <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} user_modal_refs={user_modal_ref} user_avt={user_avt}/>
+                <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} modalRef={user_modal_ref}/>
                 <MainScreenHeader isTakingPhoto={isTakingPhoto} back_button_enable={back_button_enable} handlePresentUserModal={handlePresentUserModal} 
                 navigation={navigation} data_friend={data_friend} set_data_friend={set_data_friend}/>
                 <BackToMainScreenButton 

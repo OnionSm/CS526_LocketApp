@@ -8,7 +8,7 @@ const signinstyles = StyleSheet.create({
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
-        backgroundColor: "#050505",
+        backgroundColor: "#121212",
         width : width,
         height: height
     },
@@ -19,39 +19,16 @@ const signinstyles = StyleSheet.create({
         // backgroundColor: "#b6bf30",
         alignItems:"center",
         width: width,
-        height: height * 0.57
-    },
-    titlezone: {
-        display:"flex",
-        alignItems:"center",
-        justifyContent:"center",
-        width: width,
-        height: height * 0.08,
-        flexDirection: "row",
-    },
-    locketlogo:
-    {
-        width: "10%",
-        height: "50%",
-        resizeMode: 'cover',
-        marginLeft: 5,
-        marginRight: 5
-    },
-    locket_title:{
-        color: "#FEFEFE",
-        fontSize: 35,
-        marginLeft: 5,
-        marginRight: 5,
-        fontFamily: "SF-Pro-Rounded-Bold"
+        height: height * 0.6
     },
     locketdescriptzone:{
+        marginTop: 0.02*height,
         display:"flex",
         alignItems:"center",
         justifyContent:"center",
         alignContent: "center",
         width: width,
         height: height * 0.1,
-        
     },
     locketdescript:
     {
@@ -59,7 +36,7 @@ const signinstyles = StyleSheet.create({
         marginLeft: "10%",
         textAlign: 'center',
         color:"#BEBDBB",
-        fontSize: 27,
+        fontSize: 25,
         fontFamily: "SF-Pro-Rounded-Semibold"
     },
     buttonzone:{
@@ -69,10 +46,9 @@ const signinstyles = StyleSheet.create({
         alignItems: "center",
         width: width,
         height: height * 0.25,
-        // backgroundColor: "#b6bf30",
     },
     widget:{
-        width: "65%",
+        width: "68%",
         height: "88%",
         resizeMode: 'cover'
     },
@@ -82,13 +58,14 @@ const signinstyles = StyleSheet.create({
         marginLeft: "10%",
         textAlign: 'center',
         color:"#CCCCCC",
-        fontSize: 22,
+        fontSize: 21,
         fontFamily: "SF-Pro-Rounded-Bold"
     },
     registerbutton:{
+        marginBottom: 0.01*height,
         backgroundColor: '#F1B202',
         borderRadius: 30, 
-        width: '58%', 
+        width: '55%', 
         height: "27%",
         display: "flex",
         justifyContent:"center",
@@ -96,7 +73,7 @@ const signinstyles = StyleSheet.create({
     registertext:{
         textAlign: 'center',
         color:"#301C03",
-        fontSize: 22,
+        fontSize: 21,
         fontFamily: "SF-Pro-Rounded-Bold"
     }
 }
