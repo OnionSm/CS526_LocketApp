@@ -16,13 +16,14 @@ import { GET_FRIEND_DATA_COOLDOWN } from "@env"
 const saveUserData = async (data: any, db: any) => {
     try 
     {
-        
         await AsyncStorage.setItem("user_id", data.user.id);
         await AsyncStorage.setItem("first_name", data.user.firstName);
         await AsyncStorage.setItem("last_name", data.user.lastName);
         await AsyncStorage.setItem("email", data.user.email);
+        await AsyncStorage.setItem("password",  data.user.password);
         await AsyncStorage.setItem("public_user_id", data.user.publicUserId);
         await AsyncStorage.setItem("phone_number", data.user.phoneNumber);
+        await AsyncStorage.setItem("show_user", JSON.stringify(data.user.showUser));
         await AsyncStorage.setItem("user_avatar_url", data.user.userAvatarURL);
         await AsyncStorage.setItem("list_friends", JSON.stringify(data.user.friends));
         await AsyncStorage.setItem('access_token', data.token.accessToken);

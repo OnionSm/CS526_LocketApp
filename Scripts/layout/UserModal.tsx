@@ -19,6 +19,7 @@ import {
 import ChangeInfoModal from './ChangeInfoModal';
 import CheckPasswordModal from './CheckPasswordModal';
 import ChangeEmailModal from './ChangeEmailModal';
+import ShowUerModal from './ShowUserModal';
 import DeleteAccountModal from './modals/DeleteAccountModal';
 import AvatarImageBottomSheet from './bottom_sheets/AvatarImageBottomSheet';
 import SQLite from 'react-native-sqlite-storage';
@@ -101,6 +102,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
     const reportModalRef = useRef<BottomSheetModal>(null);
     const changeInfoModalRef = useRef<BottomSheetModal>(null);
     const checkPasswordModalRef = useRef<BottomSheetModal>(null);
+    const showUserModal = useRef<BottomSheetModal>(null);
     const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
     const [isReportVisible, setIsReportVisible] = useState(false);
     const [isChangeInfoVisible, setIsChangeInfoVisible] = useState(false);
@@ -161,7 +163,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
             handleStyle={{height:10}}
             containerStyle={{
                 zIndex: 11,
-              }}
+            }}
             handleIndicatorStyle={[{ backgroundColor: '#505050' }, {width: 45}, {height: 5}]}>
             <AvatarImageBottomSheet set_user_avatar={set_user_avt} isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
             <DeleteAccountModal navigation={navigation} isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal>
@@ -172,9 +174,9 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                         <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
                         onPress={() => {toggle_avatar_image_modal()}}>
                             {user_avt_uri != null && user_avt_uri != undefined &&  user_avt_uri !== "" ? (
-                                 <Image style={general_user_profile_styles.main_avt}
-                                 source={{uri : user_avt_uri}}>
-                                 </Image>
+                                    <Image style={general_user_profile_styles.main_avt}
+                                    source={{uri : user_avt_uri}}>
+                                    </Image>
                             ): (
                                 <UserAvatar size={100} name={`${first_name} ${last_name}`} />
                             )}
@@ -234,72 +236,6 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                         </TouchableOpacity>
                         </View>
                     </View> 
-                </View>
-                
-                <View style={general_user_profile_styles.button_wrapper}>
-                    <View style={general_user_profile_styles.extension_setting_zone}>
-                        <View style={general_user_profile_styles.text_option_zone}>
-                            <Icon name="add-box" size={24} color="#AAAAAA" />
-                            <Text style={{
-                                fontFamily: 'SF-Pro-Rounded-Bold',
-                                fontSize: 16,
-                                color: "#AAAAAA",
-                                marginLeft: 5 
-                            }}>
-                                Thiết lập tiện ích
-                            </Text>
-                        </View>
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button, 
-                            {marginBottom: 1},
-                            {borderTopLeftRadius : 20},
-                            {borderTopRightRadius: 20},
-                            {display: "flex"},
-                            {justifyContent: "space-evenly"},
-                            {alignItems: "center"},
-                            {flexDirection: "row"}]}>
-                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                {marginLeft: 20},
-                                {marginRight: 20}]}>
-                                <Icon name="add-box" size={24} color="#AAAAAA" />
-                                <Text style={{
-                                    fontFamily: 'SF-Pro-Rounded-Bold',
-                                    fontSize: 16,
-                                    color: "#AAAAAA",
-                                    marginLeft: 5 
-                                }}>
-                                    Thêm tiện ích
-                                </Text>
-                            </View>
-                            <View style={[{flex: 1}]}>
-                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                            </View>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button,
-                            {borderBottomLeftRadius: 20},
-                            {borderBottomRightRadius: 20},
-                            {display: "flex"},
-                            {justifyContent: "space-evenly"},
-                            {alignItems: "center"},
-                            {flexDirection: "row"}]}>
-                            <View style={[general_user_profile_styles.text_option_zone, {flex: 7},
-                                {marginLeft: 20},
-                                {marginRight: 20}]}>
-                                <Icon name="help" size={24} color="#AAAAAA" />
-                                <Text style={{
-                                    fontFamily: 'SF-Pro-Rounded-Bold',
-                                    fontSize: 16,
-                                    color: "#AAAAAA",
-                                    marginLeft: 5 
-                                }}>
-                                    Hướng dẫn về tiện ích
-                                </Text>
-                            </View>
-                            <View style={[{flex: 1}]}>
-                                <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
                 </View>
 
                 {/* Tổng quát */}
@@ -422,7 +358,8 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                         </View>
 
                         {/* Hiển thị tài khoản người dùng */}
-                        <TouchableOpacity style={[general_user_profile_styles.medium_button,  
+                        <TouchableOpacity onPress={() => showUserModal.current?.present()}
+                            style={[general_user_profile_styles.medium_button,  
                             {marginBottom: 1},
                             {display: "flex"},
                             {justifyContent: "space-evenly"},
@@ -437,7 +374,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                                 {marginRight: 20},
                                 {borderBottomLeftRadius: 20},
                                 {borderBottomRightRadius: 20}]}>
-                                <Icon name="person" size={24} color="#AAAAAA" />
+                                <Icon name="visibility" size={24} color="#AAAAAA" />
                                 <Text style={{
                                     fontFamily: 'SF-Pro-Rounded-Bold',
                                     fontSize: 16,
@@ -451,6 +388,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                                 <Icon name="chevron-right" size={24} color="#FFFFFF"></Icon>
                             </View>
                         </TouchableOpacity>
+                        <ShowUerModal modalRef={showUserModal}/>
                     </View>
                 </View>
 

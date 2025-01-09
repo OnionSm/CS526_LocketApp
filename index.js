@@ -56,7 +56,7 @@ function MainApp() {
     <UserMessageProvider>
       <SqliteDbProvider>
         <NavigationContainer>
-        <Stack.Navigator initialRouteName="SignInScreen">
+        <Stack.Navigator initialRouteName="MainScreenRoot">
           <Stack.Screen 
             name="SignInScreen" 
             component={SignInScreen} 

@@ -13,8 +13,8 @@ import {
 import AxiosInstance from "./instance/AxiosInstance";
 import Toast from 'react-native-toast-message';
 
-export default function ChangeInfoModal({ set_first_name, set_last_name, modalRef, onClose} : 
-    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modalRef : any; onClose : () => void})
+export default function ChangeInfoModal({ set_first_name, set_last_name, modalRef} : 
+    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modalRef : any})
 {
 
     const [first_name, SetFirstName] = useState("");
@@ -77,13 +77,13 @@ export default function ChangeInfoModal({ set_first_name, set_last_name, modalRe
             Alert.alert('Thành công',`Tên của bạn đã được thay đổi`);
             SetFirstName('');
             SetLastName('');
-            onClose();
+            modalRef?.current?.dismiss();
         }
         catch{
             Alert.alert('Lỗi', 'Không thể thực hiện thay đổi');
             SetFirstName('');
             SetLastName('');
-            onClose();
+            modalRef?.current?.dismiss();
         }
     }
 
@@ -94,6 +94,9 @@ export default function ChangeInfoModal({ set_first_name, set_last_name, modalRe
             snapPoints={['100%']}
             backgroundStyle={{ backgroundColor: '#1F1F1F' }}
             handleStyle={{ height: 10 }}
+            containerStyle={{
+                zIndex: 16,
+            }}
             handleIndicatorStyle={[{ backgroundColor: '#505050', width: 45, height: 5 }]}
         >
         <BottomSheetView style={change_info_style.container}>

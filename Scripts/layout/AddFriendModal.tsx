@@ -253,13 +253,13 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
             const response = await AxiosInstance.get("api/users/friend-request/receive");
             if(response.status === 200)
             {
-                console.log(response.data);
+                //console.log(response.data);
                 set_data_add_friends(response.data);
             }
         }
         catch(error)
         {
-            console.error('Error get friend invitation', error);
+            //console.error('Error get friend invitation', error);
         }
     }
 
