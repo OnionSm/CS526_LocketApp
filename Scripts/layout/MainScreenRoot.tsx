@@ -39,6 +39,10 @@ import { SqliteDbContext } from './context/SqliteDbContext';
 import { FriendData } from './types/FriendData';
 import AxiosInstance from './instance/AxiosInstance';
 import { Story } from './types/Strory';
+import { GET_STORY_REQUEST_COOLDOWN } from "@env"
+
+
+
 // Hàm để lấy MIME type từ phần mở rộng của file
 const getMimeType = (path: any) => {
     const extension = path.split('.').pop().toLowerCase();
@@ -233,13 +237,12 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 
 // ------------------------------------------------------- GET STORY DATA ------------------------------------------------------------------
     const [list_story, set_list_story] = useState<Array<Story>>([]);
-
+    var user_id = AsyncStorage.getItem("user_id");
     useEffect(() => {
         const get_list_story_from_local_storage = async () =>
         {
             try
             {
-                var user_id = await AsyncStorage.getItem("user_id");
                 if (user_id == null || user_id == undefined)
                 {
                     return;
@@ -305,6 +308,62 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         get_list_story_from_local_storage();
     }, []);
 
+    const get_story_data_from_server = async () => 
+        {
+            try
+            {
+                var ls_story : string[] = [];
+                list_story.forEach(item => {
+                    ls_story.push(item.story_id);
+                });
+                var form_data = new FormData();
+                form_data.append("list_story_in_user", ls_story);
+                var res = await AxiosInstance.post("api/story/get_story", form_data, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                if (res.status === 200) 
+                {
+                    // Tạo danh sách để chứa các câu chuyện
+                    const list_story_respone: Array<Story> = [];
+                
+                    // Duyệt qua từng phần tử trong res.data
+                    res.data.forEach((story: any) => {
+                
+                        // Tạo đối tượng Story
+                        const st: Story = {
+                            story_id: story.id,
+                            uploader_id: story.userId,
+                            image: story.imageURL,
+                            description: story.description,
+                            create_at: story.created_at,
+                            seen: story.seen,
+                        };
+                
+                        // Thêm vào danh sách
+                        list_story_respone.push(st);
+                    });
+                
+                    // Cập nhật state với danh sách mới
+                    set_list_story(list_story_respone);
+                }
+                
+            }
+            catch(error)
+            {
+                console.error(error);
+            }
+        };
+
+    useEffect(() => 
+    {
+        const intervalStory = setInterval(() => 
+        {
+            get_story_data_from_server(); 
+        }, Number(GET_STORY_REQUEST_COOLDOWN)); 
+        return () => clearInterval(intervalStory);
+    }, []);
 // --------------------------------------------------------------------------------------------------------------------------------------
 
     return (

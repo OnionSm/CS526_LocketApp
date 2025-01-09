@@ -16,6 +16,9 @@ import StoryItem from './components/StoryItem';
 import { FriendData } from './types/FriendData';
 import UserAvatar from 'react-native-user-avatar';
 import { FlatList } from 'react-native-gesture-handler';
+import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import AxiosInstance from './instance/AxiosInstance';
 
 const getMimeType = (path: any) => {
     const extension = path.split('.').pop().toLowerCase();
@@ -36,6 +39,58 @@ const getMimeType = (path: any) => {
   | { id: string;  content: string }; // Cho FriendNew Section
 
 
+
+const up_story = async (photoImg: string | null, select_all: boolean, selected_friend : string[], data_fr: Array<FriendData>, story_caption: string | undefined) => 
+{
+    try
+    {
+        const user_id = await AsyncStorage.getItem("user_id");
+        if(user_id === undefined || user_id === null)
+        {
+            return;
+        }
+        var list_receivers: string[] = [];
+        if(select_all)
+        {
+            data_fr.forEach((item) =>
+            {
+                list_receivers.push(item.id);
+            });
+        }
+        else
+        {
+        list_receivers = selected_friend;
+        }
+        console.log(photoImg);
+        console.log(user_id);
+        console.log(list_receivers);
+        console.log(story_caption);
+        const form_data = new FormData();
+        form_data.append("Receivers", list_receivers);
+        form_data.append("ImageURL", photoImg);
+        form_data.append("Description", story_caption);
+
+        
+        var res = await AxiosInstance.post("api/story/create_story", form_data, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+        if (res.status === 200)
+        {
+            console.log("Up story thành công");
+        }
+        else
+        {
+            console.log("Up story thất bại");
+        }
+    }
+    catch(error)
+    {
+        console.log("Up ảnh không thành công");
+    }
+}
+
 function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto, setIsTakingPhoto, go_to_page_story_tab, data_friend}: 
     {hasPermission: boolean; setHasPermission: (state: boolean) => void; navigation: any; isTakingPhoto: boolean; 
     setIsTakingPhoto: (state: boolean) => void, go_to_page_story_tab: () => void, data_friend: Array<FriendData>})
@@ -50,13 +105,8 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
         set_delete_account_modal(!delete_account_modal_state);
     }
 
-    // const modalRefs = useRef<Record<string, BottomSheetModal | null>>({});
-    // const handlePresentModal = useCallback((key: string) => {
-    //     modalRefs.current[key]?.present();
-    // }, []);
-    // const handleCloseModal = useCallback((key: string) =>{
-    //     modalRefs.current[key]?.close()
-    // }, []);
+    const [selected_friend, set_selected_friend] = useState<string[]>([]); 
+    const [selected_all, set_selected_all] = useState(true);
     
 
     const devices = Camera.getAvailableCameraDevices();
@@ -109,6 +159,8 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
         setPhoto(null);
     };
 
+    const [story_caption, set_story_caption] = useState<string>();
+
     return(
         <View style={main_screen_styles.main_view}>
 
@@ -117,9 +169,22 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
             {isTakingPhoto ? (
                 <View style={main_screen_styles.image_zone}>
                 {photoImg ? (
-                    <Image 
+                    <View style={{ position: 'relative', width: '100%', height: '100%',
+                        display: "flex", alignItems: "center",
+                    }}>
+                        <Image 
                         source={{uri: photoImg}} 
-                        style={{ width: "100%", height: "100%" }} />
+                        style={{ width: '100%', height: '100%' }} />
+                        <View style={main_screen_styles.caption_background}>
+                            <TextInput style={[main_screen_styles.caption]}
+                            placeholder='Thêm một tin nhắn'
+                            placeholderTextColor={"#CACACA"}
+                            value={story_caption}
+                            onChangeText={(text) => {set_story_caption(text)}}
+                            ></TextInput>
+                        </View>
+                    </View>
+                    
             ) : (
                 <Text>No photo taken</Text>
             )}
@@ -153,13 +218,21 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
                             onPress={()=>{resetTakingPhoto()}}>
                             <Icon name="close" size={45} color="#FFFFFF" />
                         </TouchableOpacity>
-                        <TouchableOpacity style={[main_screen_styles.button, 
+                        <TouchableOpacity style={[selected_all || selected_friend.length > 0 ? 
+                        main_screen_styles.button_enable : main_screen_styles.button_unenable, 
                             {width: 100},
                             {height: 100},
-                            {borderRadius: 50}]}>
-                            <Icon name="send" size={50} color="#FFFFFF"></Icon>
-                            {/* <Image source={require("./GUI/CaptureImageButton.png")}
-                            style={main_screen_styles.capture_image_button}></Image>   */}
+                            {borderRadius: 50}]}    
+                            disabled={!selected_all && selected_friend.length === 0}
+                            onPress={async () => {
+                                await up_story(photoImg, selected_all, selected_friend, data_friend, story_caption);
+                            }}>
+                            {selected_all || selected_friend.length > 0 ? (
+                                <Icon name="send" size={50} color="#FFFFFF"></Icon>
+                            ) : (
+                                <Icon name="send" size={50} color="#888888"></Icon>
+                            )}
+                            
                         </TouchableOpacity>
                         <TouchableOpacity style={main_screen_styles.centre_button}>
                             <Icon name="edit-note" size={45} color="#FFFFFF" /> 
@@ -174,7 +247,7 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
                         <TouchableOpacity style={main_screen_styles.centre_button}
                         onPress={()=>{takePhoto()}}>
                             <Image source={require("./GUI/CaptureImageButton.png")}
-                            style={main_screen_styles.capture_image_button}></Image>  
+                            style={[main_screen_styles.capture_image_button]}></Image>  
                         </TouchableOpacity>
                         <TouchableOpacity style={main_screen_styles.centre_button}
                         onPress={() => {set_use_back_camera(!use_back_camera)}}>
@@ -198,23 +271,46 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
                 </TouchableOpacity>
             ) : (
                 <View style={main_screen_styles.history_zone_2}>
-                    <View style={{display: "flex", flexDirection: "column", marginLeft: width * 0.2, marginRight: 10 ,
-                        justifyContent: "center", alignItems: "center"}}>
-                        <View style={[main_screen_styles.mini_avatar_border]}>
+                    <TouchableOpacity style={{display: "flex", flexDirection: "column", marginLeft: width * 0.2, marginRight: 10 ,
+                        justifyContent: "center", alignItems: "center"}}
+                        onPress={() => 
+                            {
+                                set_selected_all(!selected_all);
+                            }
+                        }>
+                        <View style={[
+                            (selected_friend.length === 0 && selected_all) ? main_screen_styles.mini_avatar_border_selected :
+                            main_screen_styles.mini_avatar_border_unselected]}>
                             <Icon name="group" size={24} color="#B6B6B6" />
                         </View>
                         <Text style={{fontFamily: "SF-Pro-Rounded-Bold", color: "#7B7B7B"}}>Tất cả</Text>
-                    </View>
+                    </TouchableOpacity>
 
                     <FlatList
                         data={data_friend}
                         horizontal={true} 
                         keyExtractor={(item: FriendData) => item.id}
                         renderItem={({ item }) => (  
-                            <View style={{display: "flex", flexDirection: "column",
+                            <TouchableOpacity style={{display: "flex", flexDirection: "column",
                                 justifyContent: "center", alignItems: "center"
-                            }}>
-                                <View style={[main_screen_styles.mini_avatar_border_2]}>
+                            }}
+                            onPress={() => 
+                                {
+                                    if (selected_friend.includes(item.id)) 
+                                    {
+                                        // Nếu đã chọn, loại bỏ item.id khỏi mảng
+                                        set_selected_friend(selected_friend.filter((id) => id !== item.id));
+                                    } 
+                                    else 
+                                    {
+                                        // Nếu chưa chọn, thêm item.id vào mảng
+                                        set_selected_friend([...selected_friend, item.id]);
+                                        set_selected_all(false);
+                                    }
+                              }}>
+                                <View style={[
+                                    selected_friend.includes(item.id) ? main_screen_styles.mini_avatar_border_2_selected :
+                                    main_screen_styles.mini_avatar_border_2_unselected]}>
                                     {item.userAvatarURL !== "" ? (
                                         <Image 
                                             style={main_screen_styles.main_avt} 
@@ -225,7 +321,7 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
                                     )}
                                 </View>
                                 <Text style={{fontFamily: "SF-Pro-Rounded-Bold", color: "#7B7B7B"}}>{item.first_name}</Text>
-                            </View>
+                            </TouchableOpacity>
                         )}
                     />
                 </View>
