@@ -33,94 +33,13 @@ import { format } from 'date-fns';
 import { Story } from './types/Strory';
 import type { ICarouselInstance } from "react-native-reanimated-carousel";
 
-// const data_story = [
-//   {
-//     story_id: "1",
-//     uploader_id: "1",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "2",
-//     uploader_id: "2",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "3",
-//     uploader_id: "3",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "4",
-//     uploader_id: "4",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "5",
-//     uploader_id: "5",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "6",
-//     uploader_id: "6",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "7",
-//     uploader_id: "7",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "8",
-//     uploader_id: "8",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "9",
-//     uploader_id: "9",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   },
-//   {
-//     story_id: "10",
-//     uploader_id: "10",
-//     image: "",
-//     description: "Hi hi",
-//     create_at: "2025",
-//     seen: false
-//   }
-// ]
+
   
 const {width, height} = Dimensions.get("window");
 const MainScreenStoryTab = ({data_friend, list_story, goToTop}: {data_friend: Array<FriendData>,  list_story: Array<Story> , goToTop: () => void}) =>
 {
 
-  
+  console.log(list_story.length);
   const handleSnapToItem = (index: number) => {
       console.log('Current index:', index);
 
@@ -131,68 +50,7 @@ const MainScreenStoryTab = ({data_friend, list_story, goToTop}: {data_friend: Ar
     }
   };
 
-  // const data_fr = [
-  //   {
-  //     id: "1", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "2", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "3", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "4", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "5", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "6", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "7", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "8", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "9", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   },
-  //   {
-  //     id: "10", 
-  //     first_name: "Onion",
-  //     last_name: "Onion",
-  //     userAvatarURL: ""
-  //   }
-  // ]
+  
 
   const ref = React.useRef<ICarouselInstance>(null);
 
