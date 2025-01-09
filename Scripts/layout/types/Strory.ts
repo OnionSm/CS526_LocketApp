@@ -4,5 +4,6 @@ export type Story = {
     image: string,
     description: string,
     create_at: string
-    seen: boolean
+    seen: boolean,
+    reset_time: string 
 }
