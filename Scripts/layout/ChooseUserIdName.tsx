@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import React from 'react';
 import type {PropsWithChildren} from 'react';
-import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput} from 'react-native';
-import Icon from 'react-native-vector-icons/AntDesign';
-import choose_username_style from './styles/ChooseUserNameStyle';
+import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, Alert} from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import styles from './styles/SignInWithEmailStyle';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CONNECTION_IP } from '@env';
 
@@ -27,6 +27,8 @@ function ChooseUserIdName({navigation}: {navigation: any})
     const [register_password, SetPassword] = useState("");
     const [register_firstname, SetFirstName] = useState("");
     const [register_lastname, SetLastName] = useState("");
+
+    const isFormValid = user_id_name.trim() !== '';
 
     useEffect(() =>{
         const LoadRegisterData = async () =>
@@ -58,30 +60,29 @@ function ChooseUserIdName({navigation}: {navigation: any})
         LoadRegisterData();
     }, []);
     return(
-        <View style={choose_username_style.main_view}>
+        <View style={styles.main_view}>
+
             {/* Back Zone */}
-            <View style={choose_username_style.backzone}>
-            </View>
+            <TouchableOpacity
+                style={styles.backbutton}
+                onPress={() => navigation.navigate("SignInScreen")}
+            >
+                <Icon name="arrow-back-ios" size={22} color="#FFFFFF"/>
+            </TouchableOpacity>
 
             {/* Type Password Zone */}
-            <View style={choose_username_style.getusernamezone}>
-                <Text style={choose_username_style.getusernamezonetitle}>Thêm một tên người dùng</Text>
+            <Text style={[styles.getphonezonetitle]}>Thêm một tên người dùng</Text>
 
-                <View style ={choose_username_style.inputzone}>
-                    <TextInput  style={[choose_username_style.inputzonetext]}
+            <TextInput  style={[styles.input]}
                         placeholder="Tên người dùng"
                         placeholderTextColor="#888888"
-                        value={user_id_name}
-                        onChangeText={n => SetUserIdName(n)}>
+                        onChangeText={SetUserIdName}/>
 
-                    </TextInput>
-                    
-                </View>
-            </View>
 
             {/* Button Zone */}
-            <View style={choose_username_style.buttonzone}>
-                <TouchableOpacity style={choose_username_style.continuebutton}
+            <TouchableOpacity   
+                style={[styles.button, isFormValid && {backgroundColor: '#F1B202'}]}
+                disabled={!isFormValid}
                 onPress={async () => 
                 {
                     try
@@ -102,12 +103,12 @@ function ChooseUserIdName({navigation}: {navigation: any})
                             }
                             else
                             {
-                                console.log("Xác thực tài khoản đã đăng kí thất bại");
+                                Alert.alert("", "Tên người dùng ny đã tồn tại.");
                             }
                         }
                         else
                         {
-                            console.log("Không thể tạo tài khoản");
+                            Alert.alert("", "Tên người dùng này đã tồn tại.");
                         }
                     }
                     catch(error)
@@ -117,9 +118,8 @@ function ChooseUserIdName({navigation}: {navigation: any})
                     
                 }
                 }>
-                    <Text style ={choose_username_style.continuetext}>Tiếp tục</Text>
+                    <Text style = {[isFormValid ? styles.buttonTextActive : styles.buttonTextInactive]}>Tiếp tục</Text>
                 </TouchableOpacity>
-            </View>
         </View>
     )
 }

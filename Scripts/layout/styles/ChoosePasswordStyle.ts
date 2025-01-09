@@ -3,35 +3,21 @@ import { StyleSheet, Dimensions } from "react-native";
 const { width, height } = Dimensions.get('window');
 const change_password_styles = StyleSheet.create({
     main_view:{
-        justifyContent: 'center',
-        opacity: 1,
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
-        backgroundColor: "#050505",
-        width : width,
-        height: height
+        flex:1,
+        backgroundColor: "#121212",
     },
 
-    backzone: {
-        display: "flex",
-        width: width,
-        height: height * 0.1,
-        flexDirection: "row", 
-        alignItems: "center", 
-        justifyContent: "flex-start", 
-    },
     backbutton:
     {
-        width: 45, 
-        height: 45, 
-        borderRadius: 30, 
-        backgroundColor: '#212121', 
-        display: "flex",
-        justifyContent: 'center', 
-        alignItems: 'center',
-        marginLeft: 20,
-        marginRight:20
+        width: 40, 
+        height: 40, 
+        borderRadius: 40, 
+        backgroundColor: '#3d3d3d',
+        marginVertical: 0.04*height,
+        marginHorizontal: 0.05*width,
+        justifyContent: 'center',
+        alignContent:'center',
+        alignItems:'center',
     },
 
     getpasswordzone:

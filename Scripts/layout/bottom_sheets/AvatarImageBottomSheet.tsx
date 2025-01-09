@@ -91,38 +91,31 @@ const AvatarImageBottomSheet = ({set_user_avatar, isVisible, toggleModal} : {set
                           {justifyContent: "space-around"}, {alignSelf: "flex-start"}
                       ]}>
                           <Text style={[{color:"#FFFFFF"}, {fontSize: 20},{fontFamily: "SF-Pro-Rounded-Bold"},
-                          {marginLeft: 20}]}>
+                          {marginHorizontal: 10}, {alignSelf: 'center'}]}>
                               Ảnh hồ sơ của bạn sẽ được hiển thị cho tất cả mọi người có số điện thoại của bạn
                           </Text>
                       </View>
                       <TouchableOpacity style={[{borderTopWidth: 1}, {width: "100%"}]}>
-                          <Text style={[{color:"#FFFFFF"}, {fontSize: 20},{fontFamily: "SF-Pro-Rounded-Bold"},
-                          {marginLeft: 20}, {marginTop: 5}, {textAlign: "center"}]}
+                          <Text style={styles.button}
                           onPress={()=>{
                             openGallery();
+                            toggleModal();
                           }}>
                             Chọn từ thư viện
                           </Text>
                       </TouchableOpacity>  
                       <View style={[{borderTopWidth: 1}, {width: "100%"}]}>
-                          <Text style={[{color:"#FFFFFF"}, {fontSize: 20},{fontFamily: "SF-Pro-Rounded-Bold"},
-                          {marginLeft: 20}, {marginTop: 5}, {textAlign: "center"}]}
+                          <Text style={styles.button}
                           onPress={() => {
                             openCamera();
+                            toggleModal();
                           }}>
                               Chụp ảnh
                           </Text>
                           
                       </View>
-                      <View style={[{borderTopWidth: 1}, {width: "100%"}]}>
-                          <Text style={[{color:"#FF4438"}, {fontSize: 20},{fontFamily: "SF-Pro-Rounded-Bold"},
-                          {marginLeft: 20}, {marginTop: 5}, {textAlign: "center"}]}>
-                              Xóa ảnh hồ sơ
-                          </Text>
-                      </View>
                       <TouchableOpacity style={[{borderTopWidth: 1}, {width: "100%"}]}>
-                          <Text style={[{color:"#FFFFFF"}, {fontSize: 20},{fontFamily: "SF-Pro-Rounded-Bold"},
-                          {marginLeft: 20}, {marginTop: 5}, {textAlign: "center"}]}
+                          <Text style={styles.button}
                           onPress={() => {toggleModal()}}>
                               Hủy
                           </Text>
@@ -141,8 +134,6 @@ export default AvatarImageBottomSheet
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
   },
   image: {
@@ -150,6 +141,15 @@ const styles = StyleSheet.create({
     height: 200,
     marginTop: 20,
   },
+  button: {
+    color:"#FFFFFF",
+    fontSize: 18,
+    fontFamily: "SF-Pro-Rounded-Semibold",
+    marginHorizontal: 20, 
+    marginTop: 5, 
+    textAlign: "center",
+    justifyContent: 'center',
+  }
 });
 
 const upload_avatar  = async (uri: string) => 
@@ -162,3 +162,4 @@ const upload_avatar  = async (uri: string) =>
   });
   return respone.status === 200;
 }
+

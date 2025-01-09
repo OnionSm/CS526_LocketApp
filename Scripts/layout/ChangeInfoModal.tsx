@@ -12,13 +12,15 @@ import {
 } from '@gorhom/bottom-sheet';
 import AxiosInstance from "./instance/AxiosInstance";
 import Toast from 'react-native-toast-message';
+import UserModal from "./UserModal";
 
-export default function ChangeInfoModal({ set_first_name, set_last_name, modalRef} : 
-    {set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modalRef : any})
+export default function ChangeInfoModal({ navigation, set_first_name, set_last_name, modalRef} : 
+    {navigation : any, set_first_name: (first_name : string) => void; set_last_name: (last_name : string) => void ;  modalRef : any})
 {
 
     const [first_name, SetFirstName] = useState("");
     const [last_name, SetLastName] = useState("");
+    const userModalRef = useRef<BottomSheetModal>(null);
 
     const isFormValid = first_name.trim() !== '' && last_name.trim() !== '';
 
@@ -78,6 +80,7 @@ export default function ChangeInfoModal({ set_first_name, set_last_name, modalRe
             SetFirstName('');
             SetLastName('');
             modalRef?.current?.dismiss();
+            userModalRef.current?.dismiss();
         }
         catch{
             Alert.alert('Lỗi', 'Không thể thực hiện thay đổi');
@@ -89,6 +92,7 @@ export default function ChangeInfoModal({ set_first_name, set_last_name, modalRe
 
     // renders
     return (
+        
         <BottomSheetModal
             ref={modalRef}
             snapPoints={['100%']}
@@ -129,6 +133,7 @@ export default function ChangeInfoModal({ set_first_name, set_last_name, modalRe
             >
                 <Text style ={[isFormValid ? change_info_style.buttonTextActive : change_info_style.buttonTextInactive]}>Lưu</Text>
             </TouchableOpacity>
+            <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={SetFirstName} set_last_name={SetLastName} modalRef={userModalRef}/>
 
         </BottomSheetView>
         </BottomSheetModal>

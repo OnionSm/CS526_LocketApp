@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
-import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput} from 'react-native';
+import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, Alert} from 'react-native';
 import sign_in_with_email_styles from './styles/SignInWithEmailStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlagIcon from 'react-native-ico-flags';
 import sign_in_with_email from './frontend_logic/sign_in_with_email';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AxiosInstance from './instance/AxiosInstance';
 import { CONNECTION_IP } from '@env';
 
 console.log(CONNECTION_IP);
@@ -15,17 +16,14 @@ function SignUpWithEmail({navigation}: {navigation: any})
 {
     const [sign_up_email, setEmail] = useState("");
 
-    useEffect(() => {
-        // Load dữ liệu email khi màn hình mở
-        const loadData = async () => {
-            const savedEmail = await AsyncStorage.getItem('sign_up_email');
-            if (savedEmail) 
-            {
-                setEmail(savedEmail);
-            }
-        };
-        loadData();
-    }, []);
+    // Regex kiểm tra định dạng email
+    const isValidEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+        return emailRegex.test(email);
+    };
+    
+    // Kiểm tra định dạng form
+    const isFormValid = isValidEmail(sign_up_email);
 
     const saveData = async () => {
         try {
@@ -36,43 +34,37 @@ function SignUpWithEmail({navigation}: {navigation: any})
         }
     };
 
-
-
-
     return(
         <View style={sign_in_with_email_styles.main_view}>
-            {/* Back Zone */}
-            <View style={sign_in_with_email_styles.backzone}>
-                <TouchableOpacity style={sign_in_with_email_styles.backbutton}
-                    onPress={() => navigation.navigate("SignInScreen")}>
-                    <Icon name="arrow-back-ios" size={24} color="#FFFFFF" /> 
-                </TouchableOpacity>
-            </View>
+
+            <TouchableOpacity
+                style={sign_in_with_email_styles.backbutton}
+                onPress={() => navigation.navigate("SignInScreen")}
+            >
+                <Icon name="arrow-back-ios" size={22} color="#FFFFFF"/>
+            </TouchableOpacity>
 
             {/* Get Phone Number Zone */}
-            <View style={sign_in_with_email_styles.getphonezone}>
-                <Text style={sign_in_with_email_styles.getphonezonetitle}>Nhập Email đăng ký?</Text>
+            <Text style={sign_in_with_email_styles.getphonezonetitle}>Email của bạn là gì?</Text>
 
-                <View style ={sign_in_with_email_styles.inputzone}>
-                    <FlagIcon name="vietnam" style={sign_in_with_email_styles.inputzoneicon} />
-                    <TextInput  style={sign_in_with_email_styles.inputzonetext}
-                        value={sign_up_email} 
-                        onChangeText={e => setEmail(e)}
-                        placeholder="Địa chỉ email"
-                        placeholderTextColor="#888888">
-                            
-                    </TextInput>
-                </View>
-            </View>
+            <TextInput  
+                style={sign_in_with_email_styles.input}
+                onChangeText={setEmail}
+                placeholder="Địa chỉ email"
+                placeholderTextColor="#888888"
+            />     
 
             {/* Guideline Zone */}
-            <View style={sign_in_with_email_styles.guidelinezone}>
-                <Text style={sign_in_with_email_styles.guidelinetext}>Nhấn tiếp tục nghĩa là bạn đồng ý với điều khoản dịch vụ và chính sách quyền riêng tư của chúng tôi</Text>
+            <View style={sign_in_with_email_styles.textView}>
+            <Text style={sign_in_with_email_styles.text}>Bằng cách nhấn vào nút Tiếp tục bạn đã đồng ý với chúng tôi</Text>
+
+            <Text style={[sign_in_with_email_styles.text, {fontWeight: 'bold'} ]}>Điều khoản dịch vụ và Chính sách quyền riêng tư</Text>
             </View>
 
             {/* Button Zone */}
-            <View style={sign_in_with_email_styles.buttonzone}>
-                <TouchableOpacity style={sign_in_with_email_styles.continuebutton}
+            <TouchableOpacity 
+                style={[sign_in_with_email_styles.button, isFormValid && {backgroundColor: '#F1B202'}]}
+                disabled={!isFormValid}
                 onPress={async() =>
                 {
                     try
@@ -85,7 +77,7 @@ function SignUpWithEmail({navigation}: {navigation: any})
                         }
                         else
                         {
-                            console.log("Email đã có người sử dụng");
+                            Alert.alert("Lỗi", "Email đã có người sữ dụng, vui lòng nhập email kh")
                         }
                     }
                     catch(error)
@@ -94,9 +86,9 @@ function SignUpWithEmail({navigation}: {navigation: any})
                     }
                 }
                 }>
-                    <Text style ={sign_in_with_email_styles.continuetext}>Tiếp tục</Text>
-                </TouchableOpacity>
-            </View>
+                    <Text style = {[isFormValid ? sign_in_with_email_styles.buttonTextActive : sign_in_with_email_styles.buttonTextInactive]}>Tiếp tục</Text>
+            </TouchableOpacity>
+
         </View>
     )
 }
@@ -107,8 +99,6 @@ export default SignUpWithEmail
 async function CheckEmail(email: string) {
     const formData = new FormData();
     formData.append('email', email);
-
-    console.log(formData);
 
     try {
         console.log(CONNECTION_IP);

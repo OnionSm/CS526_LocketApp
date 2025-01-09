@@ -12,22 +12,13 @@ function SignInScreen({navigation}: {navigation: any})
             <View>
                 {/* Widget zone */}
                 <View style={signinstyles.widgetzone}>
-                    <Image source={require('./GUI/SignInWidget.png')}
-                    style = {signinstyles.widget}>
-                    </Image>
-                </View>
-
-                {/* Title zone */}
-                <View style={signinstyles.titlezone}>
-                    <Image source={require('./GUI/LocketLogo.png')}
-                    style = {signinstyles.locketlogo}>
-                    </Image>
-                    <Text  style = {signinstyles.locket_title}>Locket</Text>
+                    <Image source={require('./GUI/Locket_image.jpg')}
+                            style = {signinstyles.widget}/>
                 </View>
 
                 {/* Locket Descript */}
                 <View style={signinstyles.locketdescriptzone}>
-                    <Text style= {signinstyles.locketdescript}>Live pics from your friend, on your homescreen</Text>
+                    <Text style= {signinstyles.locketdescript}>Ảnh trực tiếp từ bạn bè ngay trên man hình chính</Text>
                 </View>
 
                 {/* Button zone */}

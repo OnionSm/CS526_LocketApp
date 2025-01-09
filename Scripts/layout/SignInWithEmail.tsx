@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
-import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput} from 'react-native';
-import sign_in_with_email_styles from './styles/SignInWithEmailStyle';
+import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, Alert} from 'react-native';
+import styles from './styles/SignInWithEmailStyle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlagIcon from 'react-native-ico-flags';
 import sign_in_with_email from './frontend_logic/sign_in_with_email';
@@ -12,6 +12,11 @@ import { CommonActions } from '@react-navigation/native';
 
 function SignInWithEmail({navigation}: {navigation: any})
 {
+    // Regex kiểm tra định dạng email
+    const isValidEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+        return emailRegex.test(email);
+    };
     
     const resetToCurrentScreen = (navigation: any, currentScreenName: string, params?: any) => {
         navigation.dispatch(
@@ -26,11 +31,13 @@ function SignInWithEmail({navigation}: {navigation: any})
     {
         const handleReset = () => {
             resetToCurrentScreen(navigation, 'SignInWithEmail'); 
-          };
+        };
     }, [])
     
 
     const [login_email, setEmail] = useState("");
+
+    const isFormValid = isValidEmail(login_email) && login_email.trim() !== '';
 
     useEffect(() => {
         // Load dữ liệu email khi màn hình mở
@@ -57,39 +64,36 @@ function SignInWithEmail({navigation}: {navigation: any})
 
 
     return(
-        <View style={sign_in_with_email_styles.main_view}>
+        <View style={styles.main_view}>
             {/* Back Zone */}
-            <View style={sign_in_with_email_styles.backzone}>
-                <TouchableOpacity style={sign_in_with_email_styles.backbutton}
-                    onPress={() => navigation.navigate("SignInScreen")}>
-                    <Icon name="arrow-back-ios" size={24} color="#FFFFFF" /> 
-                </TouchableOpacity>
-            </View>
+
+            <TouchableOpacity style={styles.backbutton}
+                onPress={() => navigation.goBack()}>
+                <Icon name="arrow-back-ios" size={24} color="#FFFFFF" /> 
+            </TouchableOpacity>
 
             {/* Get Phone Number Zone */}
-            <View style={sign_in_with_email_styles.getphonezone}>
-                <Text style={sign_in_with_email_styles.getphonezonetitle}>Nhập Email ?</Text>
+            <Text style={styles.getphonezonetitle}>Nhập địa chỉ Email của bạn?</Text>
 
-                <View style ={sign_in_with_email_styles.inputzone}>
-                    <FlagIcon name="vietnam" style={sign_in_with_email_styles.inputzoneicon} />
-                    <TextInput  style={sign_in_with_email_styles.inputzonetext}
-                        value={login_email} 
-                        onChangeText={e => setEmail(e)}
+            <TextInput  style={styles.input}
+                        value={login_email}
+                        onChangeText={setEmail}
                         placeholder="Địa chỉ email"
                         placeholderTextColor="#888888">
                             
-                    </TextInput>
-                </View>
-            </View>
+            </TextInput>
 
             {/* Guideline Zone */}
-            <View style={sign_in_with_email_styles.guidelinezone}>
-                <Text style={sign_in_with_email_styles.guidelinetext}>Nhấn tiếp tục nghĩa là bạn đồng ý với điều khoản dịch vụ và chính sách quyền riêng tư của chúng tôi</Text>
+            <View style={styles.textView}>
+            <Text style={styles.text}>Bằng cách nhấn vào nút Tiếp tục bạn đã đồng ý với chúng tôi</Text>
+
+            <Text style={[styles.text, {fontWeight: 'bold'} ]}>Điều khoản dịch vụ và Chính sách quyền riêng tư</Text>
             </View>
 
             {/* Button Zone */}
-            <View style={sign_in_with_email_styles.buttonzone}>
-                <TouchableOpacity style={sign_in_with_email_styles.continuebutton}
+                <TouchableOpacity 
+                style={[styles.button, isFormValid && {backgroundColor: '#F1B202'}]}
+                disabled={!isFormValid}
                 onPress={async() =>
                 {
                     try
@@ -102,7 +106,7 @@ function SignInWithEmail({navigation}: {navigation: any})
                         }
                         else
                         {
-                            console.log("Tài khoản không tồn tại vui lòng thử lại");
+                            Alert.alert("", "Tài khoản không tồn tại");
                         }
                     }
                     catch(error)
@@ -111,9 +115,8 @@ function SignInWithEmail({navigation}: {navigation: any})
                     }
                 }
                 }>
-                    <Text style ={sign_in_with_email_styles.continuetext}>Tiếp tục</Text>
+                    <Text style = {[isFormValid ? styles.buttonTextActive : styles.buttonTextInactive]}>Tiếp tục</Text>
                 </TouchableOpacity>
-            </View>
         </View>
     )
 }
