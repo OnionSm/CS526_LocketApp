@@ -7,24 +7,54 @@ import {useState, useEffect , createContext, useContext, useCallback, useRef} fr
 import AxiosInstance from './instance/AxiosInstance';
 import ChangeEmailModal from './ChangeEmailModal';
 import { Dimensions } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 const { width, height } = Dimensions.get('window');
+
+
 
 export default function CheckPasswordModal({modalRef}: { modalRef: any}) {
 
     const [password, setPassword] = useState('');
     const [isTextVisible, setIsTextVisible] = useState(false);
     const changeEmailModalRef = useRef<BottomSheetModal>(null);
+    
+    const [truePassword, setTruePassWord] = useState<string | null>(null);
+
+    // Lấy dữ liệu từ AsyncStorage
+    useEffect(() => {
+        const getData = async () => {
+        try {
+            const value = await AsyncStorage.getItem('password');
+            if (value !== null) {
+                setTruePassWord(value);
+            }
+        } catch (error) {
+            console.error('Error retrieving data', error);
+        }
+        };
+        getData();
+    }, []);
 
     // Kiểm tra định dạng form
     const isFormValid = password.trim() !== '';
-
+    
+    // Handle Eye Button
     const handleEyeButtonPress = () => {
         setIsTextVisible(!isTextVisible);
     }
 
+    // Handle continue Button
     const handleContinuePress = () => {
-        changeEmailModalRef.current?.present();
-        setPassword('');
+        if (password === truePassword ){
+            changeEmailModalRef.current?.present();
+            setPassword('');
+        }
+        else{
+            Alert.alert("Thất bại", "Mật khẩu chưa chính xác, vui lòng nhập lại!");
+        }
+
     }
 
     return (
@@ -35,6 +65,9 @@ export default function CheckPasswordModal({modalRef}: { modalRef: any}) {
         snapPoints={['100%']}
         backgroundStyle={{ backgroundColor: '#1F1F1F' }}
         handleStyle={{ height: 10 }}
+        containerStyle={{
+            zIndex: 16,
+        }}
         handleIndicatorStyle={[{ backgroundColor: '#505050', width: 45, height: 5 }]}>
 
         <BottomSheetView style={styles.container}>

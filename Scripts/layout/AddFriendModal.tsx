@@ -246,7 +246,7 @@ function AddFriendModal({modal_refs} : {modal_refs: any})
     
             var user_id = await AsyncStorage.getItem("user_id");
             if (!user_id) {
-                console.error("User ID is null or undefined.");
+                //console.error("User ID is null or undefined.");
                 return;
             }
 
@@ -276,17 +276,17 @@ function AddFriendModal({modal_refs} : {modal_refs: any})
                             }
                             set_data_friend(friends);
                         } else {
-                            console.log("No friends found for this user.");
+                            //console.log("No friends found for this user.");
                         }
                     },
                     (_: any , error: any) => {
-                        console.error("Error querying Friend table:", error);
+                        //console.error("Error querying Friend table:", error);
                         return false; 
                     }
                 );
             });
         } catch (error) {
-            console.error("Error in get_friend_data:", error);
+            //console.error("Error in get_friend_data:", error);
         }
     };
     get_friend_data();
@@ -320,13 +320,13 @@ function AddFriendModal({modal_refs} : {modal_refs: any})
             const response = await AxiosInstance.get("api/users/friend-request/receive");
             if(response.status === 200)
             {
-                console.log(response.data);
+                //console.log(response.data);
                 set_data_add_friends(response.data);
             }
         }
         catch(error)
         {
-            console.error('Error get friend invitation', error);
+            //console.error('Error get friend invitation', error);
         }
     }
 

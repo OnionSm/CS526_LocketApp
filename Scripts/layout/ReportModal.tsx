@@ -73,6 +73,9 @@ export default function ReportModal({ modalRef, onClose }: { modalRef: any, onCl
         snapPoints={['100%']}
         backgroundStyle={{ backgroundColor: '#1F1F1F' }}
         handleStyle={{ height: 10 }}
+        containerStyle={{
+            zIndex: 16,
+        }}
         handleIndicatorStyle={[{ backgroundColor: '#505050', width: 45, height: 5 }]}>
 
         <BottomSheetView style={styles.container}>

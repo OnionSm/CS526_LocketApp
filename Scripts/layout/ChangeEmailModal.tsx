@@ -5,12 +5,32 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useState, useEffect , createContext, useContext, useCallback} from 'react';
 import AxiosInstance from './instance/AxiosInstance';
 import { Dimensions } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const { width, height } = Dimensions.get('window');
 
 
 export default function ChangeEmailModal ({ modalRef}: { modalRef: any}) {
 
-    const [email, setEmail] = useState('');
+    const [presentEmail, setpresentEmail] = useState('');
+
+    // Lấy dữ liệu từ AsyncStorage
+    useEffect(() => {
+        const getData = async () => {
+        try {
+            const value = await AsyncStorage.getItem('email');
+            if (value !== null) {
+                setpresentEmail(value);
+            }
+        } catch (error) {
+            console.error('Error retrieving data', error);
+        }
+        };
+        getData();
+    }, []);
+
+
+    const [email, setEmail] = useState(presentEmail);
     const [loading, setLoading] = useState(false);
 
     // Regex kiểm tra định dạng email
@@ -21,12 +41,54 @@ export default function ChangeEmailModal ({ modalRef}: { modalRef: any}) {
 
     // Kiểm tra định dạng form
     const isFormValid = isValidEmail(email);
+    const ischangeEmail = email.trim() !== "";
 
-    const handlePress = () => {
-        // console.log(isFormValid);
-        console.log(email);
-        modalRef.current?.dismiss();
+    // Hàm gửi báo cáo sự cố
+    const handlePress = async () => {
+        setLoading(true);
+    
+        const formData = new FormData();
+            formData.append('email', email);
+        
+        const checkValidEmail = await AxiosInstance.post("api/login/valid-email", formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        console.log(checkValidEmail.data);
+
+        if( checkValidEmail.data ){
+            Alert.alert("Lỗi", "Email đã tồn tại, vui lòng nhập Email khác.");
+        }
+        else{
+            try {
+                const response = await AxiosInstance.put("api/user/change_email", formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+        
+                // Nếu HTTP status không phải 200, báo lỗi
+                if (response.status !== 200) { 
+                    const errorMessage = response.data;
+                    throw new Error(`Failed to send report: ${errorMessage}`);
+                    setEmail('');
+                }
+        
+                const result = response.data;
+                Alert.alert('Thành công', `Đề xuất của bạn đã được gửi.`);
+                setEmail('');
+                modalRef.current?.dismiss();
+            } catch (error) {
+                const err = error as Error;
+                Alert.alert('Lỗi', 'Không thể gửi đề xuất.');
+                setEmail('');
+            } finally {
+                setLoading(false); 
+                setEmail('');
+            }
     }
+    };   
 
     return (
     
@@ -36,6 +98,9 @@ export default function ChangeEmailModal ({ modalRef}: { modalRef: any}) {
         snapPoints={['100%']}
         backgroundStyle={{ backgroundColor: '#1F1F1F' }}
         handleStyle={{ height: 10 }}
+        containerStyle={{
+            zIndex: 16,
+        }}
         handleIndicatorStyle={[{ backgroundColor: '#505050', width: 45, height: 5 }]}>
 
     <BottomSheetView style={styles.container}>
@@ -44,7 +109,6 @@ export default function ChangeEmailModal ({ modalRef}: { modalRef: any}) {
 
         {/* Nhập email */}
         <TextInput
-            value={email}
             style={styles.input}
             placeholder="Nhập Email"
             placeholderTextColor="#AAAAAA"
