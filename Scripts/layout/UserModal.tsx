@@ -62,34 +62,15 @@ const shareLink = async () => {
     };
 
 
-const get_user_avt = (user_id: string, db: any) => {
-    return new Promise((resolve, reject) => 
-    {
-      db.transaction((tx: any) => {
-        tx.executeSql(
-          'SELECT * FROM User WHERE user_id = ?',
-            [user_id],
-            (tx: any, results: any) => {
-            const rows = results.rows;
-            let user_avt = null;
-
-            if (rows.length > 0) 
-            {
-                user_avt = rows.item(0).userAvatarURL; 
-            }
-            resolve(user_avt !== null ? user_avt : ""); 
-          },
-          (error: any) => {
-            reject('Error retrieving user avatar: ' + error); 
-            }
-        );
-        });
-    });
-  };
   
 
+<<<<<<< HEAD
 export default function UserModal({navigation, first_name, last_name, set_first_name, set_last_name, modalRef}:
     {navigation : any, first_name : string; last_name:  string; set_first_name: (name: string) => void; set_last_name: (name: string) => void;  modalRef: any})
+=======
+export default function UserModal({navigation, first_name, last_name, set_first_name, set_last_name, user_modal_refs, user_avt}:
+    {navigation : any, first_name : string; last_name:  string; set_first_name: (name: string) => void; set_last_name: (name: string) => void;  user_modal_refs: any, user_avt: string})
+>>>>>>> 8ab6f6e5d13c649ddcaa156a8f311e7a3d4896f6
 {
     const sqlite_db_context = useContext(SqliteDbContext);
     var [user_avt_uri, set_user_avt] = useState<string | undefined>();
@@ -104,7 +85,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                 console.warn("No user ID found");
                 return;
             }
-            const avatar = await get_user_avt(publicUserId, sqlite_db_context.db);
+            const avatar = user_avt;
       
             if (typeof avatar !== "string" || typeof avatar === "undefined") 
             {
@@ -245,7 +226,11 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                         </TouchableOpacity>
                     </View>
                     <View>
+<<<<<<< HEAD
                         <ChangeInfoModal navigation={navigation} set_first_name={setfirstname} set_last_name={setlastname} modalRef={changeInfoModalRef} />
+=======
+                        <ChangeInfoModal set_first_name={setFirstName} set_last_name={setLastName} modalRef={changeInfoModalRef}/>
+>>>>>>> 8ab6f6e5d13c649ddcaa156a8f311e7a3d4896f6
                     </View>
                 </View>
                 

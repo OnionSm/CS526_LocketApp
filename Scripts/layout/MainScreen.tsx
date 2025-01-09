@@ -34,107 +34,46 @@ const getMimeType = (path: any) => {
             return 'image/jpeg'; // Mặc định nếu không xác định được
     }
 };
-    type SectionData =
-  | string // Cho Camera Section
-  | { id: string;  content: string }; // Cho FriendNew Section
+type SectionData =
+| string // Cho Camera Section
+| { id: string;  content: string }; // Cho FriendNew Section
+
+const { width, height } = Dimensions.get('window');
 
 
-
-const up_story = async (photoImg: string | null, select_all: boolean, selected_friend : string[], data_fr: Array<FriendData>, story_caption: string | undefined) => 
-{
-    try
-    {
-        const user_id = await AsyncStorage.getItem("user_id");
-        if(user_id === undefined || user_id === null)
-        {
-            return;
-        }
-        var list_receivers: string[] = [];
-        if(select_all)
-        {
-            data_fr.forEach((item) =>
-            {
-                list_receivers.push(item.id);
-            });
-        }
-        else
-        {
-        list_receivers = selected_friend;
-        }
-        console.log(photoImg);
-        console.log(user_id);
-        console.log(list_receivers);
-        console.log(story_caption);
-        const form_data = new FormData();
-        form_data.append("Receivers", list_receivers);
-        form_data.append("ImageURL", photoImg);
-        form_data.append("Description", story_caption);
-
-        
-        var res = await AxiosInstance.post("api/story/create_story", form_data, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }
-        });
-        if (res.status === 200)
-        {
-            console.log("Up story thành công");
-        }
-        else
-        {
-            console.log("Up story thất bại");
-        }
-    }
-    catch(error)
-    {
-        console.log("Up ảnh không thành công");
-    }
-}
-
-function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto, setIsTakingPhoto, go_to_page_story_tab, data_friend}: 
-    {hasPermission: boolean; setHasPermission: (state: boolean) => void; navigation: any; isTakingPhoto: boolean; 
-    setIsTakingPhoto: (state: boolean) => void, go_to_page_story_tab: () => void, data_friend: Array<FriendData>})
+function MainScreen({navigation, hasPermission, setHasPermission, 
+    isTakingPhoto, setIsTakingPhoto, go_to_page_story_tab, 
+    data_friend, current_camera, format, use_back_camera, 
+    set_use_back_camera, device}: 
+    {hasPermission: boolean; setHasPermission: (state: boolean) => void; 
+    navigation: any; isTakingPhoto: boolean; 
+    setIsTakingPhoto: (state: boolean) => void, go_to_page_story_tab: () => void, 
+    data_friend: Array<FriendData>, current_camera: any, format: any, 
+    use_back_camera:boolean, set_use_back_camera: (state: boolean)=>void , device : any})
 {      
-
-    const { width, height } = Dimensions.get('window');
-
-    const [isModalVisible, setModalVisible] = useState(false);
+    
+ 
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
     const toggle_delete_account_modal = () => 
     {
         set_delete_account_modal(!delete_account_modal_state);
     }
 
-    const [selected_friend, set_selected_friend] = useState<string[]>([]); 
-    const [selected_all, set_selected_all] = useState(true);
-    
+    const [selected_friend, set_selected_friend] = useState<string[]>([]);  // FRIEND ĐÃ CHỌN ĐỂ THẤY STORY 
+    const [selected_all, set_selected_all] = useState(true); // CHỌN TẤT CẢ FRIEND
+    const [flash_state, set_flash_state] = useState(false);  // TRẠNG THÁI FLASH
 
-    const devices = Camera.getAvailableCameraDevices();
-    const [use_back_camera, set_use_back_camera] = useState(false);
-    if (!devices || devices.length === 0) {
-    console.error("Không tìm thấy thiết bị camera");
-    }
+// ---------------------------------------------------- SETTING CAMERA ------------------------------------------------
 
-    const device = devices.find((d) => d.position === (use_back_camera ? "back" : "front"));
-    if (!device) {
-    console.error("Không tìm thấy camera sau");
-    }
-    const format = useCameraFormat(device, [
-        { photoResolution: { width: 1080, height: 1080 }},
-        { videoAspectRatio: 1 },
-        { videoResolution: { width: 1080, height: 1080 } },
-        { fps: 30 }
-      ]);
-    const [flash_state, set_flash_state] = useState(false);
+
+// --------------------------------------------------- CHỤP ẢNH -------------------------------------------------------
+
     const [photoImg, setPhoto] = useState<string | null>(null); 
-    const current_camera = useRef<Camera>(null);
-
-    
     const takePhoto = async () => 
     {
         try 
         {
-            if (!current_camera.current) 
+            if (current_camera === undefined || !current_camera.current) 
             {
                 console.error("Camera is not initialized");
                 return;
@@ -153,13 +92,71 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
         } 
     };
 
+// --------------------------------------------------------------------------------------------------------------------
+
+    const [story_caption, set_story_caption] = useState<string>();
+
     const resetTakingPhoto = () => 
     {
         setIsTakingPhoto(false);
         setPhoto(null);
+        set_story_caption("");
     };
 
-    const [story_caption, set_story_caption] = useState<string>();
+// ---------------------------------------------------------- UP STORY ------------------------------------------------------------------------------------------------
+
+const up_story = async (photoImg: string | null, select_all: boolean, selected_friend : string[], data_fr: Array<FriendData>, story_caption: string | undefined) => 
+    {
+        try
+        {
+            const user_id = await AsyncStorage.getItem("user_id");
+            if(user_id === undefined || user_id === null)
+            {
+                return;
+            }
+            var list_receivers: string[] = [];
+            if(select_all)
+            {
+                data_fr.forEach((item) =>
+                {
+                    list_receivers.push(item.id);
+                });
+            }
+            else
+            {
+                list_receivers = selected_friend;
+            }
+            
+            const form_data = new FormData();
+            form_data.append("Receivers", list_receivers);
+            form_data.append("ImageURL", photoImg);
+            form_data.append("Description", story_caption);
+            
+            
+            var res = await AxiosInstance.post("api/story/create_story", form_data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            if (res.status === 200)
+            {
+                console.log("Up story thành công");
+                resetTakingPhoto();
+            }
+            else
+            {
+                console.log("Up story thất bại");
+            }
+        }
+        catch(error)
+        {
+            console.log("Up ảnh không thành công");
+        }
+    }
+    
+    // -------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    
 
     return(
         <View style={main_screen_styles.main_view}>
@@ -332,20 +329,3 @@ function MainScreen({navigation, hasPermission, setHasPermission, isTakingPhoto,
 }
 
 export default MainScreen
-
-const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      borderTopLeftRadius: 45,
-      borderTopRightRadius:45,
-      backgroundColor: '#050505',
-    },
-    contentContainer: 
-    {
-      flex: 1,
-      alignItems: 'center',
-      borderTopLeftRadius: 45,
-      borderTopRightRadius:45,
-      backgroundColor: "#242424"
-    },
-  });

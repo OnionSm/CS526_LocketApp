@@ -136,10 +136,6 @@ const renderItemFriend = ({item}:{item: FriendData}) => (
     );
 
 
-
-
-
-
 const renderItemRequest = ({item, removeFriendInvitation}:{item: FriendInvitation, removeFriendInvitation: (id : string) => void}) => (
     <View style={[{display: "flex"}, {width: width}, {height: height * 0.08}, {marginVertical: 3}, {flexDirection: "row"}, {justifyContent: "space-between"}, {alignItems: "center"}]}>
         <View style={[{display: "flex"},{flexDirection: "row"}, {marginHorizontal : width * 0.05}, {alignItems: "center"}]}>

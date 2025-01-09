@@ -87,58 +87,7 @@ const saveUserData = async (data: any, db: any) => {
     }
 }
 
-const saveFriendData = async (db: any) => 
-{
-    try 
-    {   
-        var user_id = await AsyncStorage.getItem("user_id");
-        var res = await AxiosInstance.get("api/user/friend/info");
-        if (res.status !== 200) 
-        {
-            console.log("Không lấy được dữ liệu bạn bè từ API");
-            return;
-        }
 
-        var data = res.data;  
-        
-        db.transaction((tx: any) => {
-            tx.executeSql(
-                `CREATE TABLE IF NOT EXISTS Friend (    
-                    user_id TEXT NOT NULL,
-                    friend_id TEXT NOT NULL,
-                    first_name TEXT,
-                    last_name TEXT,
-                    friend_avt TEXT,
-                    PRIMARY KEY (user_id, friend_id)
-                )`
-            );
-            
-            data.forEach((friend: any) => {
-                
-                tx.executeSql(
-                    `INSERT OR REPLACE INTO Friend (user_id, friend_id, first_name, last_name, friend_avt) 
-                     VALUES (?, ?, ?, ?, ?)`,
-                    [
-                        user_id,      
-                        friend.id,
-                        friend.first_name,  
-                        friend.last_name,
-                        friend.userAvatarURL    
-                    ],
-                    (tx: any, results: any) => {
-                        console.log('User added or updated successfully');
-                    },
-                    (error: any) => {
-                        console.log('Error adding or updating friend:', error);
-                    }
-                );
-            });
-        });
-    } catch (error) 
-    {
-        console.log("Không thể lưu data friend user", error);
-    }
-}
 
 function ChoosePassword({ navigation }: {navigation: any })
 {
@@ -162,12 +111,6 @@ function ChoosePassword({ navigation }: {navigation: any })
 
 // ----------------------------------------  SET FRIEND DATA ---------------------------------
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            saveFriendData(sqlite_db_context.db); 
-        }, Number(GET_FRIEND_DATA_COOLDOWN)); 
-        return () => clearInterval(intervalId); 
-    }, []);
 
 // ----------------------------------------------------------------------------------------------
 
@@ -274,7 +217,6 @@ async function Login(email: string, password : string, db: any)
             console.log(data.token.accessToken);
             console.log(data.token.refreshToken);
             await saveUserData(data, db);
-            await saveFriendData(db);
         }
         return data;
     } 

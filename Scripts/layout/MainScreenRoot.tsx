@@ -5,13 +5,7 @@ import { Image, ImageBackground, Text, View, Button,
      TouchableOpacity, TextInput, Modal, ScrollView,
      RefreshControl, NativeScrollEvent, NativeSyntheticEvent, Dimensions, StyleSheet,
      SectionList} from 'react-native';
-import main_screen_styles from './styles/MainScreenStyle';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import general_user_profile_styles from './styles/GeneralUserprofileStyle';
 import { Camera, useCameraDevices, useCameraPermission, getCameraDevice, useCameraFormat, getCameraFormat, PhotoFile } from 'react-native-vision-camera';
-import PermissionsPage from './components/PermissionsPage';
-import CameraDenied from './components/CameraDenied';
-import * as signalR from "@microsoft/signalr";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import UserModal from './UserModal';
 import ChangeInfoModal from './ChangeInfoModal';
@@ -21,13 +15,6 @@ import {
   BottomSheetView,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
-import DeleteAccountModal from './modals/DeleteAccountModal';
-import { CONNECTION_IP } from '@env';
-import RNFS from 'react-native-fs'; 
-import main_screen_story_tab_styles from './styles/MainScreenStoryTabStyle';
-import StoryItem from './components/StoryItem';
-import StoryBottomBar from './components/StoryBottomBar';
-import main_screen_root_styles from './styles/MainScreenRootStyle';
 import PagerView from 'react-native-pager-view';
 import MainScreen from './MainScreen';
 import MainScreenStoryTab from './MainScreenStoryTab';
@@ -60,23 +47,22 @@ const getMimeType = (path: any) => {
 };
 
 
-const { width, height } = Dimensions.get('window');
-
 const MainScreenRoot = ({navigation}: {navigation: any}) => 
 {
-
     const sqlite_db_context = useContext(SqliteDbContext);
 
 // ---------------------------------------------- GET USER DATA ---------------------------------------------------------
 
-    const[first_name, set_first_name] = useState("");
-    const[last_name, set_last_name] = useState("");
+    const [first_name, set_first_name] = useState("");
+    const [last_name, set_last_name] = useState("");
+    const [user_id, set_user_id] = useState("");
     useEffect(()=>
     {
         const get_user_name_from_storage = async () => 
         {
             var first_name = await AsyncStorage.getItem("first_name");
             var last_name = await AsyncStorage.getItem("last_name");
+            var _user_id: any = await AsyncStorage.getItem("user_id");
             if (first_name === null)
             {
                 first_name = "";
@@ -88,6 +74,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
             const _user_name = first_name + " " + last_name;
             set_first_name(first_name);
             set_last_name(last_name);
+            set_user_id(_user_id);
         };
         get_user_name_from_storage();
     }, [first_name, last_name])
@@ -128,9 +115,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         {
             console.log(back_button_enable);
             pagerViewRef.current.setPage(1); 
-            set_back_button(!back_button_enable);
-        
-            
+            set_back_button(!back_button_enable);            
         }
     };
 
@@ -148,6 +133,8 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 
 // -----------------------------------------------------------------------------------------------
 
+
+// ------------------------------------------ GET PERMISSION ----------------------------------------
     const [hasPermission, setHasPermission] = useState(false);
     const getPermission = async () => 
     {
@@ -162,10 +149,30 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
             getPermission();
         }
     },[]);
+// ---------------------------------------------------------------------------------------------------
 
+
+// ------------------------------------------------- SETTING CAMERA ----------------------------------------
     const [isTakingPhoto, setIsTakingPhoto] = useState(false);
-    const [photoImg, setPhoto] = useState<string | null>(null); 
     const current_camera = useRef<Camera>(null);
+
+    const devices = Camera.getAvailableCameraDevices();
+    if (!devices || devices.length === 0) 
+    {
+        console.error("Không tìm thấy thiết bị camera");
+    }
+    const [use_back_camera, set_use_back_camera] = useState(false);
+    const device = devices.find((d) => d.position === (use_back_camera ? "back" : "front"));
+    if (!device) 
+    {
+    console.error("Không tìm thấy camera sau");
+    }
+    const format = useCameraFormat(device, [
+        { photoResolution: { width: 1080, height: 1080 }},
+        { videoAspectRatio: 1 },
+        { videoResolution: { width: 1080, height: 1080 } },
+        { fps: 30 }
+    ]);
 
 // -----------------------------------------------------------------------------------------------------
 
@@ -174,13 +181,82 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 // ------------------------------------------------------------ GET LIST FRIEND ------------------------------------------------------
 
     const [data_friend, set_data_friend] = useState<Array<FriendData>>([]);
+    const saveFriendData = async (db: any) => {
+    try 
+    {
+        // Gọi API để lấy dữ liệu bạn bè
+        const res = await AxiosInstance.get("api/user/friend/info");
+        if (res.status !== 200) 
+        {
+            console.log("Không lấy được dữ liệu bạn bè từ API");
+            return;
+        }
 
-        
+        const data = res.data;
+        // Chèn dữ liệu bạn bè vào cơ sở dữ liệu
+        const newFriends: Array<FriendData> = [];
+        data.forEach((friend: any) => {
+            const fr: FriendData = 
+            {
+                id: friend.id,
+                first_name: friend.first_name,
+                last_name: friend.last_name,
+                userAvatarURL: friend.userAvatarURL,
+            };
+            newFriends.push(fr);
+        });
+
+        // Cập nhật state
+        set_data_friend(newFriends);
+
+        // Tạo bảng nếu chưa tồn tại
+        db.transaction((tx: any) => {
+            tx.executeSql(
+                `CREATE TABLE IF NOT EXISTS Friend (
+                    user_id TEXT NOT NULL,
+                    friend_id TEXT NOT NULL,
+                    first_name TEXT,
+                    last_name TEXT,
+                    friend_avt TEXT,
+                    PRIMARY KEY (user_id, friend_id)
+                )`
+            );
+        });
+
+       
+        db.transaction((tx: any) => {
+            data.forEach((friend: any) => {
+                tx.executeSql(
+                    `INSERT OR REPLACE INTO Friend (user_id, friend_id, first_name, last_name, friend_avt) 
+                        VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        user_id,
+                        friend.id,
+                        friend.first_name,
+                        friend.last_name,
+                        friend.userAvatarURL,
+                    ],
+                    () => {
+                        console.log("User added or updated successfully");
+                    },
+                    (error: any) => {
+                        console.error("Error adding or updating friend:", error);
+                    }
+                );
+            });
+        });
+        } 
+        catch (error) 
+        {
+            console.error("Không thể lưu data friend user", error);
+        }
+    };
+
     const get_friend_data = async () => {
-        try {
-
-            var user_id = await AsyncStorage.getItem("user_id");
-            if (!user_id) {
+        try 
+        {
+            if (user_id === null || user_id === undefined) 
+            {
                 console.error("User ID is null or undefined.");
                 return;
             }
@@ -210,7 +286,9 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                                 friends.push(friend);
                             }
                             set_data_friend(friends);
-                        } else {
+                        } 
+                        else 
+                        {
                             console.log("No friends found for this user.");
                         }
                     },
@@ -220,11 +298,22 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                     }
                 );
             });
-        } catch (error) {
+        } catch (error) 
+        {
             console.error("Error in get_friend_data:", error);
         }
     };
-    get_friend_data();
+
+    useEffect(() =>
+    {
+        const get_data_friend = async () =>
+        {
+            await saveFriendData(sqlite_db_context.db);
+            // get_friend_data();
+            console.log(data_friend.length);
+        };
+        get_data_friend();
+    }, []);
 
     useEffect(() => {
         const intervalId = setInterval(() => 
@@ -234,10 +323,57 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         return () => clearInterval(intervalId); 
     }, []);
 
+    useEffect(() => {
+        const delete_story_image = () =>
+        {
+            try
+            {
+                if (user_id == null || user_id == undefined)
+                {
+                    return;
+                }
+                sqlite_db_context.db.transaction((tx: any) => {
+                    // Kiểm tra và tạo bảng nếu chưa tồn tại
+                    tx.executeSql(
+                        `CREATE TABLE IF NOT EXISTS Story (
+                            user_id TEXT,
+                            story_id TEXT,
+                            uploader_id TEXT,
+                            image TEXT,
+                            description TEXT,
+                            create_at TEXT,
+                            seen INTEGER,
+                            reset_time TEXT
+                            PRIMARY KEY (user_id, story_id)
+                        )`
+                    );
+                    // Lệnh UPDATE với điều kiện
+                    tx.executeSql(
+                        `UPDATE Story
+                        SET image = ""
+                        WHERE reset_time < ?`,
+                        [Date.now() - 3 * 24 * 60 * 60 * 1000], // Lấy timestamp hiện tại trừ đi 3 ngày
+                        () => {
+                            console.log("Cập nhật thành công các Story cũ.");
+                        },
+                        (error: any) => {
+                            console.log("Lỗi khi cập nhật Story:", error);
+                        }
+                    );
+                });
+
+            }
+            catch(error)
+            {
+
+            }
+        };
+        delete_story_image();
+    }, [])
 
 // ------------------------------------------------------- GET STORY DATA ------------------------------------------------------------------
     const [list_story, set_list_story] = useState<Array<Story>>([]);
-    var user_id = AsyncStorage.getItem("user_id");
+
     useEffect(() => {
         const get_list_story_from_local_storage = async () =>
         {
@@ -258,6 +394,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                             description TEXT,
                             create_at TEXT,
                             seen INTEGER,
+                            reset_time TEXT
                             PRIMARY KEY (user_id, story_id)
                         )`
                     );
@@ -281,7 +418,8 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                                         image: item.image,
                                         description: item.description,
                                         create_at: item.create_at,
-                                        seen: item.seen
+                                        seen: item.seen,
+                                        reset_time: item.reset_time
                                     };
 
                                     stories.push(story);
@@ -318,8 +456,10 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 });
                 var form_data = new FormData();
                 form_data.append("list_story_in_user", ls_story);
-                var res = await AxiosInstance.post("api/story/get_story", form_data, {
-                    headers: {
+                var res = await AxiosInstance.post("api/story/get_story", form_data, 
+                {
+                    headers: 
+                    {
                         'Content-Type': 'multipart/form-data',
                     }
                 });
@@ -339,6 +479,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                             description: story.description,
                             create_at: story.created_at,
                             seen: story.seen,
+                            reset_time: new Date().toString()
                         };
                 
                         // Thêm vào danh sách
@@ -357,7 +498,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         };
 
     useEffect(() => 
-    {
+    { 
         const intervalStory = setInterval(() => 
         {
             get_story_data_from_server(); 
@@ -366,10 +507,53 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
     }, []);
 // --------------------------------------------------------------------------------------------------------------------------------------
 
+// ------------------------------------------------------ GET USER AVATAR ------------------------------------------------------------------
+
+const [user_avt, set_user_avt] = useState("");
+
+const get_user_avt = (user_id: string, db: any) => {
+    return new Promise((resolve, reject) => 
+    {
+      db.transaction((tx: any) => {
+        tx.executeSql(
+          'SELECT * FROM User WHERE user_id = ?',
+            [user_id],
+            (tx: any, results: any) => {
+            const rows = results.rows;
+            let user_avt = null;
+
+            if (rows.length > 0) 
+            {
+                user_avt = rows.item(0).userAvatarURL; 
+            }
+            resolve(user_avt !== null ? user_avt : ""); 
+          },
+          (error: any) => {
+            reject('Error retrieving user avatar: ' + error); 
+            }
+        );
+        });
+    });
+  };
+
+  useEffect(() => {
+    const get_avt_from_local = async () =>
+    {
+        var avt: any = await get_user_avt(user_id, sqlite_db_context.db);
+        if(avt !== null && avt !== undefined)
+        {
+            set_user_avt(avt);
+        }
+
+    };
+    get_avt_from_local();
+  }, []);
+
+
     return (
         <GestureHandlerRootView>
             <BottomSheetModalProvider>
-                <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} modalRef={ () => user_modal_ref.current?.present()}/>
+                <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} modalRef={user_modal_ref}/>
                 <MainScreenHeader isTakingPhoto={isTakingPhoto} back_button_enable={back_button_enable} handlePresentUserModal={handlePresentUserModal} 
                 navigation={navigation} data_friend={data_friend} set_data_friend={set_data_friend}/>
                 <BackToMainScreenButton 
@@ -381,14 +565,33 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                     style={styles.pagerView}
                     initialPage={0}
                     orientation="vertical"
-                    onPageSelected={onPageSelected} 
+                    onPageSelected={onPageSelected}
+                    offscreenPageLimit={1} // Giữ tối đa 1 trang ở mỗi bên
                 >
                     <View key="0">
-                        <MainScreen navigation={navigation} hasPermission={hasPermission} setHasPermission={setHasPermission} data_friend={data_friend} 
-                        isTakingPhoto={isTakingPhoto} setIsTakingPhoto={setIsTakingPhoto} go_to_page_story_tab={go_to_page_story_tab}/>
+                        <MainScreen 
+                            navigation={navigation} 
+                            hasPermission={hasPermission} 
+                            setHasPermission={setHasPermission} 
+                            data_friend={data_friend}
+                            isTakingPhoto={isTakingPhoto} 
+                            setIsTakingPhoto={setIsTakingPhoto} 
+                            go_to_page_story_tab={go_to_page_story_tab}
+                            current_camera={current_camera}
+                            format={format}
+                            use_back_camera={use_back_camera}
+                            set_use_back_camera={set_use_back_camera}
+                            device={device}
+                        />
                     </View>
                     <View key="1">
-                        <MainScreenStoryTab data_friend={data_friend} list_story={list_story} goToTop={goToTop}/>
+                        <MainScreenStoryTab 
+                            data_friend={data_friend} 
+                            list_story={list_story} 
+                            set_list_story={set_list_story}
+                            goToTop={goToTop}
+                            user_avt={user_avt}
+                        />
                     </View>
                 </PagerView>
             </BottomSheetModalProvider>

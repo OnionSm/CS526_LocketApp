@@ -21,13 +21,14 @@ export default function ShowUerModal ({modalRef} : {modalRef : any}) {
             const value = await AsyncStorage.getItem('show_user');
             const bool_value = value !== null ? JSON.parse(value) : false; 
             setIsEnabled(bool_value); 
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Error retrieving data', error);
         }
         };
         getData();
     }, []);
-    console.log("show", isEnabled);
 
     // Hàm thay đổi trạng thái khi nhấn vào switch
     const handlePress = async (value: boolean) => {
