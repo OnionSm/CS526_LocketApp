@@ -11,17 +11,26 @@ import StoryBottomBar from './components/StoryBottomBar';
 import Carousel from 'react-native-reanimated-carousel';
 import { FriendData } from './types/FriendData';
 import { format } from 'date-fns';
-import { Story } from './types/Strory';
+import { Story } from './types/Story';
 import type { ICarouselInstance } from "react-native-reanimated-carousel";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AxiosInstance from './instance/AxiosInstance';
+import GridStoryModal from './GridStoryModal';
+import BottomSheet from '@gorhom/bottom-sheet';
+import {
+    BottomSheetModal,
+    BottomSheetView,
+    BottomSheetModalProvider,
+    BottomSheetScrollView
+} from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
   
 
 const {width, height} = Dimensions.get("window");
 const MainScreenStoryTab = ({ data_friend, list_story, set_list_story, goToTop, user_avt }: { data_friend: Array<FriendData>, list_story: Array<Story>, set_list_story: (ls_story: Array<Story>) => void ,
-    goToTop: () => void, user_avt: string }) => {
+    goToTop: () => void, user_avt: string}) => {
     const [user_id, set_user_id] = useState<string | null>("");
 
     useEffect(() => {
@@ -32,14 +41,14 @@ const MainScreenStoryTab = ({ data_friend, list_story, set_list_story, goToTop, 
         get_user_id();
     }, []);
 
-    // Sắp xếp list_story theo create_at từ mới nhất đến cũ nhất
-    const sortedListStory = useMemo(() => {
-        return [...list_story].sort((a, b) => {
-            const dateA = new Date(a.create_at).getTime();
-            const dateB = new Date(b.create_at).getTime();
-            return dateB - dateA; // Mới nhất trước
-        });
-    }, [list_story]);
+    // // Sắp xếp list_story theo create_at từ mới nhất đến cũ nhất
+    // const sortedListStory = useMemo(() => {
+    //     return [...list_story].sort((a, b) => {
+    //         const dateA = new Date(a.create_at).getTime();
+    //         const dateB = new Date(b.create_at).getTime();
+    //         return dateB - dateA; // Mới nhất trước
+    //     });
+    // }, [list_story]);
 
     const ref = React.useRef<ICarouselInstance>(null);
 
@@ -87,14 +96,22 @@ const get_story_image = async (str_id: string) => {
 
 
 // ---------------------------------------------------------------------------------------------------------------------------------
+
+    const grid_story_modal_ref = useRef<BottomSheetModal>(null);
+
+    const open_grid_story_modal =() => 
+    {
+        grid_story_modal_ref.current?.present();
+    };
     return (
         <View style={main_screen_story_tab_styles.main_view}>
+            <GridStoryModal grid_story_modal_ref={grid_story_modal_ref} data_story={list_story} ></GridStoryModal>
             <Carousel
                 ref={ref}
                 loop={false}
                 width={width}
                 height={height}
-                data={sortedListStory} // Dữ liệu đã được sắp xếp
+                data={list_story} // Dữ liệu đã được sắp xếp
                 scrollAnimationDuration={150}
                 onSnapToItem={(index) => console.log('Current index:', index)}
                 renderItem={({ item }) => {
@@ -134,6 +151,7 @@ const get_story_image = async (str_id: string) => {
             <StoryBottomBar
                 goToTop={goToTop}
                 handleGoToFirstPage={handleGoToFirstPage}
+                open_grid_story_modal={open_grid_story_modal}
             />
         </View>
     );
