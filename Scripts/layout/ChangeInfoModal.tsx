@@ -133,8 +133,6 @@ export default function ChangeInfoModal({ navigation, set_first_name, set_last_n
             >
                 <Text style ={[isFormValid ? change_info_style.buttonTextActive : change_info_style.buttonTextInactive]}>Lưu</Text>
             </TouchableOpacity>
-            <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={SetFirstName} set_last_name={SetLastName} modalRef={userModalRef}/>
-
         </BottomSheetView>
         </BottomSheetModal>
     );

@@ -42,22 +42,67 @@ import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from 'react-native-reanimated';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useContext } from 'react';
+import { SqliteDbContext } from './Scripts/layout/context/SqliteDbContext';
+import SQLite from 'react-native-sqlite-storage';
+import LoadingScreen from './Scripts/layout/LoadingScreen';
+import GridStoryModal from './Scripts/layout/GridStoryModal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
+import StoryMessage from './Scripts/layout/components/StoryMessage';
 
-// This is the default configuration
+
+// console.log = function () {};
+// console.error = function () {};
+// console.warn = function () {};
+const isDevelopment = __DEV__; 
+
+if (isDevelopment) {
+    console.log("This is a log message");
+} else {
+    console.log = function () {}; 
+}
+
+
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
-  strict: false, // Reanimated runs in strict mode by default
+  strict: false, 
 });
 const Stack = createNativeStackNavigator();
 
-function MainApp() {
+function MainApp() 
+{   
   return (
+    <GestureHandlerRootView>
+      <BottomSheetModalProvider>
+  
     <IntervalProvider>
     <UserMessageProvider>
       <SqliteDbProvider>
         <NavigationContainer>
-        <Stack.Navigator initialRouteName="SignInScreen">
+        <Stack.Navigator initialRouteName="LoadingScreen">
+        <Stack.Screen 
+            name="LoadingScreen" 
+            component={LoadingScreen} 
+            options={{ headerShown: false }} 
+          />
           <Stack.Screen 
+            name="GridStoryModal" 
+            component={GridStoryModal} 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="StoryMessage" 
+            component={StoryMessage} 
+            options={{ headerShown: false }} 
+          />
+        <Stack.Screen 
             name="SignInScreen" 
             component={SignInScreen} 
             options={{ headerShown: false }} 
@@ -144,6 +189,8 @@ function MainApp() {
       </SqliteDbProvider>
     </UserMessageProvider>
     </IntervalProvider>
+    </BottomSheetModalProvider>
+    </GestureHandlerRootView>
     
   );
 }

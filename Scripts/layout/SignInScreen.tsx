@@ -2,6 +2,8 @@ import React from 'react';
 import type {PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button, TouchableOpacity} from 'react-native';
 import signinstyles from './styles/SignInScreenStyle'
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 function SignInScreen({navigation}: {navigation: any})
