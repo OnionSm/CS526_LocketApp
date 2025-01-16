@@ -1,13 +1,15 @@
 import React, { useState, createContext, ReactNode } from "react";
+import { FriendData } from "../types/FriendData";
+import { UserConversation } from "../types/UserConversation";
 
+// type UserMessageContextType = {
+//   friend: string | null; 
+//   ChooseFriendMessage: (id: string, friend_name : string) => void; 
+//   friend_name : string | null;
+//   setFriend: (
+// };
 
-type UserMessageContextType = {
-  friend: string | null; 
-  ChooseFriendMessage: (id: string, friend_name : string) => void; 
-  friend_name : string | null;
-};
-
-const UserMessageContext = createContext<UserMessageContextType | null>(null);
+const UserMessageContext = createContext<any>(null);
 
 interface UserMessageProviderProps 
 {
@@ -15,19 +17,21 @@ interface UserMessageProviderProps
 }
 
 function UserMessageProvider({ children }: UserMessageProviderProps) {
-  const [friend, setFriend] = useState<string | null>(null);
-  const [friend_name , setFriendName] = useState<string|null>(null);
+  const [friend_choosen, set_friend_choosen] = useState<string | null>(null);
+  const [data_friend, set_data_friend] = useState<Array<FriendData>>([]);
+  const [user_conversations, set_user_conversations] = useState<UserConversation>();
+  const [all_user_message, set_all_user_message] = useState<UserConversation>();
 
-  const ChooseFriendMessage = (id: string, friend_name : string) => {
-    console.log(id);
-    setFriend(id);
-    setFriendName(friend_name);
-  };
-
-  const value = {
-    friend,
-    ChooseFriendMessage,
-    friend_name
+  const value = 
+  {
+    friend_choosen,
+    set_friend_choosen,
+    data_friend,
+    set_data_friend,
+    user_conversations,
+    set_user_conversations,
+    all_user_message,
+    set_all_user_message
   };
 
   return (

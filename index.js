@@ -56,8 +56,9 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import StoryMessage from './Scripts/layout/components/StoryMessage';
-
-
+import ConversationItem from './Scripts/layout/components/ConversationItem';
+import { FriendDataContext } from './Scripts/layout/context/FriendDataContext';
+import { FriendDataProvider } from './Scripts/layout/context/FriendDataContext';
 // console.log = function () {};
 // console.error = function () {};
 // console.warn = function () {};
@@ -81,114 +82,120 @@ function MainApp()
   return (
     <GestureHandlerRootView>
       <BottomSheetModalProvider>
-  
-    <IntervalProvider>
-    <UserMessageProvider>
-      <SqliteDbProvider>
-        <NavigationContainer>
-        <Stack.Navigator initialRouteName="LoadingScreen">
-        <Stack.Screen 
-            name="LoadingScreen" 
-            component={LoadingScreen} 
-            options={{ headerShown: false }} 
-          />
+      <FriendDataProvider>
+      <IntervalProvider>
+      <UserMessageProvider>
+        <SqliteDbProvider>
+          <NavigationContainer>
+          <Stack.Navigator initialRouteName="LoadingScreen">
           <Stack.Screen 
-            name="GridStoryModal" 
-            component={GridStoryModal} 
-            options={{ headerShown: false }} 
-          />
+              name="LoadingScreen" 
+              component={LoadingScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="ConversationItem" 
+              component={ConversationItem} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="GridStoryModal" 
+              component={GridStoryModal} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="StoryMessage" 
+              component={StoryMessage} 
+              options={{ headerShown: false }} 
+            />
           <Stack.Screen 
-            name="StoryMessage" 
-            component={StoryMessage} 
-            options={{ headerShown: false }} 
-          />
-        <Stack.Screen 
-            name="SignInScreen" 
-            component={SignInScreen} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="MainScreenRoot" 
-            component={MainScreenRoot} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="PersonalChatScreen" 
-            component={PersonalChatScreen} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="AvatarImageBottomSheet" 
-            component={AvatarImageBottomSheet} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="MessageScreen" 
-            component={MessageScreen} 
-            options={{ headerShown: false }} 
-          />
-          
-          <Stack.Screen 
-            name="AddFriendScreen" 
-            component={AddFriendScreen} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="OfficialStory" 
-            component={OfficialStory} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="ChooseUserIdName" 
-            component={ChooseUserIdName} 
-            options={{ headerShown: false }} 
-          />
+              name="SignInScreen" 
+              component={SignInScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="MainScreenRoot" 
+              component={MainScreenRoot} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="PersonalChatScreen" 
+              component={PersonalChatScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="AvatarImageBottomSheet" 
+              component={AvatarImageBottomSheet} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="MessageScreen" 
+              component={MessageScreen} 
+              options={{ headerShown: false }} 
+            />
+            
+            <Stack.Screen 
+              name="AddFriendScreen" 
+              component={AddFriendScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="OfficialStory" 
+              component={OfficialStory} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="ChooseUserIdName" 
+              component={ChooseUserIdName} 
+              options={{ headerShown: false }} 
+            />
 
-          <Stack.Screen 
-            name="SignUpWithEmail" 
-            component={SignUpWithEmail} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="SignUpChoosePassword" 
-            component={SignUpChoosePassword} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="GetPhoneNumber" 
-            component={GetPhoneNumber} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="SignInWithEmail" 
-            component={SignInWithEmail} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="TermsOfService" 
-            component={TermsOfService} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="Policy" 
-            component={Policy} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="ChoosePassword" 
-            component={ChoosePassword} 
-            options={{ headerShown: false }} 
-          />
-          <Stack.Screen 
-            name="ChooseUserName" 
-            component={ChooseUserName} 
-            options={{ headerShown: false }} 
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-      </SqliteDbProvider>
-    </UserMessageProvider>
-    </IntervalProvider>
+            <Stack.Screen 
+              name="SignUpWithEmail" 
+              component={SignUpWithEmail} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="SignUpChoosePassword" 
+              component={SignUpChoosePassword} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="GetPhoneNumber" 
+              component={GetPhoneNumber} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="SignInWithEmail" 
+              component={SignInWithEmail} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="TermsOfService" 
+              component={TermsOfService} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="Policy" 
+              component={Policy} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="ChoosePassword" 
+              component={ChoosePassword} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="ChooseUserName" 
+              component={ChooseUserName} 
+              options={{ headerShown: false }} 
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+        </SqliteDbProvider>
+      </UserMessageProvider>
+      </IntervalProvider>
+      </FriendDataProvider>
     </BottomSheetModalProvider>
     </GestureHandlerRootView>
     
