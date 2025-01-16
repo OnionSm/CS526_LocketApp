@@ -34,6 +34,9 @@ import { userService } from './common/userService';
 import { userFriendServices } from './common/userFriendServices';
 import { sqliteService } from './common/sqliteService';
 import SQLite from 'react-native-sqlite-storage';
+import { UserMessageContext } from './context/UserMessageContext';
+import { FriendDataContext } from './context/FriendDataContext';
+
 // Hàm để lấy MIME type từ phần mở rộng của file
 const getMimeType = (path: any) => {
     const extension = path.split('.').pop().toLowerCase();
@@ -54,6 +57,8 @@ const getMimeType = (path: any) => {
 const MainScreenRoot = ({navigation}: {navigation: any}) => 
 {
     const sqlite_db_context = useContext(SqliteDbContext);
+    const user_message_context = useContext(UserMessageContext);
+    const friend_data_context = useContext(FriendDataContext);
 
 // --------------------------------------------- LOAD AND RELOAD USER DATA -----------------------------------------
 
@@ -150,7 +155,6 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 
 // ------------------------------------------------------------ GET LIST FRIEND -----------------------------------
 
-    const [data_friend, set_data_friend] = useState<Array<FriendData>>([]);
 
     const get_friend_data_from_server = async () => 
     {
@@ -185,7 +189,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         if(result)
         {
             // Cập nhật state
-            set_data_friend(newFriends);
+            friend_data_context.set_data_friend(newFriends);
         }
     }
 
@@ -221,7 +225,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 
                             friends.push(friend);
                         }
-                        set_data_friend(friends);
+                        friend_data_context.set_data_friend(friends);
                     } 
                     else 
                     {
@@ -261,7 +265,8 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         const get_data_friend = async () =>
         {
             await get_friend_data();
-            console.log(data_friend.length);
+            user_message_context.set_data_friend(friend_data_context.data_friend);
+            console.log("num friend",friend_data_context.data_friend.length);
         };
         get_data_friend();
     }, []);
@@ -270,6 +275,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         const intervalfriend = setInterval(async () => 
         {
             await get_friend_data(); 
+            user_message_context.set_data_friend(friend_data_context.data_friend);
         }, Number(GET_FRIEND_DATA_COOLDOWN)); 
         return () => clearInterval(intervalfriend); 
     }, []);
@@ -331,7 +337,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
     {
         const status = await Camera.requestCameraPermission();
         setHasPermission(status === "granted");
-        return;
+        return; 
     };
     useEffect(() =>
     {
@@ -670,16 +676,43 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         }, Number(GET_STORY_REQUEST_COOLDOWN)); 
         return () => clearInterval(intervalStory);
     }, []);
-
 // --------------------------------------------------------------------------------------------------------------------------------------
 
 
+// ------------------------------------------- GET USER CONVERSATION ---------------------------------------------
 
+    const get_latest_message = async () =>
+    {
+        try
+        {
+            var res = await AxiosInstance.get("api/userconversation/get_latest_message");
+            if(res.status === 200)
+            {
+                console.log("CONVERSATION", res.data);
+                user_message_context.set_user_conversations(res.data);
+            }
+        }
+        catch(error)
+        {
+            console.log("Can not get latest message");
+        }
+    }
+
+    useEffect(() => 
+        { 
+            const intervalNewMessage = setInterval(async () => 
+            {
+                await get_latest_message(); 
+            }, Number(GET_STORY_REQUEST_COOLDOWN)); 
+            return () => clearInterval(intervalNewMessage);
+        }, []);
+
+// --------------------------------------------------------------------------------------------------------------
     return (
         <>
             <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} user_modal_refs ={user_modal_ref} user_avt={user_avt}/>
             <MainScreenHeader isTakingPhoto={isTakingPhoto} back_button_enable={back_button_enable} handlePresentUserModal={handlePresentUserModal} 
-            navigation={navigation} data_friend={data_friend} set_data_friend={set_data_friend} user_avt={user_avt}/>
+            navigation={navigation} data_friend={friend_data_context.data_friend} set_data_friend={friend_data_context.set_data_friend} user_avt={user_avt}/>
             <BackToMainScreenButton 
                 enable={back_button_enable} 
                 scroll_to_top={goToTop} 
@@ -697,7 +730,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                         navigation={navigation} 
                         hasPermission={hasPermission} 
                         setHasPermission={setHasPermission} 
-                        data_friend={data_friend}
+                        data_friend={friend_data_context.data_friend}
                         isTakingPhoto={isTakingPhoto} 
                         setIsTakingPhoto={setIsTakingPhoto} 
                         go_to_page_story_tab={go_to_page_story_tab}
@@ -710,7 +743,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 </View>
                 <View key="1">
                     <MainScreenStoryTab 
-                        data_friend={data_friend} 
+                        data_friend={friend_data_context.data_friend} 
                         list_story={list_story} 
                         set_list_story={set_list_story}
                         goToTop={goToTop}
