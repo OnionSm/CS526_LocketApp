@@ -11,18 +11,18 @@ const StoryMessage = ({story_img, caption, uploader_avt, uploader_firstname, upl
     return(
     <View style={story_message_styles.main_zone}>
         {story_img !== "" ? (
-                    <Image
-                    source={
-                        {uri : story_img}
-                    }
-                    style={story_message_styles.image}
-                    />
-                ) : (
-                    
-                     <View style={story_message_styles.image}>
-                    </View>
-                    
-                )}
+            <Image
+            source={
+                {uri : story_img}
+            }
+            style={story_message_styles.image}
+            />
+        ) : (
+            
+            <View style={story_message_styles.image}>
+            </View>
+            
+        )}
         <View style={story_message_styles.caption_background}>
             <Text style={story_message_styles.caption}>
                 {caption}

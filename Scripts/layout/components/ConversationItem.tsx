@@ -7,11 +7,12 @@ import conversation_item_styles from './component_styles/ConversationItemStyles'
 import UserAvatar from 'react-native-user-avatar';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const ConversationItem = ({user_avt_uri, firstname, lastname, time, message}:
-    {user_avt_uri: string, firstname: string, lastname: string, time: string, message: string}) =>
+const ConversationItem = ({user_avt_uri, firstname, lastname, time, message, choose_conversation}:
+    {user_avt_uri: string; firstname: string; lastname: string; time: string; message: string; choose_conversation: () => void}) =>
 {
     return (
-        <View style={conversation_item_styles.conversation_item_background}>
+        <TouchableOpacity style={conversation_item_styles.conversation_item_background}
+        onPress={() => {choose_conversation()}}>
             <View style={conversation_item_styles.main_zone}>
                 <View style={[conversation_item_styles.avatar_border]}>
                     {user_avt_uri != null && user_avt_uri != undefined &&  user_avt_uri !== "" ? (
@@ -33,7 +34,7 @@ const ConversationItem = ({user_avt_uri, firstname, lastname, time, message}:
             </View>
             <Icon name="chevron-right" size={24} color="#FFFFFF" style={{marginRight: 30}}/>
 
-        </View>
+        </TouchableOpacity>
     )
 }
 

@@ -36,6 +36,10 @@ import { sqliteService } from './common/sqliteService';
 import SQLite from 'react-native-sqlite-storage';
 import { UserMessageContext } from './context/UserMessageContext';
 import { FriendDataContext } from './context/FriendDataContext';
+import { UserDataContext } from './context/UserDataContext';
+import { StoryDataContext } from './context/StoryDataContext';
+import _ from 'lodash';
+
 
 // Hàm để lấy MIME type từ phần mở rộng của file
 const getMimeType = (path: any) => {
@@ -59,20 +63,19 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
     const sqlite_db_context = useContext(SqliteDbContext);
     const user_message_context = useContext(UserMessageContext);
     const friend_data_context = useContext(FriendDataContext);
+    const user_data_context = useContext(UserDataContext);
+    const story_data_context = useContext(StoryDataContext);
 
 // --------------------------------------------- LOAD AND RELOAD USER DATA -----------------------------------------
 
-    const [user_avt, set_user_avt] = useState("");
-    const [first_name, set_first_name] = useState("");
-    const [last_name, set_last_name] = useState("");
-    const [user_id, set_user_id] = useState("");
+    
 
     useEffect(() =>
     {
         const get_user_id = async () =>
         {
             var _user_id = await AsyncStorage.getItem("user_id");
-            set_user_id(_user_id !== null ? _user_id : "");
+            user_data_context.set_user_id(_user_id !== null ? _user_id : "");
         };
         get_user_id();
     }, []);
@@ -85,9 +88,9 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
             var _last_name = await AsyncStorage.getItem("last_name");
             var _user_avt = await AsyncStorage.getItem("user_avatar_url");
             
-            set_first_name(_first_name !== null ? _first_name : "");
-            set_last_name(_last_name !== null ? _last_name : "");
-            set_user_avt(_user_avt !== null ? _user_avt : "");
+            user_data_context.set_first_name(_first_name !== null ? _first_name : "");
+            user_data_context.set_last_name(_last_name !== null ? _last_name : "");
+            user_data_context.set_user_avt(_user_avt !== null ? _user_avt : "");
         }
         catch(error)
         {
@@ -106,9 +109,9 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
             var res = await AxiosInstance.get("api/user");
             if(res.status === 200)
             {
-                set_first_name(res.data.firstName);
-                set_last_name(res.data.lastName);
-                set_user_avt(res.data.userAvatarURL);
+                user_data_context.set_first_name(res.data.firstName);
+                user_data_context.set_last_name(res.data.lastName);
+                user_data_context.set_user_avt(res.data.userAvatarURL);
                 
                 await userService.save_data_user(res.data, sqlite_db_context.db);
             }
@@ -185,7 +188,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
             newFriends.push(fr);
         });
 
-        var result = await userFriendServices.save_friend_data(user_id, data, sqlite_db_context.db);
+        var result = await userFriendServices.save_friend_data(user_data_context.user_id, data, sqlite_db_context.db);
         if(result)
         {
             // Cập nhật state
@@ -195,7 +198,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 
     const get_friend_data_from_local = async () => 
     {
-        if (user_id === null || user_id === undefined) 
+        if (user_data_context.user_id === null || user_data_context.user_id === undefined) 
         {
             console.error("User ID is null or undefined.");
             return;
@@ -206,7 +209,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 `SELECT * 
                 FROM Friend
                 WHERE user_id == ?`, 
-                [user_id],
+                [user_data_context.user_id],
                 (_: any, resultSet: any) => {
                     if (resultSet.rows.length > 0) 
                     {
@@ -384,7 +387,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         {
             try
             {
-                if (user_id == null || user_id == undefined)
+                if (user_data_context.user_id == null || user_data_context.user_id == undefined)
                 {
                     return;
                 }
@@ -410,7 +413,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                         WHERE reset_time < ?`,
                         [Date.now() - 3 * 24 * 60 * 60 * 1000], // Lấy timestamp hiện tại trừ đi 3 ngày
                         () => {
-                            console.log("Cập nhật thành công các Story cũ.");
+                            
                         },
                         (error: any) => {
                             console.log("Lỗi khi cập nhật Story:", error);
@@ -431,13 +434,12 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 
 
 // ------------------------------------------------------- GET STORY DATA ------------------------------------------------------------------
-    const [list_story, set_list_story] = useState<Array<Story>>([]);
     
     const get_story_data_from_local = async () =>
     {
         try
         {
-            if (user_id == null || user_id == undefined)
+            if (user_data_context.user_id == null || user_data_context.user_id == undefined)
             {
                 return;
             }
@@ -466,7 +468,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                     `SELECT * 
                     FROM Story 
                     WHERE user_id = ?`,
-                    [user_id],
+                    [user_data_context.user_id],
                     (_: any, resultSet: any) => {
                         console.log("result set", resultSet);
                         if (resultSet.rows.length > 0) 
@@ -495,7 +497,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                                 return dateB - dateA; // Sắp xếp theo ngày mới nhất trước
                             });
                             console.log("data" ,sorted);
-                            set_list_story(sorted);
+                            story_data_context.set_list_story(sorted);
                             
                         } 
                         else 
@@ -526,7 +528,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 return;
             }
             var ls_story : string[] = [];
-            list_story.forEach(item => {
+            story_data_context.list_story.forEach((item: Story) => {
                 if(item.image === "")
                 {
                     ls_story.push(item.story_id);   
@@ -571,7 +573,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                     return dateB - dateA; // Sắp xếp theo ngày mới nhất trước
                 });
                 
-                set_list_story(sorted);
+                story_data_context.set_list_story(sorted);
 
                 sqlite_db_context.db.transaction((tx: any) => {
                     tx.executeSql(
@@ -603,7 +605,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                                 (user_id, story_id, uploader_id, image, description, create_at, seen, reset_time) 
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                             [
-                                user_id,
+                                user_data_context.user_id,
                                 story.story_id,
                                 story.uploader_id,
                                 story.image,
@@ -614,7 +616,6 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                             ],
                             () => {
                                 successCount++;
-                                console.log(`Story ${story.story_id} inserted/updated successfully.`);
 
                                 // Kiểm tra xem tất cả bản ghi đã được xử lý
                                 if (successCount === list_story_respone.length && !errorOccurred) {
@@ -681,22 +682,40 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 
 // ------------------------------------------- GET USER CONVERSATION ---------------------------------------------
 
-    const get_latest_message = async () =>
+
+    const get_latest_message_from_local = async () =>
     {
-        try
+        
+    }
+    const get_latest_message = async () => 
+    {
+        try 
         {
             var res = await AxiosInstance.get("api/userconversation/get_latest_message");
-            if(res.status === 200)
+            if (res.status === 200) 
             {
                 console.log("CONVERSATION", res.data);
-                user_message_context.set_user_conversations(res.data);
+    
+                const currentConversations = user_message_context.user_conversations;
+    
+                // So sánh sâu (deep comparison)
+                const isDifferent = !_.isEqual(res.data, currentConversations);
+    
+                if (isDifferent) 
+                {
+                    user_message_context.set_user_conversations(res.data);
+                } 
+                else 
+                {
+                    console.log("No changes in conversations");
+                }
             }
-        }
-        catch(error)
+        } 
+        catch (error) 
         {
             console.log("Can not get latest message");
         }
-    }
+    };
 
     useEffect(() => 
         { 
@@ -710,9 +729,9 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 // --------------------------------------------------------------------------------------------------------------
     return (
         <>
-            <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} user_modal_refs ={user_modal_ref} user_avt={user_avt}/>
+            <UserModal navigation={navigation} first_name={user_data_context.first_name} last_name={user_data_context.last_name} set_first_name={user_data_context.set_first_name} set_last_name={user_data_context.set_last_name} user_modal_refs ={user_modal_ref} user_avt={user_data_context.user_avt}/>
             <MainScreenHeader isTakingPhoto={isTakingPhoto} back_button_enable={back_button_enable} handlePresentUserModal={handlePresentUserModal} 
-            navigation={navigation} data_friend={friend_data_context.data_friend} set_data_friend={friend_data_context.set_data_friend} user_avt={user_avt}/>
+            navigation={navigation} data_friend={friend_data_context.data_friend} set_data_friend={friend_data_context.set_data_friend} user_avt={user_data_context.user_avt}/>
             <BackToMainScreenButton 
                 enable={back_button_enable} 
                 scroll_to_top={goToTop} 
@@ -744,10 +763,10 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 <View key="1">
                     <MainScreenStoryTab 
                         data_friend={friend_data_context.data_friend} 
-                        list_story={list_story} 
-                        set_list_story={set_list_story}
+                        list_story={story_data_context.list_story} 
+                        set_list_story={story_data_context.set_list_story}
                         goToTop={goToTop}
-                        user_avt={user_avt}
+                        user_avt={user_data_context.user_avt}
                     />
                 </View>
             </PagerView>

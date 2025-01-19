@@ -20,19 +20,20 @@ const story_bottom_bar_styles = StyleSheet.create({
         alignContent: "center",
         alignItems: "center",
         alignSelf: "flex-end",
-        backgroundColor: "#000000"
+        backgroundColor: "#000000",
+        position: "relative"
     },
     section1:
     {
         width: "95%",
-        height: "40%",
+        minHeight: "12%",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
         alignContent: "center",
         justifyContent: "space-around",
         backgroundColor: "#333333",
-        borderRadius: 30
+        borderRadius: 30,
     },
     section2:
     {
@@ -42,7 +43,8 @@ const story_bottom_bar_styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         alignContent: "center",
-        justifyContent: "space-around"
+        justifyContent: "space-around",
+        position: "static"
     },
     centre_button:
     {
@@ -60,8 +62,20 @@ const story_bottom_bar_styles = StyleSheet.create({
     icon_zone:
     {
         display: "flex",
-        flexDirection: "row"
-    }
+        flexDirection: "row",
+        width: width * 0.4,
+    },
+    send_button:
+    {
+        width: 40, 
+        height: 40, 
+        borderRadius: 50, 
+        display: "flex",
+        justifyContent: 'center', 
+        alignItems: 'center',
+        flex: 1,
+        backgroundColor: "#D6D6D6"
+    },
 });
 
 export default story_bottom_bar_styles

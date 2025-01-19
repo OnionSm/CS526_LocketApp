@@ -59,6 +59,10 @@ import StoryMessage from './Scripts/layout/components/StoryMessage';
 import ConversationItem from './Scripts/layout/components/ConversationItem';
 import { FriendDataContext } from './Scripts/layout/context/FriendDataContext';
 import { FriendDataProvider } from './Scripts/layout/context/FriendDataContext';
+import MessageItem from './Scripts/layout/components/MessageItem';
+import { UserDataProvider } from './Scripts/layout/context/UserDataContext';
+import { StoryDataProvider } from './Scripts/layout/context/StoryDataContext';
+
 // console.log = function () {};
 // console.error = function () {};
 // console.warn = function () {};
@@ -82,6 +86,8 @@ function MainApp()
   return (
     <GestureHandlerRootView>
       <BottomSheetModalProvider>
+      <StoryDataProvider>
+      <UserDataProvider>
       <FriendDataProvider>
       <IntervalProvider>
       <UserMessageProvider>
@@ -91,6 +97,16 @@ function MainApp()
           <Stack.Screen 
               name="LoadingScreen" 
               component={LoadingScreen} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="MessageItem" 
+              component={MessageItem} 
+              options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+              name="MainScreenStoryTab" 
+              component={MainScreenStoryTab} 
               options={{ headerShown: false }} 
             />
             <Stack.Screen 
@@ -196,6 +212,8 @@ function MainApp()
       </UserMessageProvider>
       </IntervalProvider>
       </FriendDataProvider>
+      </UserDataProvider>
+      </StoryDataProvider>
     </BottomSheetModalProvider>
     </GestureHandlerRootView>
     
