@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext} from "react";
 import React from 'react';
 import type {PropsWithChildren} from 'react';
-import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, ScrollView, FlatList} from 'react-native';
+import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, ScrollView, FlatList, Alert} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as signalR from "@microsoft/signalr";
@@ -10,9 +10,16 @@ import personal_chat_style from "./styles/PersonalChatStyle";
 import { UserMessageContext } from "./context/UserMessageContext";
 import { Conversation } from "./types/Conversation";
 import { jwtDecode } from "jwt-decode";
-
-
-
+import { FriendDataContext } from "./context/FriendDataContext";
+import { FriendData } from "./types/FriendData";
+import { UserDataContext } from "./context/UserDataContext";
+import UserAvatar from 'react-native-user-avatar';
+import MessageItem from "./components/MessageItem";
+import { Message } from "./types/Message";
+import { GET_LIST_LATEST_MESSAGE_COOLDOWN } from "@env";
+import { networkService } from './common/networkService';
+import { StoryDataContext } from "./context/StoryDataContext";
+import { Story } from "./types/Story";
 const data = {
   friend_avatar: "https://cdn.vinaenter.edu.vn/wp-content/uploads/2024/10/meme-meo-liec-1.jpg",
   list_message: [
@@ -25,170 +32,336 @@ const data = {
 };
 
 
+type ItemProps = 
+{
+  title: string,
+  sender: string,
+  friend_avt : string,
+  user_id: string
+};
 
-  type ItemProps = {
-    title: string,
-    sender: string,
-    friend_avatar : string,
-    user_id: string
-  };
-
-  const MessageItem = ({title, sender , friend_avatar, user_id}: ItemProps) => (
-    <View style={[personal_chat_style.message_item, {justifyContent : sender === user_id ? "flex-end" : "flex-start"}]}>
-      {sender !== user_id ? (
-      <Image 
-          source={{ uri: friend_avatar }}
-          style={[personal_chat_style.avatar, {marginTop: 5}, {marginLeft : 5}, {marginRight: 5}]}
-      />
-      ) : null}
-      <View style={sender === user_id ? personal_chat_style.message_background_user : personal_chat_style.message_background_friend}>
-        <Text style={[sender === user_id ? personal_chat_style.messsage_style_user : personal_chat_style.messsage_style_friend]}>{title}</Text>
-      </View>
-      
-    </View>
-  );
-
-  interface CustomJwtPayload {
-    UserId: string;  // Thêm các thuộc tính khác nếu cần
-    iat?: number;    // Thời gian phát hành token
-    exp?: number;    // Thời gian hết hạn token
-  }
+interface CustomJwtPayload 
+{
+  UserId: string;  // Thêm các thuộc tính khác nếu cần
+  iat?: number;    // Thời gian phát hành token
+  exp?: number;    // Thời gian hết hạn token
+}
+// Hàm sắp xếp theo sendAt
+const sortMessagesBySendAt = (messages: any[]) => {
+  return messages.sort((a, b) => {
+    const dateA = a?.sendAt ? new Date(a.sendAt).getTime() : 0;
+    const dateB = b?.sendAt ? new Date(b.sendAt).getTime() : 0;
+    return dateA - dateB;
+  });
+};
 
 function PersonalChatScreen({navigation}: {navigation: any})
 {
-    const user_message_context = useContext(UserMessageContext);
-    const [AvatarUrl, setAvatarUrl] = useState("https://cdn.vinaenter.edu.vn/wp-content/uploads/2024/10/meme-meo-liec-1.jpg");
-    const [messages, setMessages] = useState<Conversation | null> (null);
-    const [user_id, setUserId] = useState<string|null>();
-    const [friend_name, setFriendName] = useState();
-    const [input_message, setInputMessage] = useState("");
+  const user_message_context = useContext(UserMessageContext);
+  const friend_data_context = useContext(FriendDataContext);
+  const user_data_context = useContext(UserDataContext);
+  const story_data_context = useContext(StoryDataContext);
 
-    useEffect(()=>{
-      const GetUserId = async () =>
-      {
-        try
-        {
-          let access_token = await AsyncStorage.getItem("access_token");
-          if (access_token) 
-          {
-              const new_decodedToken = jwtDecode<CustomJwtPayload>(access_token);
-              setUserId(new_decodedToken.UserId.toString());
-          }
-        }
-        catch(error)
-        {
-          console.log("Error when get user id", "")
-        }
-      }
-      GetUserId();
-    }, []);
+// ----------------------------- GET FRIEND DATA ---------------------------------------
+  const [friend_avt, set_friend_avt] = useState("");
+  const [friend_first_name, set_friend_first_name] = useState("");
+  const [friend_last_name, set_friend_last_name] = useState("");
 
-    const SendMessage = async () =>
+  useEffect(() => 
+  {
+    const get_friend_data = async () =>
     {
-      try
+      if (!user_message_context.conversation_choosen?.participants) 
       {
-        const formData = new FormData();
-        formData.append("ConversationId", user_message_context?.friend);
-        formData.append("Content", input_message)
-        var response = await AxiosInstance.post(`api/message`,formData, {
-          headers: {
-              "Content-Type": "multipart/form-data"
-          }
-      });
-        if (response.status === 200) 
-          {
-              //console.log("Respone data when send messsage", response.data);
-          }
-      }
-      catch(error)
-      {
-        console.log("error khi gửi tin nhắn : ", error);
+        console.error("Participants not available.");
         return;
       }
-    }
-
-    useEffect(()=>
-    {
-      const GetMessages = async () =>
+  
+      let friend_id = "";
+      user_message_context.conversation_choosen.participants.forEach((participant: any) => {
+        if (participant !== user_data_context.user_id) 
+        {
+          friend_id = participant;
+        }
+      });
+  
+      const friend = friend_data_context.data_friend.find((u: FriendData) => u.id === friend_id);
+      if (friend) 
       {
-        try 
-        {
-          if(user_message_context == null)
-          {
-            return;
-          }
-          var response = await AxiosInstance.get(`/api/userconversation/conversation/${user_message_context.friend}`);
+        set_friend_avt(friend.avatar);
+        set_friend_first_name(friend.first_name);
+        set_friend_last_name(friend.last_name);
+      }
+    };
+    get_friend_data();
+  }, [user_message_context.conversation_choosen, friend_data_context.data_friend, user_data_context.user_id]); 
 
-          if (response.status === 200) 
-          {
-              //console.log("Message : ", response.data);
-              setMessages(response.data);
-          }
-          else
-          {
-              //console.log(response.status);
-          }
-        } 
-        catch (error) 
+// ------------------------------------------------------------------------------------------------------------------
+
+// Hàm này dùng để lấy các tin nhắn mới nhất của user dựa trên tin nhắn mới nhất hiện tại trên locallocal
+const get_list_latest_message = async () => 
+  {
+    try 
+    {
+      if (!user_message_context.conversation_choosen) 
+      {
+        console.error("No conversation chosen.");
+        return;
+      }
+
+      const form_data = new FormData();
+      var latest_message_id = "all";
+      if(user_message_context.conversation_choosen?.id === null)
+      {
+        console.log("Nothing");
+        return;
+      }
+      else
+      {
+        console.log("CURRENT ALL MESSAGE", user_message_context.all_user_message);
+        const selectedConversation = user_message_context.all_user_message?.userConversations?.find(
+          (c: Conversation) => c.id === user_message_context.conversation_choosen?.id
+        );
+
+        // console.log("----------------- SELECTED CONVERSATION", selectedConversation);
+        if(selectedConversation !== null && selectedConversation !== undefined)
         {
-            console.error('Error fetching messages:', error);
+          latest_message_id = selectedConversation?.lastMessage?.id;
+        }
+        else
+        {
+          latest_message_id = "all";
         }
       }
-      GetMessages();
-    }, [messages])
-    return(
-        <View style={personal_chat_style.main_view}>
-            <View style={personal_chat_style.header_zone}>
-                <TouchableOpacity style={personal_chat_style.backbutton} onPress={()=>{
-                        navigation.pop()}}>
-                        <Icon name="chevron-left" size={24} color="#FFFFFF" /> 
-                </TouchableOpacity>
-                <View style={personal_chat_style.avatar_and_name}>
-                    <Image 
-                    source={{uri: AvatarUrl}}
-                    style={personal_chat_style.avatar}/>
-                    <Text style={personal_chat_style.name}>
-                        {user_message_context?.friend_name}
-                    </Text>
-                </View>
+      form_data.append("conversation_id", user_message_context.conversation_choosen.id);
+      form_data.append(
+        "message_id",
+        latest_message_id        
+      );
+      console.log("FORM DATA", form_data);
+      
+      const res = await AxiosInstance.post("api/userconversation/get_list_latest_message", form_data, 
+      {
+        headers: 
+        {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      if (res.status === 200) 
+      {
+        console.log("------------ DATA RESPONE", res.data.userConversations[0].lastMessage);
+        const newConversation = res.data.userConversations[0]; // Lấy cuộc hội thoại từ kết quả API
+        const existingConversations = user_message_context.all_user_message?.userConversations || [];
+        let isExisting = false;
+      
+        // Kiểm tra và cập nhật danh sách hội thoại
+        const updatedConversations = existingConversations.map((conversation: Conversation) => {
+          if (conversation.id === newConversation.id) 
+          {
+            isExisting = true;
+      
+            // Thêm tin nhắn mới và sắp xếp lại theo sendAt
+            const updatedMessages = [
+              ...conversation.listMessages,
+              ...newConversation.listMessages,
+            ];
+      
+            return {
+              ...conversation,
+              listMessages: sortMessagesBySendAt(updatedMessages),
+              lastMessage: res.data.userConversations[0].lastMessage
+            };
+          }
+          return conversation;
+        });
+      
+        // Nếu cuộc hội thoại chưa tồn tại, thêm vào danh sách
+        if (!isExisting) 
+        {
+          updatedConversations.push({
+            ...newConversation,
+            listMessages: sortMessagesBySendAt(newConversation.listMessages), // Sắp xếp tin nhắn
+          });
+        }
+      
+        // Cập nhật lại danh sách hội thoại (đảm bảo danh sách hội thoại cũng sắp xếp theo tin nhắn gần nhất)
+        const sortedConversations = updatedConversations.sort((a: any, b: any) => {
+          const lastMessageA = a.listMessages[a.listMessages.length - 1]?.sendAt;
+          const lastMessageB = b.listMessages[b.listMessages.length - 1]?.sendAt;
+        
+          // Nếu không có tin nhắn, đưa cuộc hội thoại đó xuống cuối
+          if (!lastMessageA) return -1;
+          if (!lastMessageB) return 1;
+        
+          // Sắp xếp sao cho tin nhắn mới nhất nằm ở cuối danh sách
+          return new Date(lastMessageA).getTime() - new Date(lastMessageB).getTime();
+        });
+      
+        console.log("-------------------------- UPDATED CONVERSATIONS", sortedConversations);
+        const check = JSON.stringify(user_message_context.all_user_message?.userConversations) !== JSON.stringify(sortedConversations)
+        if (check) 
+        {
+          user_message_context.set_all_user_message({
+            ...user_message_context.all_user_message,
+            userConversations: sortedConversations,
+          });
+        }
+      } 
+      else 
+      {
+        console.log("RES STATUS", res.status);
+      }
+    } 
+    
+    catch (error) 
+    {
+      console.error("Failed to fetch latest messages:", error);
+    }
+  };
+  
+  useEffect(() => 
+  {
+    const intervalListMessage = setInterval(async () => {
+      const network_check = await networkService.checkNetwork();
+      if (network_check) {
+        await get_list_latest_message();
+      }
+    }, Number(GET_LIST_LATEST_MESSAGE_COOLDOWN));
+  
+    return () => clearInterval(intervalListMessage);
+  }, [
+    user_message_context.conversation_choosen, 
+    user_message_context.all_user_message,
+    friend_data_context.data_friend
+  ]); // Add all required dependencies
+
+
+  const [messages, setMessages] = useState<Conversation | null> (null);
+  const [input_message, setInputMessage] = useState("");
+  const [send_button_state, set_send_button_state] = useState(false); 
+
+  useEffect(() => 
+  {
+    set_send_button_state(input_message.length > 0);
+  }, [input_message]);
+
+  const send_message = async () =>
+  {
+    try
+    {
+      var form_data = new FormData();
+      form_data.append("ConversationId", user_message_context.conversation_choosen.id);
+      form_data.append("Content", input_message);
+      var res = await AxiosInstance.post("api/message", form_data,
+        {
+          headers: 
+          {
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
+      if(res.status === 201)
+      {
+        console.log("Gửi tin nhắn thành công");
+      }
+      else
+      {
+        Alert.alert("Lỗi", "Không thể gửi tin nhắn.");
+      }
+    }
+    catch(error)
+    {
+      Alert.alert("Lỗi", "Không thể gửi tin nhắn.");
+    }
+  }
+
+
+  const getStoryById = (id: string | undefined) => {
+    if (!id) return null; // Trả về null nếu id không tồn tại
+    return story_data_context.list_story?.find((story: Story) => story.story_id === id) || null;
+  };
+
+  return(
+      <View style={personal_chat_style.main_view}>
+          <View style={personal_chat_style.header_zone}>
+              <TouchableOpacity style={personal_chat_style.backbutton} onPress={()=>{
+                      navigation.pop()}}>
+                      <Icon name="chevron-left" size={24} color="#FFFFFF" /> 
+              </TouchableOpacity>
+              <View style={personal_chat_style.avatar_and_name}>
+                {friend_avt === undefined && friend_avt === null && friend_avt !== "" ? (
+                  <Image 
+                  source={{uri: friend_avt}}
+                  style={personal_chat_style.avatar}/>
+                ) : (
+                  <UserAvatar size={35} name={`${friend_first_name} ${friend_last_name}`} 
+                  style={[
+                  personal_chat_style.avatar, 
+                  {marginTop: 5}, {marginLeft: 5}, {marginRight: 5}
+                  ]}/>
+                )}
                 
-                <Text style={[personal_chat_style.name, {opacity:0}]}>
-                    Onion
+                <Text style={personal_chat_style.name}>
+                  {friend_first_name} {friend_last_name}
                 </Text>
-                
-            </View>
-            {messages != null && user_id != null? 
-            (
-            <FlatList
-              data={messages.listMessages} 
-              renderItem={({ item }) => (
-                <MessageItem 
-                  title={item.content} 
-                  sender={item.senderId} 
-                  friend_avatar={data.friend_avatar} 
-                  user_id={user_id}
-                />
-              )}
-              keyExtractor={item => item.id} 
-            />
+              </View>
+              
+              <Text style={[personal_chat_style.name, {opacity:0}]}>
+                  Onion
+              </Text>
+          </View>
+
+          <View style={personal_chat_style.message_container_view}>
+          {
+            user_message_context.all_user_message?.userConversations?.find(
+              (c: Conversation) => c.id === user_message_context.conversation_choosen?.id
+            )?.listMessages?.length > 0 ? (
+              <FlatList
+                data={
+                  (() => {
+                    const selectedConversation = user_message_context.all_user_message?.userConversations?.find(
+                      (c: Conversation) => c.id === user_message_context.conversation_choosen?.id
+                    );
+                    return selectedConversation ? selectedConversation.listMessages : [];
+                  })()
+                }
+                renderItem={({ item }) => (
+                  <MessageItem
+                    sender_id={item.senderId}
+                    friend_avt={friend_avt}
+                    friend_first_name={friend_first_name}
+                    friend_last_name={friend_last_name}
+                    story={getStoryById(item.replyToStoryId)} // Tìm story theo id
+                    message={item.content}
+                  />
+                )}
+                keyExtractor={(item) => item.id}
+              />
             ) : (
-              <Text>No messages available</Text>
-            )}
-            <View style={personal_chat_style.send_message_zone}>
-                <View style={personal_chat_style.smz_background}>
-                  <TextInput style = {personal_chat_style.message_text} placeholder="Gửi tin nhắn" 
-                  placeholderTextColor={"#AAAAAA"}
-                  value={input_message}
-                  onChangeText={setInputMessage}></TextInput>
-                  <TouchableOpacity style={personal_chat_style.send_button} onPress={async ()=>{ await SendMessage()
-                       }}>
-                        <Icon name="send" size={24} color="#FFFFFF" /> 
+              <Text style={[{color: "#FFFFFF"}, {fontFamily: "SF-Pro-Rounded-Semibold"}, {fontSize: 18}, {alignSelf: "center"}]}>Không có tin nhắn</Text>
+            )
+          }
+          </View>
+          
+          <View style={personal_chat_style.send_message_zone}>
+              <View style={personal_chat_style.smz_background}>
+                <TextInput style = {personal_chat_style.message_text} placeholder="Gửi tin nhắn" 
+                placeholderTextColor={"#AAAAAA"}
+                value={input_message}
+                onChangeText={setInputMessage}></TextInput>
+                <TouchableOpacity style={[personal_chat_style.send_button, send_button_state ? personal_chat_style.background_enable: personal_chat_style.background_unenable]} 
+                onPress={ async ()=>{ 
+                  send_message();
+                  setInputMessage("");
+                }}
+                disabled={!send_button_state}>
+                    <Icon name="send" size={24} color = {send_button_state ? personal_chat_style.icon_enable.color : personal_chat_style.icon_unenable.color}/> 
                 </TouchableOpacity>
-                </View>
-            </View>
-            
-        </View>
-    )
+              </View>
+          </View>
+      </View>
+  )
 }
 
 export default PersonalChatScreen

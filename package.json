@@ -29,6 +29,7 @@
     "express": "^4.21.1",
     "jwt-decode": "^4.0.0",
     "lightningcss": "^1.28.2",
+    "lodash": "^4.17.21",
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.0",
     "nativewind": "^4.1.21",
