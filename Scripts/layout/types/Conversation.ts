@@ -5,6 +5,6 @@ export type Conversation = {
     updatedAt: Date;
     id: string;
     participants: Array<string>;
-    lastMessage: Message | null;
+    lastMessage: Message | null | undefined;
     listMessages: Array<Message>;
 };

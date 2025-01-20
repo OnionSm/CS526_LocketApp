@@ -19,6 +19,7 @@ import { FlatList } from 'react-native-gesture-handler';
 import { opacity } from 'react-native-reanimated/lib/typescript/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AxiosInstance from './instance/AxiosInstance';
+import { FriendDataContext } from './context/FriendDataContext';
 
 const getMimeType = (path: any) => {
     const extension = path.split('.').pop().toLowerCase();
@@ -34,16 +35,13 @@ const getMimeType = (path: any) => {
             return 'image/jpeg'; // Mặc định nếu không xác định được
     }
 };
-type SectionData =
-| string // Cho Camera Section
-| { id: string;  content: string }; // Cho FriendNew Section
+
 
 const { width, height } = Dimensions.get('window');
 
 
 function MainScreen({navigation, hasPermission, setHasPermission, 
-    isTakingPhoto, setIsTakingPhoto, go_to_page_story_tab, 
-    data_friend, current_camera, format, use_back_camera, 
+    isTakingPhoto, setIsTakingPhoto, go_to_page_story_tab, current_camera, format, use_back_camera, 
     set_use_back_camera, device}: 
     {hasPermission: boolean; setHasPermission: (state: boolean) => void; 
     navigation: any; isTakingPhoto: boolean; 
@@ -51,6 +49,8 @@ function MainScreen({navigation, hasPermission, setHasPermission,
     data_friend: Array<FriendData>, current_camera: any, format: any, 
     use_back_camera:boolean, set_use_back_camera: (state: boolean)=>void , device : any})
 {      
+
+    const friend_data_context = useContext(FriendDataContext);
     
  
     const [delete_account_modal_state, set_delete_account_modal] = useState(false);
@@ -222,7 +222,7 @@ const up_story = async (photoImg: string | null, select_all: boolean, selected_f
                             {borderRadius: 50}]}    
                             disabled={!selected_all && selected_friend.length === 0}
                             onPress={async () => {
-                                await up_story(photoImg, selected_all, selected_friend, data_friend, story_caption);
+                                await up_story(photoImg, selected_all, selected_friend, friend_data_context.data_friend, story_caption);
                             }}>
                             {selected_all || selected_friend.length > 0 ? (
                                 <Icon name="send" size={50} color="#FFFFFF"></Icon>
@@ -284,7 +284,7 @@ const up_story = async (photoImg: string | null, select_all: boolean, selected_f
                     </TouchableOpacity>
 
                     <FlatList
-                        data={data_friend}
+                        data={friend_data_context.data_friend}
                         horizontal={true} 
                         keyExtractor={(item: FriendData) => item.id}
                         renderItem={({ item }) => (  
@@ -323,7 +323,6 @@ const up_story = async (photoImg: string | null, select_all: boolean, selected_f
                     />
                 </View>
             )}
-            
         </View>
     )
 }

@@ -29,7 +29,7 @@ function MessageScreen({navigation}: {navigation: any})
         console.log("CHOOSE", item);
         navigation.navigate("PersonalChatScreen");
     }
-        
+    
 
 
     // useEffect(() => {
