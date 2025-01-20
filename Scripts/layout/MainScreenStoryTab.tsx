@@ -26,14 +26,19 @@ import {
 } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserDataContext } from './context/UserDataContext';
-
+import { StoryDataContext } from './context/StoryDataContext';
+import { FriendDataContext } from './context/FriendDataContext';
+import { networkService } from './common/networkService';
   
 
 const {width, height} = Dimensions.get("window");
-const MainScreenStoryTab = ({ data_friend, list_story, set_list_story, goToTop, user_avt }: { data_friend: Array<FriendData>, list_story: Array<Story>, set_list_story: (ls_story: Array<Story>) => void ,
-    goToTop: () => void, user_avt: string}) => 
+const MainScreenStoryTab = ({ goToTop }: 
+    { goToTop: () => void}) => 
 {
     const user_data_context = useContext(UserDataContext);
+    const story_data_context = useContext(StoryDataContext);
+    const friend_data_context = useContext(FriendDataContext);
+
         
 
     
@@ -49,7 +54,8 @@ const MainScreenStoryTab = ({ data_friend, list_story, set_list_story, goToTop, 
 
     const ref = React.useRef<ICarouselInstance>(null);
 
-    const handleGoToFirstPage = () => {
+    const handleGoToFirstPage = () => 
+    {
         if (ref.current) {
             ref.current.scrollTo({ index: 0, animated: true });
         }
@@ -57,39 +63,43 @@ const MainScreenStoryTab = ({ data_friend, list_story, set_list_story, goToTop, 
 
 // ------------------------------------------------------ GET STORY IMAGE -------------------------------------------------------
 
-const get_story_image = async (str_id: string) => {
-    try {
-        // Chuẩn bị FormData
-        const formData = new FormData();
-        formData.append("story_id", str_id);
+    const loadedStories = useRef(new Set()); // Set lưu các story đã tải ảnh
 
-        // Gửi yêu cầu POST đến API
-        const res = await AxiosInstance.post("api/story/get_story/image", formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-
-        // Xử lý kết quả trả về từ API
-        if (res.status === 200) 
+    // Hàm tải ảnh nếu chưa được tải
+    const get_story_image = async (str_id: string) => 
+    {
+        var network_check = await networkService.checkNetwork();
+        if(!network_check)
         {
-            const updatedStories = list_story.map((story) => 
-                story.story_id === str_id 
-                    ? { ...story, image: res.data.imageURL } 
-                    : story
-            );
-
-            // Cập nhật danh sách câu chuyện
-            set_list_story(updatedStories);
-        } 
-        else 
-        {
-            console.error("Không thể lấy hình ảnh cho story:", res.status);
+            return;
         }
-    } catch (error) {
-        console.error("Lỗi khi lấy hình ảnh cho story:", error);
-    }
-};
+        if (loadedStories.current.has(str_id)) return; // Nếu đã tải thì bỏ qua
+        loadedStories.current.add(str_id); // Đánh dấu đã tải
+
+        try 
+        {
+            const formData = new FormData();
+            formData.append("story_id", str_id);
+
+            const res = await AxiosInstance.post("api/story/get_story/image", formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            if (res.status === 200) {
+                story_data_context.set_list_story((prevStories: any) =>
+                    prevStories.map((story: Story) =>
+                        story.story_id === str_id
+                            ? { ...story, image: res.data.imageURL }
+                            : story
+                    )
+                );
+            } else {
+                console.error("Không thể lấy hình ảnh cho story:", res.status);
+            }
+        } catch (error) {
+            console.error("Lỗi khi lấy hình ảnh cho story:", error);
+        }
+    };
 
 
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -118,27 +128,30 @@ const get_story_image = async (str_id: string) => {
             }
             var form_data = new FormData();
             form_data.append("story_id", current_story);
-            form_data.append("Content", comment);
-            // var res = await AxiosInstance.post("api/message", form_data,
-            // {
-            //     headers: 
-            //     {
-            //         "Content-Type": "multipart/form-data"
-            //     }
-            // });
-            // if(res.status === 200)
-            // {
-            //     console.log("Gửi tin nhắn thành công");
-            // }
-            // else
-            // {
-            //     Alert.alert("Lỗi", "Không thể gửi tin nhắn.");
-            // }
+            form_data.append("content", comment);
+            var res = await AxiosInstance.post("api/story/send_story_message", form_data,
+            {
+                headers: 
+                {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
+            if(res.status === 200)
+            {
+                set_comment("");
+                console.log("Gửi tin nhắn thành công");
+            }
+            else
+            {
+                set_comment("");
+                Alert.alert("Lỗi", "Không thể gửi tin nhắn.");
+            }
             console.log("FORM MESSAGE DATA", form_data);
         }
-        catch
+        catch(error)
         {
-            Alert.alert("Lỗi", "Không thể gửi tin nhắn");
+            set_comment("");
+            Alert.alert("Lỗi", `Không thể gửi tin nhắn ${error}`);
         }
         
     }
@@ -146,35 +159,34 @@ const get_story_image = async (str_id: string) => {
     useEffect
     return (
         <View style={main_screen_story_tab_styles.main_view}>
-            <GridStoryModal grid_story_modal_ref={grid_story_modal_ref} data_story={list_story} ></GridStoryModal>
+            <GridStoryModal grid_story_modal_ref={grid_story_modal_ref} data_story={story_data_context.list_story} ></GridStoryModal>
             <Carousel
                 ref={ref}
                 loop={false}
                 width={width}
                 height={height}
-                data={list_story} // Dữ liệu đã được sắp xếp
+                data={story_data_context.list_story} // Dữ liệu đã được sắp xếp
                 scrollAnimationDuration={150}
                 onSnapToItem={(index) =>{
-                    const currentItem = list_story[index]; // Lấy item hiện tại
+                    const currentItem = story_data_context.list_story[index]; // Lấy item hiện tại
                     console.log('Current index:', index);
                     set_comment_visible(currentItem.uploader_id !== user_data_context.user_id)
                     set_current_story(currentItem.story_id);
                 }}
-                renderItem={({ item }) => {
+                renderItem={({item}: {item: Story}) => 
+                {
                     if (!item) return <View />;
 
                     const isUser = user_data_context.user_id === item.uploader_id;
                     const uploader = isUser
-                        ? { userAvatarURL: user_avt, first_name: "Bạn", last_name: "" }
-                        : data_friend?.find((fr) => fr.id === item.uploader_id);
-
+                        ? { userAvatarURL: user_data_context.user_avt, first_name: "Bạn", last_name: "" }
+                        : friend_data_context.data_friend?.find((fr: FriendData) => fr.id === item.uploader_id);
+                
+                    if(item.image === "" || item.image === null || item.image === undefined)
+                    {
+                        get_story_image(item.story_id);
+                    }
                     if (!uploader) return <View />;
-
-                    // // Kiểm tra và gọi hàm lấy hình ảnh nếu `image === ""` và là của người dùng
-                    // if (isUser && item.image === "") 
-                    // {
-                    //     get_story_image(item.story_id);
-                    // }
 
                     const formattedDate = format(
                         new Date(item.create_at),

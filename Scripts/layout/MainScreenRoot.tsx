@@ -39,7 +39,10 @@ import { FriendDataContext } from './context/FriendDataContext';
 import { UserDataContext } from './context/UserDataContext';
 import { StoryDataContext } from './context/StoryDataContext';
 import _ from 'lodash';
-
+import { Conversation } from './types/Conversation';
+import { Message } from './types/Message';
+import { ConversationParticipant } from './types/ConversationParticipant';
+import { UserConversation } from './types/UserConversation';
 
 // Hàm để lấy MIME type từ phần mở rộng của file
 const getMimeType = (path: any) => {
@@ -293,8 +296,6 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
             console.log(back_button_enable);
             pagerViewRef.current.setPage(0); 
             set_back_button(!back_button_enable);
-        
-            
         }
     };
     const onPageSelected = (event: any) => 
@@ -410,10 +411,10 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                     tx.executeSql(
                         `UPDATE Story
                         SET image = ""
-                        WHERE reset_time < ?`,
-                        [Date.now() - 3 * 24 * 60 * 60 * 1000], // Lấy timestamp hiện tại trừ đi 3 ngày
+                        WHERE datetime(reset_time) < datetime(?, '-7 days')`,
+                        [new Date().toISOString()], // Thời điểm hiện tại (ISO 8601 format)
                         () => {
-                            
+                            console.log("Cập nhật thành công các bản ghi cũ hơn 7 ngày.");
                         },
                         (error: any) => {
                             console.log("Lỗi khi cập nhật Story:", error);
@@ -589,9 +590,9 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                             PRIMARY KEY (user_id, story_id)
                         )`,
                         [],
-                        () => console.log("Table created or already exists"),
+                        () => console.log("Table Story created or already exists"),
                         (error: any) => {
-                            console.error("Error creating table:", error);
+                            console.error("Error Story creating table:", error);
                         }
                     );
 
@@ -683,17 +684,141 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 // ------------------------------------------- GET USER CONVERSATION ---------------------------------------------
 
 
-    const get_latest_message_from_local = async () =>
-    {
-        
-    }
-    const get_latest_message = async () => 
+    const get_latest_message_from_local = async () => 
     {
         try 
         {
-            var res = await AxiosInstance.get("api/userconversation/get_latest_message");
-            if (res.status === 200) 
+            const local_list_messages: Array<Message> = [];
+            const list_conversations: Array<Conversation> = [];
+            const list_participants: Array<ConversationParticipant> = [];
+
+            // Hàm thực hiện truy vấn SQLite và trả về Promise
+            const executeSqlAsync = (query: string, params: any[]): Promise<any> => 
             {
+                return new Promise((resolve, reject) => 
+                {
+                    sqlite_db_context.db.transaction((tx: any) => 
+                    {
+                        tx.executeSql(
+                            query,
+                            params,
+                            (_: any, result: any) => resolve(result),
+                            (_: any, error: any) => reject(error)
+                        );
+                    });
+                });
+            };
+
+            // Truy vấn tin nhắn
+            const messageResult = await executeSqlAsync(
+                `SELECT * FROM Message WHERE user_id = ?`,
+                [user_data_context.user_id]
+            );
+            if (messageResult.rows.length > 0) 
+            {
+                for (let i = 0; i < messageResult.rows.length; i++) 
+                {
+                    const item = messageResult.rows.item(i);
+                    local_list_messages.push({
+                        id: item.message_id,
+                        conversationId: item.conversation_id,
+                        content: item.content,
+                        replyToStoryId: item.reply_to_story_id,
+                        sendAt: item.send_at,
+                        senderId: item.sender_id,
+                        status: item.status,
+                    });
+                }
+            }
+
+            // Truy vấn người tham gia
+            const participantResult = await executeSqlAsync(
+                `SELECT * FROM ConversationParticipant WHERE user_id = ?`,
+                [user_data_context.user_id]
+            );
+            if (participantResult.rows.length > 0) 
+            {
+                for (let i = 0; i < participantResult.rows.length; i++) 
+                {
+                    const item = participantResult.rows.item(i);
+                    list_participants.push({
+                        conversation_id: item.conversation_id,
+                        participant_id: item.participant_id,
+                    });
+                }
+            }
+
+            // Truy vấn cuộc trò chuyện
+            const conversationResult = await executeSqlAsync(
+                `SELECT * FROM Conversation WHERE user_id = ?`,
+                [user_data_context.user_id]
+            );
+            if (conversationResult.rows.length > 0) 
+            {
+                const messageMap = new Map<string, Message>();
+                const participantMap = new Map<string, Set<string>>();
+
+                // Tạo Map để tra cứu tin nhắn nhanh hơn
+                local_list_messages.forEach((message) =>
+                {
+                    messageMap.set(message.id, message);
+                });
+
+                // Tạo Map để tra cứu danh sách người tham gia nhanh hơn
+                list_participants.forEach((participant) => 
+                {
+                    if (!participantMap.has(participant.conversation_id)) 
+                    {
+                        participantMap.set(participant.conversation_id, new Set());
+                    }
+                    participantMap.get(participant.conversation_id)?.add(participant.participant_id);
+                });
+
+                // Duyệt qua danh sách cuộc trò chuyện
+                for (let i = 0; i < conversationResult.rows.length; i++) 
+                {
+                    const item = conversationResult.rows.item(i);
+                    const lastMessage = messageMap.get(item.last_message_id) || null;
+                    const participants = Array.from(participantMap.get(item.conversation_id) || []);
+
+                    list_conversations.push({
+                        id: item.conversation_id,
+                        createdAt: item.created_at,
+                        updatedAt: item.updated_at,
+                        lastMessage: lastMessage,
+                        listMessages: [],
+                        participants: participants,
+                    });
+                }
+            } 
+            else 
+            {
+                console.log("No conversation for this user.");
+            }
+            let new_user_conversations: UserConversation = {
+                id: "",
+                userId: "",
+                userConversations: []
+            };
+            new_user_conversations.userConversations = list_conversations;
+            user_message_context.set_user_conversations(new_user_conversations);
+            
+
+            console.log("Conversations:", list_conversations);
+        } 
+        catch (error) 
+        {
+            console.error("Failed to get the latest messages from local:", error);
+        }
+    };
+
+
+    const get_latest_message_from_server = async () => 
+    {
+        try 
+        {
+            const res = await AxiosInstance.get("api/userconversation/get_latest_message");
+            if (res.status === 200) {
                 console.log("CONVERSATION", res.data);
     
                 const currentConversations = user_message_context.user_conversations;
@@ -701,30 +826,178 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 // So sánh sâu (deep comparison)
                 const isDifferent = !_.isEqual(res.data, currentConversations);
     
-                if (isDifferent) 
-                {
+                if (isDifferent) {
                     user_message_context.set_user_conversations(res.data);
-                } 
-                else 
-                {
+    
+                    sqlite_db_context.db.transaction((tx: any) => {
+                        // Tạo bảng nếu chưa tồn tại
+                        tx.executeSql(
+                            `CREATE TABLE IF NOT EXISTS Conversation (
+                                user_id TEXT,
+                                conversation_id TEXT,
+                                last_message_id TEXT,
+                                created_at TEXT,
+                                updated_at TEXT,
+                                PRIMARY KEY (user_id, conversation_id)
+                            )`,
+                            [],
+                            () => console.log("Table Conversation created or already exists"),
+                            (error: any) => console.error("Error creating table Conversation:", error)
+                        );
+    
+                        tx.executeSql(
+                            `CREATE TABLE IF NOT EXISTS Message (
+                                user_id TEXT,
+                                message_id TEXT,
+                                conversation_id TEXT,
+                                sender_id TEXT,
+                                content TEXT,
+                                status TEXT,
+                                send_at TEXT,
+                                reply_to_story_id TEXT,
+                                PRIMARY KEY (user_id, message_id)
+                            )`,
+                            [],
+                            () => console.log("Table Message created or already exists"),
+                            (error: any) => console.error("Error creating table Message:", error)
+                        );
+    
+                        tx.executeSql(
+                            `CREATE TABLE IF NOT EXISTS ConversationParticipant (
+                                user_id TEXT,
+                                conversation_id TEXT,
+                                participant_id TEXT,
+                                PRIMARY KEY (user_id, conversation_id, participant_id)
+                            )`,
+                            [],
+                            () => console.log("Table ConversationParticipant created or already exists"),
+                            (error: any) => console.error("Error creating table ConversationParticipant:", error)
+                        );
+    
+                        // Chèn hoặc cập nhật từng bản ghi
+                        res.data.userConversations.forEach((conversation: any) => {
+                            const {
+                                id: conversation_id,
+                                lastMessage,
+                                createdAt,
+                                updatedAt,
+                                participants,
+                            } = conversation;
+    
+                            // Chèn dữ liệu vào bảng Conversation
+                            tx.executeSql(
+                                `INSERT OR REPLACE INTO Conversation 
+                                    (user_id, conversation_id, last_message_id, created_at, updated_at) 
+                                    VALUES (?, ?, ?, ?, ?)`,
+                                [
+                                    user_data_context.user_id,
+                                    conversation_id,
+                                    lastMessage?.id || null,
+                                    createdAt,
+                                    updatedAt,
+                                ],
+                                () => console.log(`Conversation ${conversation_id} processed.`),
+                                (error: any) =>
+                                    console.error(`Error adding/updating conversation ${conversation_id}:`, error)
+                            );
+    
+                            // Chèn dữ liệu vào bảng Message
+                            if (lastMessage) {
+                                const {
+                                    id: message_id,
+                                    senderId,
+                                    content,
+                                    status,
+                                    sendAt,
+                                    replyToStoryId,
+                                } = lastMessage;
+    
+                                tx.executeSql(
+                                    `INSERT OR REPLACE INTO Message
+                                        (user_id, message_id, conversation_id, sender_id, content, status, send_at, reply_to_story_id)
+                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                                    [
+                                        user_data_context.user_id,
+                                        message_id,
+                                        conversation_id,
+                                        senderId,
+                                        content,
+                                        status,
+                                        sendAt,
+                                        replyToStoryId || null,
+                                    ],
+                                    () => console.log(`Message ${message_id} processed.`),
+                                    (error: any) =>
+                                        console.error(`Error adding/updating message ${message_id}:`, error)
+                                );
+                            }
+    
+                            // Chèn dữ liệu vào bảng ConversationParticipant
+                            participants.forEach((participant: string) => {
+                                tx.executeSql(
+                                    `INSERT OR REPLACE INTO ConversationParticipant
+                                        (user_id, conversation_id, participant_id)
+                                        VALUES (?, ?, ?)`,
+                                    [user_data_context.user_id, conversation_id, participant],
+                                    () =>
+                                        console.log(
+                                            `Participant ${participant} added to conversation ${conversation_id}.`
+                                        ),
+                                    (error: any) =>
+                                        console.error(
+                                            `Error adding participant ${participant} to conversation ${conversation_id}:`,
+                                            error
+                                        )
+                                );
+                            });
+                        });
+                    });
+                } else {
                     console.log("No changes in conversations");
                 }
             }
-        } 
-        catch (error) 
-        {
-            console.log("Can not get latest message");
+        } catch (error) {
+            console.log("Can not get latest message", error);
         }
     };
 
-    useEffect(() => 
-        { 
-            const intervalNewMessage = setInterval(async () => 
+    const get_latest_message = async () =>
+    {
+        try
+        {
+            var network_check = await networkService.checkNetwork();
+            if(network_check)
             {
-                await get_latest_message(); 
-            }, Number(GET_STORY_REQUEST_COOLDOWN)); 
-            return () => clearInterval(intervalNewMessage);
-        }, []);
+                await get_latest_message_from_server();
+            }
+            else
+            {
+                await get_latest_message_from_local();
+            }
+        }
+        catch(error)
+        {
+            console.error("Can not get latest message data");
+        }
+    }
+    
+    useEffect(()=>
+    {
+        get_latest_message();
+    }, []);
+
+    useEffect(() => 
+    { 
+        const intervalNewMessage = setInterval(async () => 
+        {
+            var network_check = await networkService.checkNetwork();
+            if(network_check)
+            {
+                await get_latest_message_from_server(); 
+            }
+        }, Number(GET_STORY_REQUEST_COOLDOWN)); 
+        return () => clearInterval(intervalNewMessage);
+    }, []);
 
 // --------------------------------------------------------------------------------------------------------------
     return (
@@ -762,11 +1035,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 </View>
                 <View key="1">
                     <MainScreenStoryTab 
-                        data_friend={friend_data_context.data_friend} 
-                        list_story={story_data_context.list_story} 
-                        set_list_story={story_data_context.set_list_story}
                         goToTop={goToTop}
-                        user_avt={user_data_context.user_avt}
                     />
                 </View>
             </PagerView>

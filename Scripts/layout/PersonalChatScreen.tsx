@@ -20,6 +20,8 @@ import { GET_LIST_LATEST_MESSAGE_COOLDOWN } from "@env";
 import { networkService } from './common/networkService';
 import { StoryDataContext } from "./context/StoryDataContext";
 import { Story } from "./types/Story";
+import { SqliteDbContext } from "./context/SqliteDbContext";
+
 const data = {
   friend_avatar: "https://cdn.vinaenter.edu.vn/wp-content/uploads/2024/10/meme-meo-liec-1.jpg",
   list_message: [
@@ -61,6 +63,7 @@ function PersonalChatScreen({navigation}: {navigation: any})
   const friend_data_context = useContext(FriendDataContext);
   const user_data_context = useContext(UserDataContext);
   const story_data_context = useContext(StoryDataContext);
+  const sqlite_db_context = useContext(SqliteDbContext);
 
 // ----------------------------- GET FRIEND DATA ---------------------------------------
   const [friend_avt, set_friend_avt] = useState("");
@@ -184,6 +187,10 @@ const get_list_latest_message = async () =>
             listMessages: sortMessagesBySendAt(newConversation.listMessages), // Sắp xếp tin nhắn
           });
         }
+        else
+        {
+          console.log("--------- TIN NHẮN KHÔNG KHÁC NHAU --------");
+        }
       
         // Cập nhật lại danh sách hội thoại (đảm bảo danh sách hội thoại cũng sắp xếp theo tin nhắn gần nhất)
         const sortedConversations = updatedConversations.sort((a: any, b: any) => {
@@ -206,6 +213,78 @@ const get_list_latest_message = async () =>
             ...user_message_context.all_user_message,
             userConversations: sortedConversations,
           });
+
+          sqlite_db_context.db.transaction((tx: any) =>
+          {
+            // Chèn hoặc cập nhật từng bản ghi
+            res.data.userConversations.forEach((conversation: any) => {
+              const {
+                  id: conversation_id,
+                  lastMessage,
+                  createdAt,
+                  updatedAt,
+                  participants,
+              } = conversation;
+
+              // Chèn dữ liệu vào bảng Conversation
+              tx.executeSql(
+                  `INSERT OR REPLACE INTO Conversation 
+                      (user_id, conversation_id, last_message_id, created_at, updated_at) 
+                      VALUES (?, ?, ?, ?, ?)`,
+                  [
+                      user_data_context.user_id,
+                      conversation_id,
+                      lastMessage?.id || null,
+                      createdAt,
+                      updatedAt,
+                  ],
+                  () => console.log(`Conversation ${conversation_id} processed.`),
+                  (error: any) =>
+                      console.error(`Error adding/updating conversation ${conversation_id}:`, error)
+              );
+              
+              res.data.userConversations?.listMessages.forEach((message: any) =>
+              {
+                tx.executeSql(
+                    `INSERT OR REPLACE INTO Message
+                        (user_id, message_id, conversation_id, sender_id, content, status, send_at, reply_to_story_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        user_data_context.user_id,
+                        message.id,
+                        message.conversationId,
+                        message.senderId,
+                        message.content,
+                        message.status,
+                        message.sendAt,
+                        message.replyToStoryId || null,
+                    ],
+                    () => console.log(`Message ${message.id} processed.`),
+                    (error: any) =>
+                        console.error(`Error adding/updating message ${message.id}:`, error)
+                );
+              });
+
+              // Chèn dữ liệu vào bảng ConversationParticipant
+              participants.forEach((participant: string) => {
+                  tx.executeSql(
+                      `INSERT OR REPLACE INTO ConversationParticipant
+                          (user_id, conversation_id, participant_id)
+                          VALUES (?, ?, ?)`,
+                      [user_data_context.user_id, conversation_id, participant],
+                      () =>
+                          console.log(
+                              `Participant ${participant} added to conversation ${conversation_id}.`
+                          ),
+                      (error: any) =>
+                          console.error(
+                              `Error adding participant ${participant} to conversation ${conversation_id}:`,
+                              error
+                          )
+                  );
+              });
+          });
+          });
         }
       } 
       else 
@@ -222,9 +301,11 @@ const get_list_latest_message = async () =>
   
   useEffect(() => 
   {
-    const intervalListMessage = setInterval(async () => {
+    const intervalListMessage = setInterval(async () => 
+    {
       const network_check = await networkService.checkNetwork();
-      if (network_check) {
+      if (network_check) 
+      {
         await get_list_latest_message();
       }
     }, Number(GET_LIST_LATEST_MESSAGE_COOLDOWN));
@@ -276,8 +357,8 @@ const get_list_latest_message = async () =>
     }
   }
 
-
-  const getStoryById = (id: string | undefined) => {
+  const getStoryById = (id: string | undefined) => 
+  {
     if (!id) return null; // Trả về null nếu id không tồn tại
     return story_data_context.list_story?.find((story: Story) => story.story_id === id) || null;
   };
