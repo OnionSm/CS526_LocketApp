@@ -196,6 +196,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         {
             // Cập nhật state
             friend_data_context.set_data_friend(newFriends);
+            console.log("--------------------", friend_data_context.data_friend);
         }
     }
 
@@ -818,7 +819,8 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
         try 
         {
             const res = await AxiosInstance.get("api/userconversation/get_latest_message");
-            if (res.status === 200) {
+            if (res.status === 200) 
+            {
                 console.log("CONVERSATION", res.data);
     
                 const currentConversations = user_message_context.user_conversations;
@@ -826,10 +828,12 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 // So sánh sâu (deep comparison)
                 const isDifferent = !_.isEqual(res.data, currentConversations);
     
-                if (isDifferent) {
+                if (isDifferent) 
+                {
                     user_message_context.set_user_conversations(res.data);
     
-                    sqlite_db_context.db.transaction((tx: any) => {
+                    sqlite_db_context.db.transaction((tx: any) => 
+                    {
                         // Tạo bảng nếu chưa tồn tại
                         tx.executeSql(
                             `CREATE TABLE IF NOT EXISTS Conversation (
@@ -957,7 +961,7 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
                 }
             }
         } catch (error) {
-            console.log("Can not get latest message", error);
+            console.log("Can not get latest message server", error);
         }
     };
 
