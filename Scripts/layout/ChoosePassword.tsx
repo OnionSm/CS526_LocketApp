@@ -93,6 +93,7 @@ const saveUserData = async (data: any, db: any) => {
 function ChoosePassword({ navigation }: {navigation: any })
 {
 
+
 // ------------------------------ SET DATABASE --------------------------------
     const sqlite_db_context = useContext(SqliteDbContext);
 
@@ -107,13 +108,6 @@ function ChoosePassword({ navigation }: {navigation: any })
     }, []);
 
 // -------------------------------------------------------------------------------
-
-
-
-// ----------------------------------------  SET FRIEND DATA ---------------------------------
-
-
-// ----------------------------------------------------------------------------------------------
 
 
     const [login_email, setEmail] = useState("");
@@ -208,7 +202,8 @@ async function Login(email: string, password : string, db: any)
             body: formData, 
         });
 
-        if (!response.ok) {
+        if (!response.ok) 
+        {
             throw new Error('Network response was not ok');
         }
 

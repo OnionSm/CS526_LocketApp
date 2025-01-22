@@ -5,16 +5,22 @@ const your_message_background = "#CFCFCF";
 const your_message_color = "#000000"
 const friend_message_background = "#333333";
 const friend_message_color = "#FFFFFF";
-const personal_chat_style = StyleSheet.create({
-    main_view:{
-        justifyContent: 'center',
+const personal_chat_style = StyleSheet.create(
+{
+    main_view:
+    {
         opacity: 1,
         display: "flex",
         alignItems: "center",
         flexDirection: "column",
         backgroundColor: "#050505",
-        width : width,
-        height: height
+        flex: 1
+
+    },
+    message_container_view:
+    {
+        width: width,
+        height: 0.81* height,
     },
     header_zone:
     {
@@ -25,6 +31,7 @@ const personal_chat_style = StyleSheet.create({
         justifyContent: "space-between",
         alignContent: "center",
         flexDirection: "row",
+        alignSelf: "flex-start"
     },
     backbutton:
     {
@@ -92,7 +99,6 @@ const personal_chat_style = StyleSheet.create({
         display: "flex",
         alignItems: "flex-start",
         justifyContent: "center"
-
     },
     messsage_style_user:
     {
@@ -114,16 +120,20 @@ const personal_chat_style = StyleSheet.create({
         marginBottom: 5,
         fontFamily: "SF-Pro-Rounded-SemiBold",
     },
-    send_message_zone:
+    send_message_zone: 
     {
-        width: width,
-        height: 0.1* height,
-        display: "flex",
-        alignItems:"flex-start",
-        justifyContent: "center",
-        alignContent: "center",
+        width: width, 
+        height: 0.1 * height,
+        position: "absolute", 
+        bottom: 0, 
+        left: 0, 
+        display: "flex", 
+        alignItems: "center",
+        justifyContent: "center", 
         flexDirection: "row",
+        backgroundColor: "#050505"
     },
+    
     smz_background:
     {
         width:"90%",
@@ -152,13 +162,28 @@ const personal_chat_style = StyleSheet.create({
         width: 45, 
         height: 45, 
         borderRadius: 30, 
-        backgroundColor: '#212121', 
         display: "flex",
         justifyContent: 'center', 
         alignItems: 'center',
         marginLeft: 20,
         marginRight:20,
         flex: 1
+    },
+    background_unenable:
+    {
+        backgroundColor: "#5C5C5C"
+    },
+    background_enable:
+    {
+        backgroundColor: "#D6D6D6"
+    },
+    icon_unenable:
+    {
+        color: "#353535"
+    },
+    icon_enable:
+    {
+        color: "#2B2B2B"
     }
 });
 

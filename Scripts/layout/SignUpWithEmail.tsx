@@ -102,7 +102,7 @@ async function CheckEmail(email: string) {
 
     try {
         console.log(CONNECTION_IP);
-        const response = await fetch(`http://${CONNECTION_IP}:5115/api/user/email`, {
+        const response = await fetch(`  ail`, {
             method: 'POST',
             body: formData, 
         });

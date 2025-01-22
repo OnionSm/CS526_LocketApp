@@ -10,8 +10,8 @@ import UserModal from "../UserModal";
 
 
 const {width, height} = Dimensions.get("window");
-const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserModal, navigation, data_friend, set_data_friend} : 
-    {isTakingPhoto : boolean; back_button_enable: boolean; handlePresentUserModal: () => void;  navigation: any, data_friend: Array<FriendData>, set_data_friend: (fr : Array<FriendData>) => void}) => 
+const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserModal, navigation, data_friend, set_data_friend, user_avt} : 
+    {isTakingPhoto : boolean; back_button_enable: boolean; handlePresentUserModal: () => void;  navigation: any, data_friend: Array<FriendData>, set_data_friend: (fr : Array<FriendData>) => void, user_avt: string}) => 
 {
 
     const add_friend_modal_ref = useRef<BottomSheetModal>(null);
