@@ -44,13 +44,6 @@ type FriendInvitation = {
     userAvatarURL: string
 }
 
-const link = 'https://example.com';
-const url_messenger = `fb-messenger://share?link=${encodeURIComponent(link)}`;
-const url_instagram = `https://www.instagram.com/direct/inbox`;
-const phoneNumber = '0123456789'; // Số điện thoại của người nhận
-const url_zalo = `https://zalo.me/share?text=Hello!`;
-
-
 const shareDirection = async ({link, url}: {link: string, url: string}) => {
     const supported = await Linking.canOpenURL(url);
     Linking.openURL(url)
@@ -58,13 +51,12 @@ const shareDirection = async ({link, url}: {link: string, url: string}) => {
 };
 
 
-
-const shareLink = async () => {
+const shareLink = async ({link} : {link : string}) => {
     try 
     {
         const result = await Share.share({
-            message: 'Check out this link: https://example.com',
-            url: 'https://example.com',
+            message: `Check out this link: ${link}`,
+            url:  `${link}`,
         });
     
         if (result.action === Share.sharedAction) {
@@ -186,6 +178,34 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
     
         get_data_from_search();
     }, [search_text]);
+
+// ------------------------------------------------------------ Lấy link kết bạn từ AsyncStorage -----------------------------------------------------------
+    const [addfriend_link, setAddfriend_link] = useState<string | null>(null);;
+
+
+    // Lấy dữ liệu từ AsyncStorage
+    useEffect(() => {
+        const getData = async () => {
+        try {
+            const value = await AsyncStorage.getItem('addfriend_link');
+            if (value !== null) {
+                setAddfriend_link(value);
+            }
+        } catch (error) {
+            console.error('Error retrieving data', error);
+        }
+        };
+        getData();
+    }, []);
+
+    //const link = addfriend_link === null ? "" : addfriend_link;
+    const link = "cs526_locket://";
+
+    const url_messenger = `fb-messenger://share?link=${encodeURIComponent(link)}`;
+    const url_instagram = `https://www.instagram.com/direct/inbox`;
+    const phoneNumber = '0123456789'; // Số điện thoại của người nhận
+    const url_zalo = `https://zalo.me/share?text=Hello!`;
+
 
 // ------------------------------------------------------------ GET USER FROM SEARCH -----------------------------------------------------------
 
@@ -373,7 +393,7 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
 
                             {/* Share Instagram */}
                             <TouchableOpacity 
-                                onPress={() => shareLink()}
+                                onPress={() => shareLink({link: link})}
                                 style={add_friend_modal_styles.list_other_app_item}>
                                 <Image source={require('./GUI/InstaIcon.png')}
                                 style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}></Image>
@@ -382,14 +402,14 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
 
                             {/* Share Zalo */}
                             <TouchableOpacity 
-                                onPress={() => shareLink()}                     
+                                onPress={() => shareLink({link: link})}                     
                                 style={add_friend_modal_styles.list_other_app_item}>
                                 <Image source={require('./GUI/ZaloIcon.png')}
                                 style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}></Image>
                                 <Text style={add_friend_modal_styles.other_app_button_text}>Zalo</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={add_friend_modal_styles.list_other_app_item} 
-                            onPress={() => shareLink()}>
+                            onPress={() => shareLink({link: link})}>
                                 <Image source={require('./GUI/ShareButton.png')}
                                 style={[{width: "80%"}, {height: "80%"}, {resizeMode: "contain"}]}/>
                                 <Text style={add_friend_modal_styles.other_app_button_text}>Khác</Text>
@@ -550,7 +570,7 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                         </TouchableOpacity>
 
                         <TouchableOpacity 
-                            onPress={shareLink}
+                            onPress={() => shareLink({link: link})}
                             style={[add_friend_modal_styles.medium_button]}>
                             <View style={[add_friend_modal_styles.text_option_zone, {flex: 8},
                                 ]}>
@@ -571,7 +591,7 @@ function AddFriendModal({modal_refs, data_friend, set_data_friend} : {modal_refs
                         </TouchableOpacity>
 
                         <TouchableOpacity style={[add_friend_modal_styles.medium_button]}
-                        onPress={() => shareLink()}>
+                        onPress={() => shareLink({link: link})}>
                             <View style={[add_friend_modal_styles.text_option_zone, {flex: 8},
                                 ]}>
                                 <Image source={require('./GUI/ShareButton.png')}

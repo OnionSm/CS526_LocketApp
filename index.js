@@ -13,7 +13,6 @@ import SignUpWithEmail from './Scripts/layout/SignUpWithEmail';
 import SignUpChoosePassword from './Scripts/layout/SignUpChoosePassword';
 import ChooseUserIdName from './Scripts/layout/ChooseUserIdName';
 import OfficialStory from './Scripts/layout/OfficicalStory';
-import AddFriendScreen from './Scripts/layout/AddFriendScreen';
 import MessageScreen from './Scripts/layout/MessageScreen';
 import { name as appName } from './app.json';
 import "./global.css";
@@ -42,6 +41,7 @@ import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from 'react-native-reanimated';
+import { CONNECTION_IP } from '@env';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useContext } from 'react';
@@ -79,6 +79,20 @@ configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false, 
 });
+
+// Cấu hình deep linking
+const linking = {
+  prefixes: ['https://cs526_locket.com', 'cs526_locket://'],
+  config: {
+    screens: {
+      SignInScreen: '',
+      MainScreenRoot: 'home',
+      PersonalChatScreen: 'chat/:userId',
+      // Thêm các màn hình khác nếu cần
+    },
+  },
+};
+
 const Stack = createNativeStackNavigator();
 
 function MainApp() 
@@ -219,5 +233,7 @@ function MainApp()
     
   );
 }
+
+
 
 AppRegistry.registerComponent(appName, () => MainApp);

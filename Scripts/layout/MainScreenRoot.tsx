@@ -1002,7 +1002,6 @@ const MainScreenRoot = ({navigation}: {navigation: any}) =>
 // --------------------------------------------------------------------------------------------------------------
     return (
         <>
-            <UserModal navigation={navigation} first_name={user_data_context.first_name} last_name={user_data_context.last_name} set_first_name={user_data_context.set_first_name} set_last_name={user_data_context.set_last_name} user_modal_refs ={user_modal_ref} user_avt={user_data_context.user_avt}/>
             <MainScreenHeader isTakingPhoto={isTakingPhoto} back_button_enable={back_button_enable} handlePresentUserModal={handlePresentUserModal} 
             navigation={navigation} data_friend={friend_data_context.data_friend} set_data_friend={friend_data_context.set_data_friend} user_avt={user_data_context.user_avt}/>
             <BackToMainScreenButton 

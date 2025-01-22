@@ -25,6 +25,7 @@ const saveUserData = async (data: any, db: any) => {
         await AsyncStorage.setItem("email", data.user.email);
         await AsyncStorage.setItem("password",  data.user.password);
         await AsyncStorage.setItem("public_user_id", data.user.publicUserId);
+        await AsyncStorage.setItem("addfriend_link", data.user.addFriendLink);
         await AsyncStorage.setItem("phone_number", data.user.phoneNumber);
         await AsyncStorage.setItem("show_user", JSON.stringify(data.user.showUser));
         await AsyncStorage.setItem("user_avatar_url", data.user.userAvatarURL);
