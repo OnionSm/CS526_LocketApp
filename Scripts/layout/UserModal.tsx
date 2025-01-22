@@ -64,13 +64,8 @@ const shareLink = async () => {
 
   
 
-<<<<<<< HEAD
-export default function UserModal({navigation, first_name, last_name, set_first_name, set_last_name, modalRef}:
-    {navigation : any, first_name : string; last_name:  string; set_first_name: (name: string) => void; set_last_name: (name: string) => void;  modalRef: any})
-=======
-export default function UserModal({navigation, first_name, last_name, set_first_name, set_last_name, user_modal_refs, user_avt}:
-    {navigation : any, first_name : string; last_name:  string; set_first_name: (name: string) => void; set_last_name: (name: string) => void;  user_modal_refs: any, user_avt: string})
->>>>>>> 8ab6f6e5d13c649ddcaa156a8f311e7a3d4896f6
+export default function UserModal({navigation, first_name, last_name, set_first_name, set_last_name, user_modal_refs}:
+    {navigation : any, first_name : string; last_name:  string; set_first_name: (name: string) => void; set_last_name: (name: string) => void;  user_modal_refs: any})
 {
     const sqlite_db_context = useContext(SqliteDbContext);
     var [user_avt_uri, set_user_avt] = useState<string | undefined>();
@@ -85,7 +80,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                 console.warn("No user ID found");
                 return;
             }
-            const avatar = user_avt;
+            const avatar = user_avt_url;
       
             if (typeof avatar !== "string" || typeof avatar === "undefined") 
             {
@@ -124,7 +119,6 @@ export default function UserModal({navigation, first_name, last_name, set_first_
     };
 
 // -----------------------------------------------------------------------------------------------------------------------------------
-
     const closeChangeInfoModal = () => {
         setIsChangeInfoVisible(false);
         changeInfoModalRef.current?.dismiss();
@@ -152,14 +146,24 @@ export default function UserModal({navigation, first_name, last_name, set_first_
     const firstLetter = first_name ? first_name[0].toUpperCase() : '';
     const secondLetter = last_name ? last_name[0].toUpperCase() : '';
 
-    const[firstname, setfirstname] = useState(first_name);
-    const[lastname, setlastname] = useState(last_name);
+    const [firstname, setfirstname] = useState(first_name);
+    const [lastname, setlastname] = useState(last_name);
+    const [user_avt_url, setUser_avt_url] = useState<string | null>(null);
+    const [user_id, setUser_id] = useState<string | null>(null);
     useEffect(()=>
     {
         const get_user_name_from_storage = async () => 
         {
             const first = await AsyncStorage.getItem("first_name");
             const last = await AsyncStorage.getItem("last_name");
+            const user_avatar = await AsyncStorage.getItem('user_avatar_url');
+            const id = await AsyncStorage.getItem('public_user_id');
+            if (user_avatar !== null) {
+                setUser_avt_url(user_avatar);
+            }
+            if (id !== null) {
+                setUser_id(id);
+            }
             if (first !== null)
             {
                 setfirstname(first);
@@ -171,16 +175,18 @@ export default function UserModal({navigation, first_name, last_name, set_first_
             
         };
         get_user_name_from_storage();
-    }, [firstname, lastname])
+    }, [firstname, lastname, user_avt_url, user_id])
 
     const handleChangeInfoPress = () => {
         changeInfoModalRef.current?.present() 
     }
 
+    
+
     return (
         
         <BottomSheetModal
-            ref={modalRef}
+            ref={user_modal_refs}
             backgroundStyle={{ backgroundColor: '#1F1F1F' }}
             handleStyle={{ height: 10 }}
             containerStyle={{
@@ -190,6 +196,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
             >
 
             <BottomSheetScrollView contentContainerStyle={[styles.contentContainer, {minHeight: height}]}>
+
                 <AvatarImageBottomSheet set_user_avatar={set_user_avt} isVisible={avatar_image_modal_state} toggleModal={toggle_avatar_image_modal}></AvatarImageBottomSheet>
                 <DeleteAccountModal navigation={navigation} isVisible={delete_account_modal_state} toggleModal={toggle_delete_account_modal}></DeleteAccountModal>
                 <View style={general_user_profile_styles.user_avatar_zone}>
@@ -197,13 +204,23 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                     <View style={[general_user_profile_styles.user_avatar_child_zone]}>
                         <TouchableOpacity style={[general_user_profile_styles.avatar_border]}
                         onPress={() => {toggle_avatar_image_modal()}}>
-                            {user_avt_uri != null && user_avt_uri != undefined &&  user_avt_uri !== "" ? (
-                                    <Image style={general_user_profile_styles.main_avt}
-                                    source={{uri : user_avt_uri}}/>
+                            {
+                            user_avt_uri != null && user_avt_uri != undefined &&  user_avt_uri !== "" ? 
+                            (
+                                <Image style={general_user_profile_styles.main_avt}
+                                source={{uri : user_avt_uri}}/>
                                     
-                            ): (
-                                <UserAvatar size={100} name={`${firstname} ${lastname}`} />
-                            )}
+                            ) :
+                            (  
+                                user_avt_url != null && user_avt_url != undefined &&  user_avt_url !== "" ? 
+                                (                                 
+                                    <Image style={general_user_profile_styles.main_avt}
+                                    source={{uri : user_avt_url?.trim()}}/>
+                                ) : 
+                                (
+                                    <UserAvatar size={100} name={`${firstname} ${lastname}`} />
+                                )
+                            ) }
                         </TouchableOpacity>
                     </View>
 
@@ -216,7 +233,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                     {/* User Id and Change Profile */}
                     <View style={general_user_profile_styles.userid_zone}>
                         <View style={general_user_profile_styles.userid_background}>
-                            <Text style={general_user_profile_styles.userid_text}>onion.sm</Text>
+                            <Text style={general_user_profile_styles.userid_text}>{user_id}</Text>
                         </View>
 
                         <TouchableOpacity style={general_user_profile_styles.user_setting_background}
@@ -226,11 +243,7 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                         </TouchableOpacity>
                     </View>
                     <View>
-<<<<<<< HEAD
-                        <ChangeInfoModal navigation={navigation} set_first_name={setfirstname} set_last_name={setlastname} modalRef={changeInfoModalRef} />
-=======
-                        <ChangeInfoModal set_first_name={setFirstName} set_last_name={setLastName} modalRef={changeInfoModalRef}/>
->>>>>>> 8ab6f6e5d13c649ddcaa156a8f311e7a3d4896f6
+                        <ChangeInfoModal navigation={navigation} set_first_name={setfirstname} set_last_name={setlastname} modalRef={changeInfoModalRef}/>
                     </View>
                 </View>
                 
@@ -240,21 +253,31 @@ export default function UserModal({navigation, first_name, last_name, set_first_
                     <View style={general_user_profile_styles.locket_share_background}>
                         <View style={general_user_profile_styles.locket_share_background_zone1}>
                         <View style={[general_user_profile_styles.mini_avatar_border]}>
-                        {user_avt_uri !== "" ? (
-                                    <Image style={general_user_profile_styles.main_avt}
-                                    source={{uri : user_avt_uri}}/>
+                        {
+                            user_avt_uri != null && user_avt_uri != undefined &&  user_avt_uri !== "" ? 
+                            (
+                                <Image style={general_user_profile_styles.main_avt}
+                                source={{uri : user_avt_uri}}/>
                                     
-                            ): (
-                                <UserAvatar size={35} name={`${first_name} ${last_name}`} />
-                            )}
-                            
+                            ) :
+                            (  
+                                user_avt_url != null && user_avt_url != undefined &&  user_avt_url !== "" ? 
+                                (                                 
+                                    <Image style={general_user_profile_styles.main_avt}
+                                    source={{uri : user_avt_url?.trim()}}/>
+                                ) : 
+                                (
+                                    <UserAvatar size={35} name={`${firstname} ${lastname}`} />
+                                )
+                            ) }
+
                         </View>
 
                             <View style={general_user_profile_styles.locket_share_text_zone}>
                                 <Text style={[general_user_profile_styles.general_text ,{fontSize:15}]}
                                 >Mời bạn bè tham gia Locket</Text>
                                 <Text style={[general_user_profile_styles.general_text2, {fontSize:15}]}
-                                >locket.cam/onion</Text>
+                                >locket.cam/{user_id}</Text>
                             </View>
                         </View>
 

@@ -44,10 +44,11 @@ const MainScreenHeader = ({isTakingPhoto, back_button_enable, handlePresentUserM
         };
         get_user_name_from_storage();
     }, [first_name, last_name])
+    
 
     return(
         <View style={main_screen_header_styles.upper_zone}>
-            <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} modalRef={userModalRef}/>
+            <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} user_modal_refs={userModalRef} />
             <AddFriendModal modal_refs={add_friend_modal_ref} data_friend={data_friend} set_data_friend={set_data_friend}></AddFriendModal>
             {isTakingPhoto ? (
                 <View style={[

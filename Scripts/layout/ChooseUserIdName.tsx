@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import { Image, ImageBackground, Text, View, Button, TouchableOpacity, TextInput, Alert} from 'react-native';
@@ -6,6 +6,79 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import styles from './styles/SignInWithEmailStyle';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { CONNECTION_IP } from '@env';
+import { SqliteDbContext } from './context/SqliteDbContext';
+import SQLite from 'react-native-sqlite-storage';
+
+const saveUserData = async (data: any, db: any) => {
+    try 
+    {
+        await AsyncStorage.setItem("user_id", data.user.id);
+        await AsyncStorage.setItem("first_name", data.user.firstName);
+        await AsyncStorage.setItem("last_name", data.user.lastName);
+        await AsyncStorage.setItem("email", data.user.email);
+        await AsyncStorage.setItem("password",  data.user.password);
+        await AsyncStorage.setItem("public_user_id", data.user.publicUserId);
+        await AsyncStorage.setItem("addfriend_link", data.user.addFriendLink);
+        await AsyncStorage.setItem("phone_number", data.user.phoneNumber);
+        await AsyncStorage.setItem("show_user", JSON.stringify(data.user.showUser));
+        await AsyncStorage.setItem("user_avatar_url", data.user.userAvatarURL);
+        await AsyncStorage.setItem("list_friends", JSON.stringify(data.user.friends));
+        await AsyncStorage.setItem('access_token', data.token.accessToken);
+        await AsyncStorage.setItem("refresh_token", data.token.refreshToken);
+        console.log("Lưu token thành công");
+
+        db.transaction((tx: any) => {
+            tx.executeSql(
+                `CREATE TABLE IF NOT EXISTS User (
+                user_id TEXT PRIMARY KEY,
+                publicUserId TEXT NOT NULL DEFAULT '',
+                firstName TEXT NOT NULL,
+                lastName TEXT NOT NULL,
+                age INTEGER,
+                gender TEXT DEFAULT '',
+                phoneNumber TEXT,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                userAvatarURL TEXT,
+                friends TEXT,  -- This will store the list as a comma-separated string (you'll need to handle this in your application logic)
+                accountDeleted INTEGER DEFAULT 0  -- Use 0 for false, 1 for true
+                )`,
+                [],
+                () => {
+                console.log('User table created successfully');
+                },
+                (error: any) => {
+                    console.log('Error creating User table:', error);
+                }
+                );
+
+            tx.executeSql(
+                    `INSERT OR REPLACE INTO User (user_id, publicUserId, firstName, lastName, phoneNumber, email, password, userAvatarURL) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    data.user.id, 
+                    data.user.publicUserId, 
+                    data.user.firstName, 
+                    data.user.lastName, 
+                    data.user.phoneNumber, 
+                    data.user.email, 
+                    data.user.password,
+                    data.user.userAvatarURL
+                ],
+                (tx: any, results: any) => {
+                    console.log('User added or updated successfully');
+                },
+                (error: any) => {
+                    console.log('Error adding or updating user:', error);
+                }
+            );
+        });
+    } 
+    catch (error) 
+    {
+        console.log("Không thể lưu token", error);
+    }
+}
 
 
 const saveToken = async (access_token: string, refresh_token: string) => {
@@ -21,6 +94,18 @@ const saveToken = async (access_token: string, refresh_token: string) => {
 
 function ChooseUserIdName({navigation}: {navigation: any})
 {
+    // ------------------------------ SET DATABASE --------------------------------
+    const sqlite_db_context = useContext(SqliteDbContext);
+
+    useEffect(() =>{
+        const open_database = async () =>
+        {
+            const db = SQLite.openDatabase(
+                {name: 'Locket.db', location: 'default'});
+            sqlite_db_context.set_db(db);
+        };
+        open_database();
+    }, []);
 
     const [user_id_name, SetUserIdName] = useState("");
     const [register_email, SetEmail] = useState("");
@@ -96,10 +181,10 @@ function ChooseUserIdName({navigation}: {navigation: any})
                         console.log(result);
                         if(result)
                         {
-                            const result_login = await Login(register_email, register_password);
+                            const result_login = await Login(register_email, register_password, sqlite_db_context.db);
                             if(result_login)
                             {
-                                navigation.navigate("AddFriendScreen");
+                                navigation.navigate("MainScreenRoot");
                             }
                             else
                             {
@@ -174,7 +259,7 @@ async function CreateAccount(
 
 
 
-async function Login(email: string, password : string) 
+async function Login(email: string, password : string, db: any) 
 {
     const formData = new FormData();
     formData.append('Email', email);
@@ -199,6 +284,8 @@ async function Login(email: string, password : string)
             console.log(data.accessToken);
             console.log(data.refreshToken);
             await saveToken(data.accessToken, data.refreshToken);
+            await saveUserData(data, db);
+            console.log("Lưu thông tin người dùng thành công")
         }
         return data;
     } 

@@ -524,7 +524,7 @@ const get_user_avt = (user_id: string, db: any) => {
 
             if (rows.length > 0) 
             {
-                user_avt = rows.item(0).userAvatarURL; 
+                user_avt = rows.item(0).userAvatarURL;
             }
             resolve(user_avt !== null ? user_avt : ""); 
           },
@@ -548,14 +548,14 @@ const get_user_avt = (user_id: string, db: any) => {
     };
     get_avt_from_local();
   }, []);
+  
 
 
     return (
         <GestureHandlerRootView>
             <BottomSheetModalProvider>
-                <UserModal navigation={navigation} first_name={first_name} last_name={last_name} set_first_name={set_first_name} set_last_name={set_last_name} modalRef={user_modal_ref}/>
                 <MainScreenHeader isTakingPhoto={isTakingPhoto} back_button_enable={back_button_enable} handlePresentUserModal={handlePresentUserModal} 
-                navigation={navigation} data_friend={data_friend} set_data_friend={set_data_friend}/>
+                navigation={navigation} data_friend={data_friend} set_data_friend={set_data_friend} />
                 <BackToMainScreenButton 
                     enable={back_button_enable} 
                     scroll_to_top={goToTop} 
