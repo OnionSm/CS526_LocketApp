@@ -164,11 +164,11 @@ function MainApp()
               options={{ headerShown: false }} 
             />
             
-            <Stack.Screen 
+            {/* <Stack.Screen 
               name="AddFriendScreen" 
               component={AddFriendScreen} 
               options={{ headerShown: false }} 
-            />
+            /> */}
             <Stack.Screen 
               name="OfficialStory" 
               component={OfficialStory} 
